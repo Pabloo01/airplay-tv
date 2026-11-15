@@ -13,17 +13,33 @@ class AudioRenderer {
 
     private var serverHandle = 0L
 
+    // own lock for the delay poll: start() can hold the instance lock for a whole oboe stream
+    // open, and the video scheduler must never wait that long. cleared before the engine is freed
+    private val delayLock = Any()
+    private var delayHandle = 0L
+
     @Synchronized
     fun attachEngine(server: Long) {
         serverHandle = server
+        synchronized(delayLock) { delayHandle = server }
         pushConfig()
         NativeBridge.nativeServerAudioSetClientGain(serverHandle, clientGain)
     }
 
     @Synchronized
     fun detachEngine() {
+        synchronized(delayLock) { delayHandle = 0L }
         serverHandle = 0L
         codecLabel = ""
+    }
+
+    // ns from a sample's timestamp until it is heard, null when audio isn't playing; never blocks
+    fun presentationDelayNs(): Long? {
+        synchronized(delayLock) {
+            if (delayHandle == 0L) return null
+            return NativeBridge.nativeServerAudioPresentationDelayNs(delayHandle)
+                .takeIf { it != NativeBridge.AUDIO_DELAY_UNKNOWN }
+        }
     }
 
     // open playout (first onAudioFormat, or resume after pause); idempotent natively

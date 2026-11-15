@@ -42,6 +42,14 @@ void audio_engine_pause(AudioEngine *engine);
 /* refresh + copy packed debug struct into dst; false if engine NULL or dstLen too small */
 bool audio_engine_get_debug(AudioEngine *engine, void *dst, size_t dstLen);
 
+#define AUDIO_DELAY_UNKNOWN INT64_MIN
+
+/* audio presentation delay in ns relative to packet timestamps (CLOCK_REALTIME): when the
+ * sample stamped pts is heard, minus pts. AUDIO_DELAY_UNKNOWN when not playing, not NTP
+ * synced or momentarily busy. cheap, any thread, never blocks; not concurrent with
+ * audio_engine_destroy */
+int64_t audio_engine_presentation_delay_ns(AudioEngine *engine);
+
 /* stop + destroy engine; no concurrent or later audio_engine_decode calls allowed */
 void audio_engine_destroy(AudioEngine *engine);
 

@@ -1,92 +1,83 @@
-# AirPlay Receiver for Android
+# AirPlay TV
 
-[![Stars](https://img.shields.io/github/stars/jqssun/android-airplay-server)](https://github.com/jqssun/android-airplay-server)
-[![GitHub](https://img.shields.io/github/downloads/jqssun/android-airplay-server/total?label=GitHub&logo=GitHub)](https://github.com/jqssun/android-airplay-server/releases)
-[![license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/jqssun/android-airplay-server/blob/main/LICENSE)
-[![build](https://img.shields.io/github/actions/workflow/status/jqssun/android-airplay-server/apk.yml?label=build)](https://github.com/jqssun/android-airplay-server/actions/workflows/apk.yml)
-[![release](https://img.shields.io/github/v/release/jqssun/android-airplay-server)](https://github.com/jqssun/android-airplay-server/releases)
+AirPlay TV turns an Android TV into an AirPlay receiver with one job: mirroring an iPhone screen to the TV to watch movies on the big screen. Start a film in any app on the iPhone, open Control Center, choose Screen Mirroring and pick the TV: the picture fills the screen without the phone's black bars, motion stays steady and the sound stays in sync.
 
-A fully featured free and open-source implementation of AirPlay for Android that turns your device into an AirPlay-compatible display and speaker, based on [UxPlay](https://github.com/FDH2/UxPlay). It is the first open-source AirPlay 2 receiver for Android and Android TV, and works with iOS/iPadOS, macOS devices as well as other sender implementations.
-
-[<img height="48" alt="Get it on Google Play" src="https://jqssun.github.io/images/badges/google-play-store.svg">](https://play.google.com/store/apps/details?id=io.github.jqssun.airplay)
-[<img height="48" alt="Get it on F-Droid" src="https://jqssun.github.io/images/badges/fdroid.svg">](https://f-droid.org/packages/io.github.jqssun.airplay)
-[<img height="48" alt="Get it on GitHub" src="https://jqssun.github.io/images/badges/github.svg">](https://github.com/jqssun/android-airplay-server/releases/latest)
-
-<video loop src='https://github.com/user-attachments/assets/79ed7c0c-0102-43cc-8816-4f00ce6a4199' alt="demo" width="200" style="display: block; margin: auto;"></video>
-
-## Compatibility
-
-- Android 7.0+, including Android TV
-- AirPlay devices on the same subnet, including iOS/iPadOS, macOS devices, or other sender implementations
+It is a fork of [android-airplay-server](https://github.com/jqssun/android-airplay-server), built on the [UxPlay](https://github.com/FDH2/UxPlay) AirPlay library.
 
 ## Features
 
-- Screen mirroring with H.264 and H.265 (HEVC) video decoding
-- Audio streaming with AAC-ELD, AAC-LC and ALAC audio decoding
-- Video playback with support for HLS, downloads, and remote controls
-- Music playback with track information, cover art, and remote controls
-- Support for Android TV with directional pad navigation and seeking controls
-- Support for Picture-in-Picture, automatic resolution and mode switching
-- Optional PIN authentication
-- Video resolution, overscan, and frame rate control
-- Audio latency control and support for software decoder fallback
-- Debug overlay with real-time statistics (FPS, bitrate, codec, resolution, frame count, audio volume, etc.)
-- Android native media session integration with notification controls
-- Wired secondary display for macOS/iPadOS devices over USB tethering
+- **Screen mirroring** (H.264; H.265 is off by default because some TV decoders show a black screen with it) with AAC-ELD audio.
+- **Black-bar crop** (`auto_crop`, on by default): the GL pipeline samples a tiny copy of the frame every 300 ms, finds the black bars the phone adds around the movie and scales the rest to fill the TV. Only black is removed, and a new crop has to stay stable for a while, so dark scenes don't zoom the picture.
+- **Smooth playback with lip-sync** (`smooth_playback`, on by default): compressed frames are queued and decoded just in time for the sender's presentation timestamp plus a delay, instead of on arrival. The delay follows the measured audio presentation delay, so lips stay in sync; `av_offset_ms` fine-tunes it. While mirroring, a low-latency Wi-Fi lock keeps the radio out of power save.
+- **Remote that can't end the movie by accident**: Back, OK and the D-pad only bring up the overlay; stopping from the TV needs an explicit confirmation.
+- **Audio-only mode**: AirPlay music (AAC, ALAC) with track info, cover art, playback controls and Android media session.
+- **Who can connect**: optional PIN, a prompt the first time a new device connects, and a list of allowed devices. While a device is mirroring, other Apple devices are told the TV is busy; the same device can reconnect at once (for example after a Wi-Fi drop).
+- **Settings over ADB** for TVs without an easy way to type (see below).
 
 > [!WARNING]
-> DRM content (e.g. from the Apple TV application) is not supported.
+> DRM content (e.g. the Apple TV app) is not supported: iOS refuses to mirror it.
 
-## Configure from ADB
+Requires Android 6.0 (API 23) or newer; built and tested for Android TV / Google TV. The TV and the iPhone must be on the same network.
 
-On devices without a display, settings can also be changed over ADB. The receiver is protected by `android.permission.DUMP` so regular installed apps cannot change them. Values are passed as text using `--es`. Using `adb shell`:
+## What changed from upstream
+
+This fork removes everything that isn't mirroring a movie:
+
+- **AirPlay Video (HLS URL handoff) is gone and never advertised.** With it, iOS stops mirroring when a video starts and hands the TV a stream URL instead. Many video apps serve that stream from a proxy on the phone itself (`http://127.0.0.1:…`), which the TV can't reach, so the session dropped. Without it, iOS keeps mirroring and the movie plays.
+- Also removed: video downloads, Picture-in-Picture, the USB-tethering secondary display, and the settings that only served those.
+- Added: black-bar crop, smooth playback with lip-sync, the TV interface (Spanish by default, English included), the connection prompt and allowed devices, and the same-device reconnect described above (UxPlay patch `0010`).
+
+## Settings over ADB
+
+Settings can be changed with a broadcast. The receiver is protected by `android.permission.DUMP`, so only `adb shell` (not other apps) can use it. Values are passed as text with `--es`. From `adb shell`:
 
 ```bash
-export KEY="server_name" VALUE="Speaker"
+KEY="server_name" VALUE="Living room"
 am broadcast -n app.airplaytv/io.github.jqssun.airplay.SettingsReceiver -a io.github.jqssun.airplay.SET_SETTING --es key "$KEY" --es value "$VALUE"
 ```
 
-To list all settings with their current values as JSON:
+To list every setting with its current value and default as JSON (start the app once first so it can receive broadcasts):
 
 ```bash
 am start -n app.airplaytv/io.github.jqssun.airplay.MainActivity
 am broadcast -n app.airplaytv/io.github.jqssun.airplay.SettingsReceiver -a io.github.jqssun.airplay.LIST_SETTINGS
 ```
 
-## Implementation
+Useful keys: `auto_crop`, `smooth_playback`, `av_offset_ms` (-500..500, positive = picture later), `h265` (`auto`/`on`/`off`), `allow_new_conn` (`true` lets any new device take over), `request_new_devices`, `require_pin`, `resolution`, `max_fps`, `debug_enabled`, `benchmark_log`.
 
-This application uses the C-based [UxPlay](https://github.com/FDH2/UxPlay) library to implement the AirPlay/RAOP protocol, with a JNI bridge to the Android application layer. Audio can be decoded via MediaCodec or a software ALAC decoder, while mirroring video is decoded via MediaCodec and rendered to a SurfaceView. HLS sessions are served through a local playlist proxy.
+## How it works
 
-When using USB tethering, the Android device can act as a reliable secondary display over a wired connection. Apple devices natively support USB tethering over CDC-NCM, so on Android devices that default to RNDIS, you may need to switch to CDC-NCM over ADB:
-
-```bash
-adb shell settings put global tether_force_usb_functions 1
-```
+UxPlay (C) implements the AirPlay/RAOP protocol, pairing and FairPlay; a JNI bridge connects it to the Android app, which advertises the TV over mDNS. Mirrored video is decoded by MediaCodec into a SurfaceTexture and drawn by a GL pipeline (black-bar crop, aspect fit) onto the screen. Audio is decoded by MediaCodec or FFmpeg (software ALAC/AAC) and played through Oboe.
 
 ```mermaid
 flowchart LR
-    AppleDevice["Apple Device (Sender)"]
-    UxPlay["UxPlay (C/JNI)<br/>RAOP + mDNS<br/>FairPlay + HLS"]
-    AndroidApp["Android (Receiver)<br/>MediaCodec + AudioTrack<br/>ExoPlayer (HLS)"]
+    AppleDevice["iPhone (sender)"]
+    UxPlay["UxPlay (C/JNI)<br/>RAOP + mDNS<br/>FairPlay"]
+    AndroidApp["Android TV (receiver)<br/>MediaCodec → GL pipeline (SurfaceTexture)<br/>MediaCodec/FFmpeg → Oboe"]
 
-    AppleDevice -- "RAOP / HLS" --> UxPlay
+    AppleDevice -- "AirPlay mirroring" --> UxPlay
     UxPlay --> AndroidApp
 ```
 
-CMake is used for native C/C++ components under [`app/src/main/cpp`](app/src/main/cpp). Submodules must be initialized before building. 
+## Building
+
+Native code (UxPlay, OpenSSL, FFmpeg, libplist) is built with CMake from [`app/src/main/cpp`](app/src/main/cpp); UxPlay is patched at build time with the patches in [`app/src/main/cpp/patches/UxPlay`](app/src/main/cpp/patches/UxPlay). You need the Android SDK, NDK 27.0.12077973 and JDK 17 or newer.
 
 ```bash
 git submodule update --init --recursive
-./gradlew assembleDebug
+./gradlew assembleRelease
 ```
 
-Check out the [CI](https://github.com/jqssun/android-airplay-server/blob/main/.github/workflows/apk.yml) for more details on reproducible builds.
+> [!NOTE]
+> The native build fails if the project path contains spaces: clone it into a path without them.
 
 ## Credits
 
+- [android-airplay-server](https://github.com/jqssun/android-airplay-server) by jqssun, the upstream app this fork is based on
 - [UxPlay](https://github.com/FDH2/UxPlay) for the AirPlay/RAOP server implementation
-- [FFmpeg](https://ffmpeg.org) for the lossless audio decoder
-- [Next Player](https://github.com/anilbeesetti/nextplayer) for the video player
+- [FFmpeg](https://ffmpeg.org) for the software ALAC and AAC decoders
+
+Licensed under the GPLv3, see [LICENSE](LICENSE).
 
 ---
 

@@ -8,68 +8,24 @@
     <string name="notification_text">Aceptando conexiones AirPlay</string>
     <string name="notification_pin_title">Se necesita código AirPlay</string>
     <string name="notification_pin_text">Código: %1$s</string>
-    <string name="stop_service">Detener</string>
 
-    <!-- Tabs -->
-    <string name="tab_overview">Inicio</string>
+    <!-- Logs -->
     <string name="tab_logs">Registros</string>
-    <string name="tab_settings">Ajustes</string>
 
     <!-- Overview -->
-    <string name="server_stopped">Receptor detenido</string>
-    <string name="waiting_for_connection">Esperando conexión…</string>
     <string name="waiting_for_playback">Pulsa reproducir en tu dispositivo…</string>
-    <string name="error_starting_server">Error al iniciar el receptor</string>
-    <string name="connected_count">%d conectados</string>
-    <string name="error_label">Error</string>
-    <string name="stopped_label">Detenido</string>
     <string name="btn_start">Iniciar</string>
-    <string name="btn_stop">Detener</string>
     <string name="btn_allow">Permitir</string>
     <string name="btn_open_settings">Abrir ajustes</string>
-    <string name="local_network_label">Se necesita acceso a dispositivos cercanos</string>
     <string name="local_network_desc">Permite el acceso a dispositivos cercanos para que los dispositivos AirPlay puedan encontrar este televisor y conectarse</string>
     <string name="unknown_track">Desconocido</string>
 
     <!-- Content descriptions -->
-    <string name="cd_pip">Imagen en imagen</string>
-    <string name="cd_fullscreen">Pantalla completa</string>
-    <string name="cd_exit_fullscreen">Salir de pantalla completa</string>
     <string name="cd_cover_art">Carátula</string>
     <string name="cd_play_pause">Reproducir/Pausa</string>
-    <string name="cd_rewind">Retroceder</string>
-    <string name="cd_fast_forward">Avanzar</string>
     <string name="volume_server">Volumen del receptor</string>
     <string name="volume_client">Volumen del emisor</string>
     <string name="volume_value">%1$d%%</string>
-    <string name="cd_download">Descargar vídeo</string>
-    <string name="cd_cancel_download">Cancelar descarga</string>
-
-    <!-- Video download -->
-    <string name="download_saved">Guardado en %1$s</string>
-    <string name="download_failed">No se pudo descargar</string>
-
-    <!-- Player gestures -->
-    <string name="gesture_seek_seconds">%1$d segundos</string>
-    <string name="seconds_short">%1$d s</string>
-    <string name="select_playback_speed">Velocidad de reproducción</string>
-    <string name="cd_reset_speed">Restablecer velocidad</string>
-    <string name="skip_silence">Saltar silencios</string>
-
-    <!-- Player controls -->
-    <string name="cd_back">Atrás</string>
-    <string name="cd_copy_url">Copiar URL del vídeo</string>
-    <string name="cd_rotate">Girar pantalla</string>
-    <string name="cd_lock_controls">Bloquear controles</string>
-    <string name="cd_unlock_controls">Desbloquear controles</string>
-    <string name="scale_best_fit">Ajustar</string>
-    <string name="scale_stretch">Estirar</string>
-    <string name="scale_crop">Recortar</string>
-    <string name="scale_hundred_percent">100%</string>
-
-    <!-- Dialogs -->
-    <string name="dialog_pin_title">Código AirPlay</string>
-    <string name="btn_ok">Aceptar</string>
 
     <!-- Logs screen -->
     <string name="btn_export">Exportar</string>
@@ -97,17 +53,11 @@
     <string name="setting_require_pin">Pedir código (beta)</string>
     <string name="setting_require_pin_desc">Pide un código de 4 cifras en cada conexión nueva</string>
     <string name="setting_allow_new_conn">Permitir conexiones nuevas</string>
-    <string name="setting_allow_new_conn_desc">Desconecta el emisor actual cuando se conecta otro</string>
+    <string name="setting_allow_new_conn_desc">Si se activa, un emisor nuevo desconecta al actual. Si no, los demás reciben «ocupado» y solo el mismo dispositivo puede volver a conectarse</string>
 
     <!-- Settings: Display -->
-    <string name="setting_idle_preview">Vista previa en espera</string>
-    <string name="setting_idle_preview_desc">Muestra la superficie de vídeo mientras espera una conexión</string>
-    <string name="setting_auto_fullscreen">Pantalla completa automática</string>
-    <string name="setting_auto_fullscreen_desc">Pasa a pantalla completa cuando se conecta un emisor</string>
     <string name="setting_keep_screen_on">Mantener la pantalla encendida</string>
     <string name="setting_keep_screen_on_desc">Evita que se apague mientras hay un emisor conectado</string>
-    <string name="setting_advertise_video">Anunciar vídeo AirPlay</string>
-    <string name="setting_advertise_video_desc">Si se desactiva, los vídeos se envían solo como audio</string>
     <string name="setting_advertise_mirroring">Anunciar duplicado de pantalla</string>
     <string name="setting_advertise_mirroring_desc">Si se desactiva, el televisor no aparece para duplicar pantalla</string>
     <string name="setting_advertise_audio">Anunciar audio AirPlay</string>
@@ -119,14 +69,8 @@
     <string name="setting_launch_on_connect">Abrir la app al conectar</string>
     <string name="setting_launch_on_connect_desc">Muestra la pantalla cuando se conecta un emisor</string>
     <string name="setting_launch_on_connect_no_permission">Pulsa para conceder el permiso de mostrar sobre otras apps</string>
-    <string name="setting_discovery">Visible a través de</string>
-    <string name="setting_discovery_all_desc">Se anuncia en todas las interfaces disponibles. Usa NsdManager.</string>
-    <string name="setting_discovery_usb_desc">Solo se anuncia por USB para forzar la conexión por cable. Usa un servidor mDNS propio.</string>
-    <string name="chip_all_networks">Todas las redes</string>
-    <string name="chip_usb_only">Solo USB</string>
     <string name="setting_resolution">Resolución</string>
     <string name="setting_resolution_desc">Resolución de vídeo que se anuncia a los emisores</string>
-    <string name="setting_resolution_placeholder">[An]x[Al]</string>
     <string name="setting_resolution_width">Ancho</string>
     <string name="setting_resolution_height">Alto</string>
     <string name="setting_max_fps">FPS máximos</string>
@@ -134,13 +78,17 @@
     <string name="setting_max_fps_placeholder">FPS</string>
     <string name="setting_overscanned">Sobrebarrido</string>
     <string name="setting_overscanned_desc">Añade un margen para pantallas con sobrebarrido</string>
+    <string name="setting_auto_crop">Recortar bandas negras</string>
+    <string name="setting_auto_crop_desc">Quita las bandas negras del teléfono para que la película llene la TV</string>
+    <string name="setting_smooth_playback">Reproducción fluida</string>
+    <string name="setting_smooth_playback_desc">Retrasa un poco la imagen para que el movimiento sea constante y vaya sincronizada con el sonido. Se aplica en la siguiente conexión</string>
     <string name="chip_custom">Personalizada</string>
     <string name="chip_device_portrait">Vertical</string>
     <string name="chip_device_landscape">Horizontal</string>
 
     <!-- Settings: Decode -->
     <string name="setting_h265">H.265 (HEVC)</string>
-    <string name="setting_h265_desc">En automático solo usa decodificadores H.265 que se sabe que funcionan</string>
+    <string name="setting_h265_desc">Desactivado por defecto: en algunos televisores el duplicado en H.265 se ve en negro. En automático solo usa decodificadores H.265 que se sabe que funcionan</string>
     <string name="setting_enforce_sdr">MediaFormat.KEY_COLOR_TRANSFER</string>
     <string name="setting_enforce_sdr_desc">Marca el vídeo como SDR limitado; desactívalo para dejar pasar fuentes HDR</string>
     <string name="setting_sw_alac">Forzar decodificador ALAC por software</string>
@@ -155,8 +103,8 @@
     <string name="setting_developer_options_desc">Muestra opciones para usuarios avanzados</string>
     <string name="setting_key_allow_frame_drop">MediaFormat.KEY_ALLOW_FRAME_DROP</string>
     <string name="setting_key_allow_frame_drop_desc">Permite que el decodificador descarte fotogramas para no retrasarse (Android 10+)</string>
-    <string name="setting_realtime_decoder_priority">MediaFormat.KEY_PRIORITY</string>
-    <string name="setting_realtime_decoder_priority_desc">Pide prioridad de tiempo real para el decodificador de audio</string>
+    <string name="setting_realtime_decoder_priority">Prioridad de tiempo real del audio</string>
+    <string name="setting_realtime_decoder_priority_desc">Pide prioridad de tiempo real (MediaFormat.KEY_PRIORITY) al decodificador de audio para evitar cortes. Se aplica al momento y no afecta al vídeo</string>
     <string name="setting_operating_rate">MediaFormat.KEY_OPERATING_RATE</string>
     <string name="setting_operating_rate_desc">Pide al decodificador su velocidad máxima de funcionamiento</string>
     <string name="chip_auto">Auto</string>
@@ -164,8 +112,6 @@
     <string name="chip_off">No</string>
     <string name="setting_low_latency">Baja latencia</string>
     <string name="setting_low_latency_desc">Decodifica el audio en modo de baja latencia; consume más batería y CPU</string>
-    <string name="setting_scheduled_output_buffer_release">Ritmo de fotogramas alineado</string>
-    <string name="setting_scheduled_output_buffer_release_desc">Programa cada fotograma al VSYNC que corresponde a su marca de tiempo</string>
     <string name="setting_audio_delay">Fijar retardo de audio</string>
     <string name="setting_audio_delay_desc">Indica al emisor una latencia de audio personalizada</string>
     <string name="audio_delay_value">%d ms</string>
@@ -186,7 +132,7 @@
     <string name="setting_debug_overlay">Mostrar diagnóstico</string>
     <string name="setting_debug_overlay_desc">Muestra sobre el vídeo códec, FPS, tasa de bits, variación, fotogramas y descartes</string>
     <string name="setting_benchmark_log">Activar registro de depuración</string>
-    <string name="setting_benchmark_log_desc">Escribe en logcat códec, FPS, tasa de bits, variación, fotogramas y descartes</string>
+    <string name="setting_benchmark_log_desc">Cada segundo escribe en los registros de la app y en logcat: códec, FPS, tasa de bits, variación, fotogramas, descartes y latencia del decodificador de audio</string>
 
     <!-- Debug overlay -->
     <string name="debug_section_video">Vídeo</string>
@@ -208,7 +154,6 @@
     <string name="btn_save">Guardar</string>
     <string name="btn_retry">Reintentar</string>
     <string name="btn_home">Volver al inicio</string>
-    <string name="cd_stop">Detener</string>
     <string name="cd_previous">Anterior</string>
     <string name="cd_next">Siguiente</string>
 
@@ -243,15 +188,16 @@
 
     <!-- Mirroring -->
     <string name="chip_mirroring">Duplicando · %1$s</string>
-    <string name="mirroring_help">Atrás para detener · OK para opciones</string>
+    <string name="mirroring_help">Atrás para ocultar</string>
     <string name="btn_stop_mirroring">Detener</string>
+    <string name="btn_keep_watching">Seguir viendo</string>
+    <string name="stop_confirm_title">¿Dejar de duplicar la pantalla?</string>
+    <string name="stop_confirm_desc">%1$s dejará de verse en este televisor.</string>
+    <string name="btn_stop_confirm">Sí, detener</string>
 
-    <!-- Video and audio -->
-    <string name="chip_streaming">Transmitiendo</string>
+    <!-- Audio -->
     <string name="chip_audio">Transmitiendo audio</string>
     <string name="source_from">Desde %1$s</string>
-    <string name="source_from_detail">Desde %1$s · %2$s</string>
-    <string name="video_untitled">Vídeo</string>
     <string name="audio_dim_note">Tras 2 min sin tocar el mando, la pantalla se atenúa para proteger el televisor.</string>
 
     <!-- Settings home -->
@@ -262,8 +208,6 @@
     <string name="row_server">Receptor</string>
     <string name="row_server_running">Visible para tus dispositivos</string>
     <string name="row_server_stopped">Ahora no está visible</string>
-    <string name="value_on">Activo</string>
-    <string name="value_off">Detenido</string>
     <string name="row_name">Nombre del receptor</string>
     <string name="row_name_sub">Así aparece en el iPhone</string>
     <string name="row_pin">Pedir código al conectar</string>
@@ -280,7 +224,7 @@
     <string name="quality_4k">4K</string>
     <string name="quality_custom">Personalizada</string>
     <string name="row_debug">Mostrar diagnóstico</string>
-    <string name="row_debug_sub">IP, resolución y latencia en pantalla</string>
+    <string name="row_debug_sub">Códec, FPS, búfer de audio y cortes sobre el vídeo</string>
     <string name="section_advanced">Avanzado</string>
     <string name="row_advanced">Ajustes avanzados</string>
     <string name="row_advanced_sub">Códecs, red, audio y opciones de desarrollador</string>

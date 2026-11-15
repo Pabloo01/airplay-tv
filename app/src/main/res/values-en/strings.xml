@@ -8,68 +8,24 @@
     <string name="notification_text">Accepting AirPlay connections</string>
     <string name="notification_pin_title">AirPlay PIN Required</string>
     <string name="notification_pin_text">PIN: %1$s</string>
-    <string name="stop_service">Stop</string>
 
-    <!-- Tabs -->
-    <string name="tab_overview">Overview</string>
+    <!-- Logs -->
     <string name="tab_logs">Logs</string>
-    <string name="tab_settings">Settings</string>
 
     <!-- Overview -->
-    <string name="server_stopped">Server stopped</string>
-    <string name="waiting_for_connection">Waiting for connection...</string>
     <string name="waiting_for_playback">Press start on the sender...</string>
-    <string name="error_starting_server">Error starting server</string>
-    <string name="connected_count">%d connected</string>
-    <string name="error_label">Error</string>
-    <string name="stopped_label">Stopped</string>
     <string name="btn_start">Start</string>
-    <string name="btn_stop">Stop</string>
     <string name="btn_allow">Allow</string>
     <string name="btn_open_settings">Open settings</string>
-    <string name="local_network_label">Nearby devices access needed</string>
     <string name="local_network_desc">Allow access to nearby devices so AirPlay devices can find and connect to this device</string>
     <string name="unknown_track">Unknown</string>
 
     <!-- Content descriptions -->
-    <string name="cd_pip">Picture-in-Picture</string>
-    <string name="cd_fullscreen">Fullscreen</string>
-    <string name="cd_exit_fullscreen">Exit fullscreen</string>
     <string name="cd_cover_art">Cover art</string>
     <string name="cd_play_pause">Play/Pause</string>
-    <string name="cd_rewind">Rewind</string>
-    <string name="cd_fast_forward">Fast forward</string>
     <string name="volume_server">Receiver volume</string>
     <string name="volume_client">Sender volume</string>
     <string name="volume_value">%1$d%%</string>
-    <string name="cd_download">Download video</string>
-    <string name="cd_cancel_download">Cancel download</string>
-
-    <!-- Video download -->
-    <string name="download_saved">Saved to %1$s</string>
-    <string name="download_failed">Download failed</string>
-
-    <!-- Player gestures -->
-    <string name="gesture_seek_seconds">%1$d seconds</string>
-    <string name="seconds_short">%1$ds</string>
-    <string name="select_playback_speed">Playback speed</string>
-    <string name="cd_reset_speed">Reset speed</string>
-    <string name="skip_silence">Skip silence</string>
-
-    <!-- Player controls -->
-    <string name="cd_back">Back</string>
-    <string name="cd_copy_url">Copy video URL</string>
-    <string name="cd_rotate">Rotate screen</string>
-    <string name="cd_lock_controls">Lock controls</string>
-    <string name="cd_unlock_controls">Unlock controls</string>
-    <string name="scale_best_fit">Best fit</string>
-    <string name="scale_stretch">Stretch</string>
-    <string name="scale_crop">Crop</string>
-    <string name="scale_hundred_percent">100%</string>
-
-    <!-- Dialogs -->
-    <string name="dialog_pin_title">AirPlay PIN</string>
-    <string name="btn_ok">OK</string>
 
     <!-- Logs screen -->
     <string name="btn_export">Export</string>
@@ -97,17 +53,11 @@
     <string name="setting_require_pin">Require PIN (Beta)</string>
     <string name="setting_require_pin_desc">Require 4-digit PIN for each new connection</string>
     <string name="setting_allow_new_conn">Allow new connections</string>
-    <string name="setting_allow_new_conn_desc">Drop current sender when a new one connects</string>
+    <string name="setting_allow_new_conn_desc">When on, a new sender drops the current one. When off, others are told the TV is busy and only the same device can reconnect</string>
 
     <!-- Settings: Display -->
-    <string name="setting_idle_preview">Idle screen preview</string>
-    <string name="setting_idle_preview_desc">Show video surface while waiting for a connection</string>
-    <string name="setting_auto_fullscreen">Enter fullscreen automatically</string>
-    <string name="setting_auto_fullscreen_desc">Enter fullscreen when a sender connects</string>
     <string name="setting_keep_screen_on">Keep screen on</string>
     <string name="setting_keep_screen_on_desc">Prevent sleeping while a sender is connected</string>
-    <string name="setting_advertise_video">Advertise AirPlay video support</string>
-    <string name="setting_advertise_video_desc">When off, videos are cast as audio only streams</string>
     <string name="setting_advertise_mirroring">Advertise AirPlay mirroring support</string>
     <string name="setting_advertise_mirroring_desc">When off, the device is hidden from mirroring</string>
     <string name="setting_advertise_audio">Advertise AirPlay audio support</string>
@@ -119,14 +69,8 @@
     <string name="setting_launch_on_connect">Open this application on connect</string>
     <string name="setting_launch_on_connect_desc">Show the screen when a sender connects</string>
     <string name="setting_launch_on_connect_no_permission">Tap to grant Display over other apps permission</string>
-    <string name="setting_discovery">Discoverable over</string>
-    <string name="setting_discovery_all_desc">Advertise on all usable interfaces. Uses NsdManager.</string>
-    <string name="setting_discovery_usb_desc">Only advertise over USB tethering to enforce wired connection. Uses custom mDNS responder.</string>
-    <string name="chip_all_networks">All networks</string>
-    <string name="chip_usb_only">USB only</string>
     <string name="setting_resolution">Resolution</string>
     <string name="setting_resolution_desc">Video resolution advertised to senders</string>
-    <string name="setting_resolution_placeholder">[W]x[H]</string>
     <string name="setting_resolution_width">Width</string>
     <string name="setting_resolution_height">Height</string>
     <string name="setting_max_fps">Maximum FPS</string>
@@ -134,13 +78,17 @@
     <string name="setting_max_fps_placeholder">FPS</string>
     <string name="setting_overscanned">Overscanned</string>
     <string name="setting_overscanned_desc">Add pixel boundary for full-screen overscan displays</string>
+    <string name="setting_auto_crop">Crop black bars</string>
+    <string name="setting_auto_crop_desc">Removes the phone\'s black bars so the movie fills the TV</string>
+    <string name="setting_smooth_playback">Smooth playback</string>
+    <string name="setting_smooth_playback_desc">Adds a small delay so motion is steady and lip-synced with the sound. Applies from the next connection</string>
     <string name="chip_custom">Custom</string>
     <string name="chip_device_portrait">Portrait</string>
     <string name="chip_device_landscape">Landscape</string>
 
     <!-- Settings: Decode -->
     <string name="setting_h265">H.265 (HEVC)</string>
-    <string name="setting_h265_desc">Auto only uses H.265 decoders known to work</string>
+    <string name="setting_h265_desc">Off by default: on some TVs H.265 mirroring shows a black screen. Auto only uses H.265 decoders known to work</string>
     <string name="setting_enforce_sdr">MediaFormat.KEY_COLOR_TRANSFER</string>
     <string name="setting_enforce_sdr_desc">Tag video as limited SDR; disable to allow HDR sources to pass through</string>
     <string name="setting_sw_alac">Force software ALAC decoder</string>
@@ -155,8 +103,8 @@
     <string name="setting_developer_options_desc">Show options for advanced users</string>
     <string name="setting_key_allow_frame_drop">MediaFormat.KEY_ALLOW_FRAME_DROP</string>
     <string name="setting_key_allow_frame_drop_desc">Allow video decoders to drop frames internally to keep up on Android 10+</string>
-    <string name="setting_realtime_decoder_priority">MediaFormat.KEY_PRIORITY</string>
-    <string name="setting_realtime_decoder_priority_desc">Request real-time scheduling for audio decoder</string>
+    <string name="setting_realtime_decoder_priority">Real-time audio priority</string>
+    <string name="setting_realtime_decoder_priority_desc">Ask the audio decoder for real-time priority (MediaFormat.KEY_PRIORITY) to avoid dropouts. Applies immediately and does not affect video</string>
     <string name="setting_operating_rate">MediaFormat.KEY_OPERATING_RATE</string>
     <string name="setting_operating_rate_desc">Request maximum operating rate from decoder</string>
     <string name="chip_auto">Auto</string>
@@ -164,8 +112,6 @@
     <string name="chip_off">Off</string>
     <string name="setting_low_latency">Low latency</string>
     <string name="setting_low_latency_desc">Use low-latency audio decoding for output; this uses more power and CPU</string>
-    <string name="setting_scheduled_output_buffer_release">Aligned frame pacing</string>
-    <string name="setting_scheduled_output_buffer_release_desc">Schedule each decoded frame to the VSYNC matching its presentation timestamp</string>
     <string name="setting_audio_delay">Override audio delay</string>
     <string name="setting_audio_delay_desc">Set a custom audio latency reported to sender</string>
     <string name="audio_delay_value">%dms</string>
@@ -186,7 +132,7 @@
     <string name="setting_debug_overlay">Show debug overlay</string>
     <string name="setting_debug_overlay_desc">Overlay stream stats on video: codec, FPS, bitrate, jitter, frames, drops</string>
     <string name="setting_benchmark_log">Enable debug logging</string>
-    <string name="setting_benchmark_log_desc">Log stream stats to logcat: codec, FPS, bitrate, jitter, frames, drops</string>
+    <string name="setting_benchmark_log_desc">Every second, write stream stats to the app logs and logcat: codec, FPS, bitrate, jitter, frames, drops and audio decode latency</string>
 
     <!-- Debug overlay -->
     <string name="debug_section_video">Video</string>
@@ -207,7 +153,6 @@
     <string name="btn_save">Save</string>
     <string name="btn_retry">Retry</string>
     <string name="btn_home">Back to home</string>
-    <string name="cd_stop">Stop</string>
     <string name="cd_previous">Previous</string>
     <string name="cd_next">Next</string>
 
@@ -242,15 +187,16 @@
 
     <!-- Mirroring -->
     <string name="chip_mirroring">Mirroring · %1$s</string>
-    <string name="mirroring_help">Back to stop · OK for options</string>
+    <string name="mirroring_help">Back to hide</string>
     <string name="btn_stop_mirroring">Stop</string>
+    <string name="btn_keep_watching">Keep watching</string>
+    <string name="stop_confirm_title">Stop mirroring?</string>
+    <string name="stop_confirm_desc">%1$s will stop showing on this TV.</string>
+    <string name="btn_stop_confirm">Yes, stop</string>
 
-    <!-- Video and audio -->
-    <string name="chip_streaming">Streaming</string>
+    <!-- Audio -->
     <string name="chip_audio">Streaming audio</string>
     <string name="source_from">From %1$s</string>
-    <string name="source_from_detail">From %1$s · %2$s</string>
-    <string name="video_untitled">Video</string>
     <string name="audio_dim_note">After 2 minutes without using the remote, the screen dims to protect the TV.</string>
 
     <!-- Settings home -->
@@ -261,8 +207,6 @@
     <string name="row_server">Receiver</string>
     <string name="row_server_running">Visible to your devices</string>
     <string name="row_server_stopped">Not visible right now</string>
-    <string name="value_on">On</string>
-    <string name="value_off">Off</string>
     <string name="row_name">Receiver name</string>
     <string name="row_name_sub">How it appears on the iPhone</string>
     <string name="row_pin">Ask for a code when connecting</string>
@@ -279,7 +223,7 @@
     <string name="quality_4k">4K</string>
     <string name="quality_custom">Custom</string>
     <string name="row_debug">Show diagnostics</string>
-    <string name="row_debug_sub">IP, resolution and latency on screen</string>
+    <string name="row_debug_sub">Codec, FPS, audio buffer and glitches over the video</string>
     <string name="section_advanced">Advanced</string>
     <string name="row_advanced">Advanced settings</string>
     <string name="row_advanced_sub">Codecs, network, audio and developer options</string>

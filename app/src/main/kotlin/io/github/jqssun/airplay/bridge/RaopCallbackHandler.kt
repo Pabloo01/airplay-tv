@@ -1,5 +1,9 @@
 package io.github.jqssun.airplay.bridge
 
+// every method here is looked up by name + JNI signature in android_raop_callbacks.c
+// (GetMethodID at init): keep both sides in sync; a lookup without a matching method
+// here makes the server fail to start. AirPlay Video (HLS) callbacks are inert C stubs with no
+// Kotlin counterpart.
 interface RaopCallbackHandler {
     fun onVideoData(data: ByteArray, ntpTimeNs: Long, isH265: Boolean)
     fun onAudioFormat(ct: Int, spf: Int, usingScreen: Boolean)
@@ -18,12 +22,5 @@ interface RaopCallbackHandler {
     fun onProgress(start: Long, curr: Long, end: Long)
     fun onDacpId(dacpId: String, activeRemote: String)
     fun onMirrorRunning(running: Boolean)
-    // video (hls), distinct from mirroring and raop audio
-    fun onVideoPlay(location: String, startPositionSeconds: Float)
-    fun onVideoScrub(positionSeconds: Float)
-    fun onVideoRate(rate: Float)
-    fun onVideoStop()
-    // fired per sender GET /playback-info poll; polling starts before /play
-    fun onVideoSessionPoll()
     fun onClientRequest(deviceId: ByteArray, model: ByteArray, name: ByteArray): Boolean
 }

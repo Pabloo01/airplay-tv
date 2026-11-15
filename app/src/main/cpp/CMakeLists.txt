@@ -37,7 +37,7 @@ endif()
 # ---------- Oboe (low-latency audio output, via prefab AAR) ----------
 find_package(oboe REQUIRED CONFIG)
 
-# ---------- ffmpeg (software ALAC decoder) ----------
+# ---------- ffmpeg (software ALAC and AAC decoders) ----------
 include(BuildFFmpeg)
 
 # ---------- libplist (built from submodule source) ----------

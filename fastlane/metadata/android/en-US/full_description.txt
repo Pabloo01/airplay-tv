@@ -1,12 +1,13 @@
-- Screen mirroring with H.264 and H.265 (HEVC) video decoding
-- Audio streaming with AAC-ELD, AAC-LC and ALAC audio decoding
-- Video playback with support for HLS, downloads, and remote controls
-- Music playback with track information, cover art, and remote controls
-- Support for Android TV with directional pad navigation and seeking controls
-- Support for Picture-in-Picture, automatic resolution and mode switching
-- Optional PIN authentication
-- Video resolution, overscan, and frame rate control
-- Audio latency control and support for software decoder fallback
-- Debug overlay with real-time statistics (FPS, bitrate, codec, resolution, frame count, audio volume, etc.)
-- Android native media session integration with notification controls
-- Wired secondary display over USB tethering
+AirPlay TV turns your Android TV into an AirPlay receiver made for one thing: mirroring your iPhone to the TV to watch movies on the big screen.
+
+- Screen mirroring from iPhone and iPad, with the phone's black bars cropped away so the movie fills the TV
+- Smooth playback: steady motion with the sound kept in lip-sync
+- A remote that can't stop the movie by accident: stopping from the TV asks for confirmation
+- Audio-only mode for AirPlay music, with track info, cover art and playback controls
+- Optional PIN, a prompt the first time a new device connects, and a list of allowed devices
+- While one device is mirroring, others are told the TV is busy; the same device can reconnect straight away
+- Settings over ADB
+
+AirPlay Video (handing the TV a stream URL) is intentionally not supported: iOS keeps mirroring instead, which works with every video app. DRM-protected content (e.g. the Apple TV app) can't be mirrored.
+
+Based on android-airplay-server and UxPlay. Not affiliated with Apple Inc.

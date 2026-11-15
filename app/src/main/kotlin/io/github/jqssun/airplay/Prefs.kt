@@ -68,7 +68,7 @@ object Prefs {
         IntPref(key, def, range, restart).also(_all::add)
     private fun str(key: String, def: String, restart: Boolean = false, check: (String) -> Boolean = { true }) =
         StrPref(key, def, restart, check).also(_all::add)
-    private fun tri(key: String, restart: Boolean = false) = str(key, AUTO, restart) { it in setOf(AUTO, ON, OFF) }
+    private fun tri(key: String, def: String = AUTO, restart: Boolean = false) = str(key, def, restart) { it in setOf(AUTO, ON, OFF) }
 
     fun forced(v: String) = when (v) { ON -> true; OFF -> false; else -> null }
 
@@ -77,19 +77,20 @@ object Prefs {
     val AUTO_START = bool("auto_start", true)
     val BOOT_AUTO_START = bool("boot_auto_start", true)
     val RUN_IN_BACKGROUND = bool("run_in_background", true)
-    val H265 = tri("h265", restart = true)
+    // off: auto advertises HEVC on decoders that black-screen in mirroring (e.g. Realtek TVs)
+    val H265 = tri("h265", OFF, restart = true)
     val ENFORCE_SDR = bool("enforce_sdr", true, restart = true)
     val KEY_ALLOW_FRAME_DROP = bool(MediaFormat.KEY_ALLOW_FRAME_DROP, true, restart = true)
-    val KEY_PRIORITY = bool(MediaFormat.KEY_PRIORITY, true, restart = true)
+    // realtime priority (MediaFormat priority=0) for the audio MediaCodec; live audio config only
+    val KEY_PRIORITY = bool(MediaFormat.KEY_PRIORITY, true)
     val LOW_LATENCY = bool("low_latency", false)
     val OPERATING_RATE = tri("operating_rate", restart = true)
-    val SCHEDULED_OUTPUT_BUFFER_RELEASE = bool("scheduled_output_buffer_release", false, restart = true)
     val AUDIO_AUTO_BUFFER = bool("audio_auto_buffer", true)
     // fixed cushion ms, used only when AUDIO_AUTO_BUFFER is off
     val AUDIO_CUSHION_MS = int("audio_cushion_ms", 40, 1..1000)
     // slider step 0..4 mapping to arrival-delay percentile the cushion targets;
     // lower = less latency, higher = more stable
-    val AUDIO_ADAPTIVE_STEP = int("audio_adaptive_step", 3, ADAPTIVE_PERCENTILES.indices)
+    val AUDIO_ADAPTIVE_STEP = int("audio_adaptive_step", 4, ADAPTIVE_PERCENTILES.indices)
     val OBOE_BUFFER_FRAMES = int("oboe_buffer_frames", 0, 0..8192)
     val ALAC_ENABLED = bool("alac_enabled", false, restart = true)
     val FORCE_SW_ALAC = bool("force_sw_alac", true)
@@ -100,20 +101,25 @@ object Prefs {
     val RESOLUTION = str("resolution", AUTO, restart = true) { it in setOf(AUTO, PORTRAIT, LANDSCAPE) || SIZE.matches(it) }
     val MAX_FPS = int("max_fps", 60, 1..Int.MAX_VALUE, restart = true)
     val OVERSCANNED = bool("overscanned", false, restart = true)
+    // crop black bars baked into the mirrored frame so a movie fills the screen; applies live
+    val AUTO_CROP = bool("auto_crop", true)
+    // de-jitter mirrored video: hold frames briefly and show them at the sender's cadence,
+    // lip-synced to the audio delay; off = decode each frame as it arrives. from next session
+    val SMOOTH_PLAYBACK = bool("smooth_playback", true)
+    // smooth playback lip-sync trim in ms, positive = picture later; applies live
+    val AV_OFFSET_MS = int("av_offset_ms", 0, -500..500)
     val REQUIRE_PIN = bool("require_pin", false, restart = true)
-    val ALLOW_NEW_CONN = bool("allow_new_conn", true, restart = true)
+    // UxPlay "nohold": any new sender drops the current one. off: others get busy (409), only the
+    // current sender's address may take over (reconnect after a Wi-Fi drop, UxPlay patch 0010)
+    val ALLOW_NEW_CONN = bool("allow_new_conn", false, restart = true)
     val AUDIO_LATENCY_MS = int("audio_latency_ms", -1, -1..1000, restart = true)
     val DEBUG_ENABLED = bool("debug_enabled", false)
     val DEVELOPER_OPTIONS = bool("developer_options", false)
     val BENCHMARK_LOG = bool("benchmark_log", false, restart = true)
-    val IDLE_PREVIEW = bool("idle_preview", false)
-    val AUTO_FULLSCREEN = bool("auto_fullscreen", true)
     val KEEP_SCREEN_ON = bool("keep_screen_on", true)
-    val ADVERTISE_VIDEO = bool("advertise_video", true, restart = true)
     val ADVERTISE_MIRRORING = bool("advertise_mirroring", true, restart = true)
     val ADVERTISE_AUDIO = bool("advertise_audio", true, restart = true)
     val LAUNCH_ON_CONNECT = bool("launch_on_connect", true)
-    val USB_ONLY = bool("usb_only", false, restart = true)
     val REQUEST_NEW_DEVICES = bool("request_new_devices", true)
     val ALLOWED_DEVICES = str("allowed_devices", "[]") { runCatching { org.json.JSONArray(it) }.isSuccess }
 }

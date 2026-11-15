@@ -58,7 +58,8 @@ private val wallBlobs = listOf(
     Blob(0.60f, 0.15f, 0.35f, Atv.Ambient3),
 )
 
-fun DrawScope.drawAmbient(alpha: Float = Atv.AmbientStrength) {
+fun DrawScope.drawAmbient() {
+    val alpha = Atv.AmbientStrength
     val span = max(size.width, size.height) * 1.4f
     wallBlobs.forEach { b ->
         val center = Offset(size.width * b.x, size.height * b.y)
@@ -174,7 +175,6 @@ fun GlassSurface(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     shape: Shape = Atv.ShapePill,
-    strong: Boolean = false,
     blur: Boolean = true,
     focusScale: Float = Atv.ScaleFocus,
     transparentAtRest: Boolean = false,
@@ -196,7 +196,7 @@ fun GlassSurface(
     val surface = when {
         focused -> Modifier.focusedGlass(shape)
         transparentAtRest -> Modifier.clip(shape)
-        else -> Modifier.glass(shape, strong, blur)
+        else -> Modifier.glass(shape, blur = blur)
     }
     Box(
         modifier = modifier
@@ -211,9 +211,8 @@ fun GlassSurface(
 @Composable
 fun GlassPanel(
     modifier: Modifier = Modifier,
-    shape: Shape = Atv.ShapeLg,
     strong: Boolean = false,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    Box(modifier.glass(shape, strong), content = content)
+    Box(modifier.glass(Atv.ShapeLg, strong), content = content)
 }

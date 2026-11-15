@@ -26,12 +26,9 @@ object NativeBridge {
     external fun nativeSetPlist(handle: Long, key: String, value: Int)
     external fun nativeSetH265Enabled(handle: Long, enabled: Boolean)
     external fun nativeSetCodecs(handle: Long, alac: Boolean, aac: Boolean)
+    // AirPlay Video (HLS URL handoff) on/off; the app always passes false
     external fun nativeSetHlsEnabled(handle: Long, enabled: Boolean)
-    external fun nativeSetLang(handle: Long, lang: String)
     external fun nativeSetFeature(handle: Long, bit: Int, enabled: Boolean)
-    external fun nativeUpdatePlaybackInfo(
-        handle: Long, position: Float, duration: Float, rate: Float, readyToPlay: Boolean
-    )
 
     external fun nativeGetRaopTxtRecords(handle: Long): Map<String, String>?
     external fun nativeGetAirplayTxtRecords(handle: Long): Map<String, String>?
@@ -49,4 +46,11 @@ object NativeBridge {
     external fun nativeServerAudioFormat(handle: Long, ct: Int, spf: Int)
     // fills direct buffer with packed debug snapshot; false if audio isn't running
     external fun nativeServerAudioDebug(handle: Long, buf: java.nio.ByteBuffer): Boolean
+    // audio presentation delay (ns): when the sample stamped pts is heard, minus pts;
+    // AUDIO_DELAY_UNKNOWN when not playing / not NTP synced. never blocks
+    external fun nativeServerAudioPresentationDelayNs(handle: Long): Long
+    // CLOCK_REALTIME - CLOCK_MONOTONIC (ns): sender timestamps (realtime) minus this = System.nanoTime() domain
+    external fun nativeRealtimeOffsetNs(): Long
+
+    const val AUDIO_DELAY_UNKNOWN = Long.MIN_VALUE
 }

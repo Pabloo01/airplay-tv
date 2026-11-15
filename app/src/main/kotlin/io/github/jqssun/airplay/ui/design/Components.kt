@@ -39,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -65,9 +64,9 @@ fun Wordmark(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun Mark(modifier: Modifier = Modifier, white: Boolean = false) {
+fun Mark(modifier: Modifier = Modifier) {
     Image(
-        painter = painterResource(if (white) R.drawable.logo_mark_white else R.drawable.logo_mark),
+        painter = painterResource(R.drawable.logo_mark),
         contentDescription = null,
         modifier = modifier,
     )
@@ -139,18 +138,10 @@ fun GlassIconButton(
     contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    blur: Boolean = false,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    content: (@Composable () -> Unit)? = null,
 ) {
-    GlassSurface(
-        onClick = onClick,
-        modifier = modifier.size(48.dp),
-        blur = blur,
-        interactionSource = interactionSource,
-    ) {
+    GlassSurface(onClick = onClick, modifier = modifier.size(48.dp), blur = false) {
         Box(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
-            content?.invoke() ?: Icon(icon, contentDescription, modifier = Modifier.size(24.dp))
+            Icon(icon, contentDescription, modifier = Modifier.size(24.dp))
         }
     }
 }
@@ -161,7 +152,6 @@ fun MediaCard(
     title: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    meta: String? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
@@ -178,7 +168,6 @@ fun MediaCard(
         }
         Column(Modifier.offset(y = 8.dp * lift).padding(horizontal = Atv.Space1)) {
             Text(title, style = AtvType.CardTitle, color = titleColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            if (meta != null) Text(meta, style = AtvType.Caption, color = Atv.InkMuted, maxLines = 1)
         }
     }
 }

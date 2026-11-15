@@ -124,6 +124,32 @@ struct AudioEngine {
         return true;
     }
 
+    /*
+     * audio presentation delay: when the sample stamped pts is heard, minus pts (ns; pts and
+     * now are both CLOCK_REALTIME). AUDIO_DELAY_UNKNOWN when not playing ring data, not NTP
+     * synced, or busy. any thread, never blocks (try-locks only).
+     *
+     * the read head sample (pts readHeadPts) is the next frame the data callback writes, and
+     * oboe's latency is exactly "next written frame is heard at now + latency", so
+     *   delay = now + latency - readHeadPts
+     * (== now + backlog + latency - write-head pts, without mixing two writes). both terms jump
+     * by one burst inside each callback and cancel; retry if a callback ran between the reads
+     */
+    int64_t presentationDelayNs() {
+        std::unique_lock<std::mutex> lk(mRebuildLock, std::try_to_lock);
+        if (!lk.owns_lock() || !mOutputActive || !mOutput || !mTimeline) return AUDIO_DELAY_UNKNOWN;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            const uint64_t before = mTimeline->readPosition();
+            const int64_t latencyNs = mOutput->outputLatencyNs();
+            const int64_t nowNs = realtimeNs();
+            const int64_t headPtsNs = mTimeline->readHeadPtsNs();
+            if (mTimeline->readPosition() != before) continue;
+            if (latencyNs < 0 || headPtsNs == TimelineBuffer::NO_PTS) return AUDIO_DELAY_UNKNOWN;
+            return nowNs + latencyNs - headPtsNs;
+        }
+        return AUDIO_DELAY_UNKNOWN;
+    }
+
     // touches decoder: must not run concurrently with stop()
     void decode(const uint8_t *data, size_t len, int ct, int64_t ptsNs) {
         if (!mTimeline) return;
@@ -156,9 +182,23 @@ struct AudioEngine {
         }
         if (mDecoder.decoder && !mDecoder.decoder->decode(data, len, ptsNs))
             mDecodeErrors.fetch_add(1, std::memory_order_relaxed);
+        if (mApplied && mApplied->benchmarkLog) logTimeline();
     }
 
 private:
+    // decode thread: playout buffer health every TIMELINE_LOG_NS (drift steering, skips, gaps)
+    void logTimeline() {
+        const int64_t now = monoNs();
+        if (now < mNextTimelineLogNs) return;
+        mNextTimelineLogNs = now + TIMELINE_LOG_NS;
+        const TimelineBuffer::Debug d = mTimeline->debugInfo();
+        mLog->info("timeline: backlog=%ums cushion=%ums steer=%+dppm slips=%llu trims=%u underruns=%u "
+                   "silences=%u drops=%u",
+                   (unsigned)d.backlogMs, (unsigned)d.tunedCushionMs, (int)mTimeline->steerPpm(),
+                   (unsigned long long)mTimeline->slips(), (unsigned)d.metrics.trims,
+                   (unsigned)d.metrics.underruns, (unsigned)d.metrics.silences, (unsigned)d.metrics.drops);
+    }
+
     static int ctIndex(int ct) {
         switch (ct) {
             case CT_ALAC:    return 0;
@@ -205,6 +245,8 @@ private:
     CreatedDecoder mDecoder;
     static constexpr int64_t DECODER_RETRY_NS = 1'000'000'000LL;
     int64_t mRetryAtNs = 0;  // earliest retry of failed decoder
+    static constexpr int64_t TIMELINE_LOG_NS = 10'000'000'000LL;
+    int64_t mNextTimelineLogNs = 0;  // decode thread
 
     // wanted config per codec, keyed by ctIndex
     static constexpr int NUM_CT = 3;
@@ -259,6 +301,10 @@ void audio_engine_pause(AudioEngine *engine) {
 bool audio_engine_get_debug(AudioEngine *engine, void *dst, size_t dstLen) {
     if (!engine || !dst) return false;
     return engine->copyDebug(dst, dstLen);
+}
+
+int64_t audio_engine_presentation_delay_ns(AudioEngine *engine) {
+    return engine ? engine->presentationDelayNs() : AUDIO_DELAY_UNKNOWN;
 }
 
 void audio_engine_destroy(AudioEngine *engine) {

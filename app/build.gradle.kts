@@ -33,8 +33,8 @@ android {
         applicationId = "app.airplaytv"
         minSdk = 23
         targetSdk = 37
-        versionCode = 36
-        versionName = "0.0.36-tv1"
+        versionCode = 37
+        versionName = "1.0.0"
 
         externalNativeBuild {
             cmake {
@@ -116,13 +116,10 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.androidx.lifecycle.service)
-    implementation(libs.androidx.lifecycle.viewmodel)
-    implementation(libs.androidx.datastore.prefs)
+    // MediaSessionCompat + MediaStyle notification (audio-only music mode)
     implementation(libs.androidx.media)
-    implementation(libs.media3.exoplayer)
-    implementation(libs.media3.exoplayer.hls)
-    implementation(libs.media3.ui.compose.material3)
-    implementation(libs.media3.transformer)
+    // Player / SimpleBasePlayer for DacpPlayer (audio-only music mode); also brings Guava futures
+    implementation(libs.media3.common)
     implementation(libs.kotlinx.coroutines)
     implementation(libs.oboe)
     implementation(libs.haze)
@@ -130,12 +127,12 @@ dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
-    implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
     implementation(libs.compose.material.icons)
     debugImplementation(libs.compose.ui.tooling)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
+
+    testImplementation(libs.junit)
 }

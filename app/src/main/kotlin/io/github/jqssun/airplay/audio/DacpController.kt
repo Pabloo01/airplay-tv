@@ -39,9 +39,6 @@ class DacpController(ctx: Context) {
     fun prevItem() = _send("/ctrl-int/1/previtem")
     fun volumeUp() = _send("/ctrl-int/1/volumeup")
     fun volumeDown() = _send("/ctrl-int/1/volumedown")
-    fun beginFastForward() = _send("/ctrl-int/1/beginff")
-    fun beginRewind() = _send("/ctrl-int/1/beginrew")
-    fun playResume() = _send("/ctrl-int/1/playresume")
 
     fun reset() {
         dacpId = ""

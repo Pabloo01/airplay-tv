@@ -3,21 +3,18 @@ package io.github.jqssun.airplay.ui
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 
-// shared surface for mirroring (VideoRenderer) and airplay video (AirPlayVideoPlayer)
+// display surface for screen mirroring (VideoRenderer); fills the screen, the gl pipeline
+// aspect-fits the stream (or its black-bar crop) inside it
 @Composable
 fun VideoSurfaceView(
     onSurfaceAvailable: (Surface) -> Unit,
     onSurfaceDestroyed: (Surface) -> Unit,
-    aspectRatio: Float = 16f / 9f,
-    // false = caller sizes the surface (content-scale modes)
-    applyAspectRatio: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val callbacks = remember {
@@ -40,12 +37,6 @@ fun VideoSurfaceView(
                 it.holder.addCallback(callbacks)
             }
         },
-        modifier = if (applyAspectRatio) {
-            modifier
-                .aspectRatio(aspectRatio, matchHeightConstraintsFirst = aspectRatio < 1f)
-                .fillMaxSize()
-        } else {
-            modifier
-        }
+        modifier = modifier.fillMaxSize()
     )
 }

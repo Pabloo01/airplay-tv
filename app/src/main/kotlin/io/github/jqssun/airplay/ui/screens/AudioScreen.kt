@@ -1,6 +1,12 @@
 package io.github.jqssun.airplay.ui.screens
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Bitmap
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -32,9 +38,13 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.DisposableEffectResult
+import androidx.compose.runtime.DisposableEffectScope
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +64,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.jqssun.airplay.R
+import io.github.jqssun.airplay.audio.VolumeBroadcast
 import io.github.jqssun.airplay.ui.design.ChipKind
 import io.github.jqssun.airplay.ui.design.GlassIconButton
 import io.github.jqssun.airplay.ui.design.SafeArea
@@ -62,8 +73,6 @@ import io.github.jqssun.airplay.ui.design.Wall
 import io.github.jqssun.airplay.ui.design.glass
 import io.github.jqssun.airplay.ui.design.isWide
 import io.github.jqssun.airplay.ui.dpadAdjust
-import io.github.jqssun.airplay.ui.formatVideoTime
-import io.github.jqssun.airplay.ui.gestures.ServerVolumeState
 import io.github.jqssun.airplay.ui.isTv
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
 import io.github.jqssun.airplay.ui.theme.Atv
@@ -120,13 +129,13 @@ fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
                     ) {
-                        Text(formatVideoTime(positionMs), style = AtvType.CaptionStrong, color = Atv.InkMuted)
+                        Text(formatTrackTime(positionMs), style = AtvType.CaptionStrong, color = Atv.InkMuted)
                         TrackBar(
                             if (durationMs > 0) positionMs / durationMs.toFloat() else 0f,
                             Modifier.weight(1f),
                         )
                         Text(
-                            "−" + formatVideoTime((durationMs - positionMs).coerceAtLeast(0)),
+                            "−" + formatTrackTime((durationMs - positionMs).coerceAtLeast(0)),
                             style = AtvType.CaptionStrong,
                             color = Atv.InkMuted,
                         )
@@ -262,3 +271,58 @@ private fun VolumeRow(
 
 private const val DIM_AFTER_MS = 120_000L
 private const val CLIENT_VOLUME_STEP = 1f / 16
+
+private fun formatTrackTime(ms: Long): String {
+    val s = (ms / 1000).toInt().coerceAtLeast(0)
+    return if (s >= 3600) "%d:%02d:%02d".format(s / 3600, (s % 3600) / 60, s % 60)
+    else "%d:%02d".format(s / 60, s % 60)
+}
+
+// receiver STREAM_MUSIC volume as 0..100, kept in sync with volume-key presses
+@Stable
+private class ServerVolumeState(private val context: Context) {
+    private val audioManager = context.getSystemService(AudioManager::class.java)
+    private val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+
+    var percentage by mutableIntStateOf(_current())
+        private set
+
+    private fun _current() = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) * 100 / maxVolume
+
+    fun sync() {
+        percentage = _current()
+    }
+
+    fun update(newPercentage: Int) {
+        percentage = newPercentage.coerceIn(0, 100)
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, percentage * maxVolume / 100, _flags())
+    }
+
+    fun adjust(up: Boolean) {
+        audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+            if (up) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER, _flags())
+        sync()
+    }
+
+    // surface the system panel when a headset is connected
+    private fun _flags() = if (_isHeadsetOn()) AudioManager.FLAG_SHOW_UI else 0
+
+    fun handleLifecycle(scope: DisposableEffectScope): DisposableEffectResult = with(scope) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context, intent: Intent) {
+                if (intent.action == VolumeBroadcast.ACTION) sync()
+            }
+        }
+        context.registerReceiver(receiver, IntentFilter(VolumeBroadcast.ACTION))
+        onDispose { context.unregisterReceiver(receiver) }
+    }
+
+    private fun _isHeadsetOn(): Boolean =
+        audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).any { device ->
+            device.type == AudioDeviceInfo.TYPE_WIRED_HEADSET ||
+                device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
+                device.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+                device.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO ||
+                device.type == AudioDeviceInfo.TYPE_USB_HEADSET
+        }
+}

@@ -3,8 +3,10 @@
  */
 
 #include <jni.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #include <memory>
 #include <android/log.h>
 
@@ -66,7 +68,6 @@ Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeInit(
         delete ctx;
         return 0;
     }
-    ctx->cb_ctx.raop = ctx->raop;
 
     raop_set_log_level(ctx->raop, LOGGER_ERR);
     raop_set_log_callback(ctx->raop, _log_callback, NULL);
@@ -130,10 +131,6 @@ Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeStart(
         LOGE("raop_start_httpd failed: %d", ret);
         return -1;
     }
-    /* raop_start_httpd doesn't record the bound port; without this the hls
-       proxy urls are built with port 0 */
-    raop_set_port(ctx->raop, port);
-
     LOGI("AirPlay server started on port %d", port);
 
     /* Register dnssd records (stored in shim, Kotlin reads them) */
@@ -306,7 +303,8 @@ Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeSetH265Enabled(
     }
 }
 
-/* hls plist gates raop.c's hls support; feature bits 0/4 advertise it over dns-sd */
+/* hls plist gates raop.c's hls support (off: AirPlay Video requests are dropped before any
+   handler runs); feature bits 0/4 advertise it over dns-sd */
 extern "C"
 JNIEXPORT void JNICALL
 Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeSetHlsEnabled(
@@ -319,18 +317,6 @@ Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeSetHlsEnabled(
         dnssd_set_airplay_features(ctx->dnssd, 0, enabled ? 1 : 0);
         dnssd_set_airplay_features(ctx->dnssd, 4, enabled ? 1 : 0);
     }
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeSetLang(
-        JNIEnv *env, jobject thiz, jlong handle, jstring lang) {
-
-    server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
-    if (!ctx || !ctx->raop) return;
-    const char *c = env->GetStringUTFChars(lang, NULL);
-    raop_set_lang(ctx->raop, c);
-    env->ReleaseStringUTFChars(lang, c);
 }
 
 extern "C"
@@ -351,17 +337,6 @@ Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeSetCodecs(
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
     if (!ctx || !ctx->dnssd) return;
     android_dnssd_set_codecs(ctx->dnssd, alac ? 1 : 0, aac ? 1 : 0);
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeUpdatePlaybackInfo(
-        JNIEnv *env, jobject thiz, jlong handle,
-        jfloat position, jfloat duration, jfloat rate, jboolean readyToPlay) {
-
-    server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
-    if (!ctx) return;
-    android_callbacks_update_playback_info(&ctx->cb_ctx, position, duration, rate, readyToPlay ? 1 : 0);
 }
 
 extern "C"
@@ -415,6 +390,43 @@ Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeServerAudioFormat(
         JNIEnv *env, jobject thiz, jlong handle, jint ct, jint spf) {
     server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
     if (ctx && ctx->cb_ctx.audio_engine) audio_engine_on_format(ctx->cb_ctx.audio_engine, ct, spf);
+}
+
+/* polled by the video scheduler thread; never blocks */
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeServerAudioPresentationDelayNs(
+        JNIEnv *env, jobject thiz, jlong handle) {
+    server_ctx_t *ctx = (server_ctx_t *)(intptr_t)handle;
+    if (!ctx || !ctx->cb_ctx.audio_engine) return (jlong)AUDIO_DELAY_UNKNOWN;
+    return (jlong)audio_engine_presentation_delay_ns(ctx->cb_ctx.audio_engine);
+}
+
+static int64_t _clock_ns(clockid_t id) {
+    struct timespec ts;
+    clock_gettime(id, &ts);
+    return (int64_t)ts.tv_sec * 1000000000LL + ts.tv_nsec;
+}
+
+/* CLOCK_REALTIME - CLOCK_MONOTONIC in ns: maps sender timestamps (UxPlay converts them to
+   realtime) onto System.nanoTime(). realtime read sandwiched between two monotonic reads,
+   tightest of a few tries, so preemption can't skew it */
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeRealtimeOffsetNs(
+        JNIEnv *env, jobject thiz) {
+    int64_t best_span = INT64_MAX;
+    int64_t best_offset = 0;
+    for (int i = 0; i < 5; i++) {
+        const int64_t m0 = _clock_ns(CLOCK_MONOTONIC);
+        const int64_t rt = _clock_ns(CLOCK_REALTIME);
+        const int64_t m1 = _clock_ns(CLOCK_MONOTONIC);
+        if (m1 - m0 < best_span) {
+            best_span = m1 - m0;
+            best_offset = rt - (m0 + (m1 - m0) / 2);
+        }
+    }
+    return (jlong)best_offset;
 }
 
 extern "C"

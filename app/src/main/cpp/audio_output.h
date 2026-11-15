@@ -115,6 +115,24 @@ public:
         return Debug{mLastXrun};
     }
 
+    /*
+     * ns until the next frame the data callback writes is heard (oboe calculateLatencyMillis:
+     * presentation timestamp extrapolated to frames-written, so it includes mixer + HAL), or
+     * -1 when unknown. never blocks; not for the data callback (oboe advises against
+     * timestamps there before Android R)
+     */
+    int64_t outputLatencyNs() {
+        std::unique_lock<std::mutex> lk(mLock, std::try_to_lock);
+        if (!lk.owns_lock() || !mStream) return -1;
+        const auto lat = mStream->calculateLatencyMillis();
+        if (lat) return (int64_t)(lat.value() * 1e6);
+        // transient (e.g. no timestamp yet right after start): unknown rather than a guess
+        if (lat.error() != oboe::Result::ErrorUnimplemented) return -1;
+        // path without timestamps (OpenSL ES): app buffer depth only, misses mixer/HAL latency
+        const int32_t rate = mStream->getSampleRate();
+        return rate > 0 ? (int64_t)mStream->getBufferSizeInFrames() * NS_PER_SEC / rate : -1;
+    }
+
 private:
     friend class OboeCallbacks;
 

@@ -14,7 +14,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.RectangleShape
@@ -43,18 +42,16 @@ fun SettingsScreen(viewModel: MainViewModel) {
     val alacEnabled by viewModel.pref(Prefs.ALAC_ENABLED).collectAsState()
     val aacEnabled by viewModel.pref(Prefs.AAC_ENABLED).collectAsState()
     val resolution by viewModel.pref(Prefs.RESOLUTION).collectAsState()
-    val idlePreview by viewModel.pref(Prefs.IDLE_PREVIEW).collectAsState()
-    val autoFullscreen by viewModel.pref(Prefs.AUTO_FULLSCREEN).collectAsState()
     val keepScreenOn by viewModel.pref(Prefs.KEEP_SCREEN_ON).collectAsState()
-    val advertiseVideo by viewModel.pref(Prefs.ADVERTISE_VIDEO).collectAsState()
     val advertiseMirroring by viewModel.pref(Prefs.ADVERTISE_MIRRORING).collectAsState()
     val advertiseAudio by viewModel.pref(Prefs.ADVERTISE_AUDIO).collectAsState()
     val launchOnConnect by viewModel.pref(Prefs.LAUNCH_ON_CONNECT).collectAsState()
     val maxFps by viewModel.pref(Prefs.MAX_FPS).collectAsState()
     val overscanned by viewModel.pref(Prefs.OVERSCANNED).collectAsState()
+    val autoCrop by viewModel.pref(Prefs.AUTO_CROP).collectAsState()
+    val smoothPlayback by viewModel.pref(Prefs.SMOOTH_PLAYBACK).collectAsState()
     val requirePin by viewModel.pref(Prefs.REQUIRE_PIN).collectAsState()
     val allowNewConn by viewModel.pref(Prefs.ALLOW_NEW_CONN).collectAsState()
-    val usbOnly by viewModel.pref(Prefs.USB_ONLY).collectAsState()
     val autoStart by viewModel.pref(Prefs.AUTO_START).collectAsState()
     val bootAutoStart by viewModel.pref(Prefs.BOOT_AUTO_START).collectAsState()
     val runInBackground by viewModel.pref(Prefs.RUN_IN_BACKGROUND).collectAsState()
@@ -69,7 +66,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
     val realtimeDecoderPriority by viewModel.pref(Prefs.KEY_PRIORITY).collectAsState()
     val lowLatency by viewModel.pref(Prefs.LOW_LATENCY).collectAsState()
     val operatingRate by viewModel.pref(Prefs.OPERATING_RATE).collectAsState()
-    val scheduledOutputBufferRelease by viewModel.pref(Prefs.SCHEDULED_OUTPUT_BUFFER_RELEASE).collectAsState()
     val benchmarkLog by viewModel.pref(Prefs.BENCHMARK_LOG).collectAsState()
     val audioAutoBuffer by viewModel.pref(Prefs.AUDIO_AUTO_BUFFER).collectAsState()
     val audioCushionMs by viewModel.pref(Prefs.AUDIO_CUSHION_MS).collectAsState()
@@ -117,17 +113,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
         )
 
         SectionHeader(stringResource(R.string.section_connection))
-
-        SettingSegmented(
-            title = stringResource(R.string.setting_discovery),
-            summary = stringResource(if (usbOnly) R.string.setting_discovery_usb_desc else R.string.setting_discovery_all_desc),
-            value = usbOnly,
-            options = listOf(
-                false to stringResource(R.string.chip_all_networks),
-                true to stringResource(R.string.chip_usb_only),
-            ),
-            onValueChange = { viewModel.set(Prefs.USB_ONLY, it) }
-        )
 
         SettingSwitch(
             title = stringResource(R.string.setting_require_pin),
@@ -180,13 +165,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
 
         SectionHeader(stringResource(R.string.section_display))
 
-        SettingSwitch(
-            title = stringResource(R.string.setting_auto_fullscreen),
-            description = stringResource(R.string.setting_auto_fullscreen_desc),
-            checked = autoFullscreen,
-            onCheckedChange = { viewModel.set(Prefs.AUTO_FULLSCREEN, it) }
-        )
-
         SettingResolution(
             value = resolution,
             onValueChange = { viewModel.set(Prefs.RESOLUTION, it) }
@@ -200,6 +178,20 @@ fun SettingsScreen(viewModel: MainViewModel) {
             placeholder = stringResource(R.string.setting_max_fps_placeholder),
             keyboardType = KeyboardType.Number,
             onValueChange = { it.toIntOrNull()?.let { v -> viewModel.set(Prefs.MAX_FPS, v) } }
+        )
+
+        SettingSwitch(
+            title = stringResource(R.string.setting_auto_crop),
+            description = stringResource(R.string.setting_auto_crop_desc),
+            checked = autoCrop,
+            onCheckedChange = { viewModel.set(Prefs.AUTO_CROP, it) }
+        )
+
+        SettingSwitch(
+            title = stringResource(R.string.setting_smooth_playback),
+            description = stringResource(R.string.setting_smooth_playback_desc),
+            checked = smoothPlayback,
+            onCheckedChange = { viewModel.set(Prefs.SMOOTH_PLAYBACK, it) }
         )
 
         SettingSwitch(
@@ -265,20 +257,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
             )
 
             SettingSwitch(
-                title = stringResource(R.string.setting_idle_preview),
-                description = stringResource(R.string.setting_idle_preview_desc),
-                checked = idlePreview,
-                onCheckedChange = { viewModel.set(Prefs.IDLE_PREVIEW, it) }
-            )
-
-            SettingSwitch(
-                title = stringResource(R.string.setting_advertise_video),
-                description = stringResource(R.string.setting_advertise_video_desc),
-                checked = advertiseVideo,
-                onCheckedChange = { viewModel.set(Prefs.ADVERTISE_VIDEO, it) }
-            )
-
-            SettingSwitch(
                 title = stringResource(R.string.setting_advertise_mirroring),
                 description = stringResource(R.string.setting_advertise_mirroring_desc),
                 checked = advertiseMirroring,
@@ -340,13 +318,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 description = stringResource(R.string.setting_low_latency_desc),
                 checked = lowLatency,
                 onCheckedChange = { viewModel.set(Prefs.LOW_LATENCY, it) }
-            )
-
-            SettingSwitch(
-                title = stringResource(R.string.setting_scheduled_output_buffer_release),
-                description = stringResource(R.string.setting_scheduled_output_buffer_release_desc),
-                checked = scheduledOutputBufferRelease,
-                onCheckedChange = { viewModel.set(Prefs.SCHEDULED_OUTPUT_BUFFER_RELEASE, it) }
             )
 
             SettingSwitch(
@@ -683,38 +654,6 @@ private fun SettingChips(
                 Text(description)
                 Spacer(Modifier.height(8.dp))
                 ChipRow(value, options, onValueChange)
-            }
-        }
-    )
-}
-
-@Composable
-private fun <T> SettingSegmented(
-    title: String,
-    summary: String,
-    value: T,
-    options: List<Pair<T, String>>,
-    onValueChange: (T) -> Unit
-) {
-    ListItem(
-        headlineContent = { Text(title) },
-        supportingContent = {
-            Column {
-                Spacer(Modifier.height(8.dp))
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    options.forEachIndexed { i, (key, label) ->
-                        val shape = SegmentedButtonDefaults.itemShape(i, options.size)
-                        SegmentedButton(
-                            selected = value == key,
-                            onClick = { onValueChange(key) },
-                            shape = shape,
-                            modifier = Modifier.dpadFocus(shape),
-                            label = { Text(label) }
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-                Text(summary)
             }
         }
     )

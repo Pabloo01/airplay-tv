@@ -43,10 +43,8 @@ object Atv {
     val SafeX = 48.dp
     val SafeY = 27.dp
 
-    val RadiusSm = 12.dp
     val RadiusMd = 20.dp
     val RadiusLg = 32.dp
-    val ShapeSm = RoundedCornerShape(RadiusSm)
     val ShapeMd = RoundedCornerShape(RadiusMd)
     val ShapeLg = RoundedCornerShape(RadiusLg)
     val ShapePill = RoundedCornerShape(percent = 50)
@@ -78,7 +76,6 @@ object AtvType {
     val Display = style(40, 46, FontWeight.Bold, -0.8f)
     val Title = style(28, 34, FontWeight.Bold, -0.4f)
     val Headline = style(22, 28, FontWeight.SemiBold)
-    val PlayerTitle = style(22, 28, FontWeight.SemiBold, -0.2f)
     val Body = style(18, 24, FontWeight.Normal)
     val BodyStrong = style(18, 24, FontWeight.SemiBold)
     val Callout = style(16, 22, FontWeight.Normal)

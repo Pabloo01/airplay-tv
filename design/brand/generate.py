@@ -2,7 +2,7 @@
 """Generate every AirPlay TV brand asset from one geometry.
 
 Outputs (run from the repo root: `python3 design/brand/generate.py`):
-  app/src/main/res/drawable/logo_mark.xml, logo_mark_white.xml   in-app mark (vector)
+  app/src/main/res/drawable/logo_mark.xml                         in-app mark (vector)
   app/src/main/res/drawable/ic_launcher_{background,foreground,monochrome}.xml  adaptive layers
   app/src/main/res/mipmap-*/ic_launcher.png, ic_launcher_round.png  legacy icons (API < 26)
   app/src/main/res/drawable-xhdpi/banner.png                      Android TV banner (320x180 dp)
@@ -131,7 +131,6 @@ def write(path, text):
 def write_vectors():
     d = os.path.join(RES, "drawable")
     write(os.path.join(d, "logo_mark.xml"), vector_doc(vector_paths(mark_shapes(SIGNAL, 0.14)), 96, 96))
-    write(os.path.join(d, "logo_mark_white.xml"), vector_doc(vector_paths(mark_shapes(WHITE, 0.14)), 96, 96))
     s, tx, ty = fg_transform()
     group = (f'    <group\n        android:scaleX="{s:.4f}"\n        android:scaleY="{s:.4f}"\n'
              f'        android:translateX="{tx:.4f}"\n        android:translateY="{ty:.4f}">\n'

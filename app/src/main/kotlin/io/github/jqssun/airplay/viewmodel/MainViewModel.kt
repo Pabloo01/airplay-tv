@@ -3,7 +3,6 @@ package io.github.jqssun.airplay.viewmodel
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.os.SystemClock
 import android.view.Surface
 import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
@@ -19,7 +18,9 @@ import io.github.jqssun.airplay.observe
 import io.github.jqssun.airplay.service.AirPlayService
 import io.github.jqssun.airplay.service.AirPlayService.ServerState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,7 +29,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
-import kotlin.math.abs
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -85,11 +85,6 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
     private var service: AirPlayService? = null
     val dacpPlayer: Player? get() = service?.dacpPlayer
 
-    fun audioScanBegin(forward: Boolean) {
-        service?.dacpController?.let { if (forward) it.beginFastForward() else it.beginRewind() }
-    }
-    fun audioScanEnd() { service?.dacpController?.playResume() }
-
     private val _clientVolume = MutableStateFlow(1f)
     val clientVolume: StateFlow<Float> = _clientVolume.asStateFlow()
     private val _clientVolumeAdjustable = MutableStateFlow(false)
@@ -133,12 +128,6 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
 
     fun clearAllowedDevices() = AllowedDevices.clear(prefs)
 
-    private val _videoAspect = MutableStateFlow(16f / 9f)
-    val videoAspect: StateFlow<Float> = _videoAspect.asStateFlow()
-
-    private val _videoResolution = MutableStateFlow("")
-    val videoResolution: StateFlow<String> = _videoResolution.asStateFlow()
-
     private val _prefStates = mutableMapOf<Pref<*>, StateFlow<*>>()
 
     @Suppress("UNCHECKED_CAST")
@@ -159,62 +148,6 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
     private val _audioOnly = MutableStateFlow(false)
     val audioOnly: StateFlow<Boolean> = _audioOnly.asStateFlow()
 
-    private val _videoPlaybackActive = MutableStateFlow(false)
-    val videoPlaybackActive: StateFlow<Boolean> = _videoPlaybackActive.asStateFlow()
-
-    // video channel polling but /play not received yet
-    private val _videoSessionPending = MutableStateFlow(false)
-    val videoSessionPending: StateFlow<Boolean> = _videoSessionPending.asStateFlow()
-
-    // airplay video transport overlay state
-
-    // bumping the tick shows the overlay and restarts its auto-hide timer
-    private val _videoOverlayTick = MutableStateFlow(0L)
-    val videoOverlayTick: StateFlow<Long> = _videoOverlayTick.asStateFlow()
-
-    private val _videoPositionMs = MutableStateFlow(0L)
-    val videoPositionMs: StateFlow<Long> = _videoPositionMs.asStateFlow()
-
-    private val _videoDurationMs = MutableStateFlow(0L)
-    val videoDurationMs: StateFlow<Long> = _videoDurationMs.asStateFlow()
-
-    private val _videoPlaybackAspect = MutableStateFlow(16f / 9f)
-    val videoPlaybackAspect: StateFlow<Float> = _videoPlaybackAspect.asStateFlow()
-
-    private val _videoPlaybackSize = MutableStateFlow<Pair<Int, Int>?>(null)
-    val videoPlaybackSize: StateFlow<Pair<Int, Int>?> = _videoPlaybackSize.asStateFlow()
-
-    private val _videoBuffering = MutableStateFlow(false)
-    val videoBuffering: StateFlow<Boolean> = _videoBuffering.asStateFlow()
-
-    private val _videoTitle = MutableStateFlow("")
-    val videoTitle: StateFlow<String> = _videoTitle.asStateFlow()
-
-    private val _videoLocation = MutableStateFlow<String?>(null)
-    val videoLocation: StateFlow<String?> = _videoLocation.asStateFlow()
-
-    // optimistic for instant icon feedback, re-synced from the delayed snapshot
-    private val _videoPlaying = MutableStateFlow(true)
-    val videoPlaying: StateFlow<Boolean> = _videoPlaying.asStateFlow()
-    private var _videoActionAt = 0L
-
-    // null = idle, -1 = unknown, else 0..100
-    private val _videoDownloadProgress = MutableStateFlow<Int?>(null)
-    val videoDownloadProgress: StateFlow<Int?> = _videoDownloadProgress.asStateFlow()
-
-    // mirror the player's playback parameters; sender /rate commands reset speed to 1
-    private val _videoSpeed = MutableStateFlow(1f)
-    val videoSpeed: StateFlow<Float> = _videoSpeed.asStateFlow()
-    private val _videoSkipSilence = MutableStateFlow(false)
-    val videoSkipSilence: StateFlow<Boolean> = _videoSkipSilence.asStateFlow()
-    private var _videoParamsActionAt = 0L
-
-    // non-null while a scrub is in flight; committed once after a debounce
-    private val _videoScrubPositionMs = MutableStateFlow<Long?>(null)
-    val videoScrubPositionMs: StateFlow<Long?> = _videoScrubPositionMs.asStateFlow()
-    private var _scrubJob: Job? = null
-    private var _lastVideoPlaySeq = 0L
-
     private val _mirroringActive = MutableStateFlow(false)
     val mirroringActive: StateFlow<Boolean> = _mirroringActive.asStateFlow()
 
@@ -222,43 +155,57 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
     val trackInfo: StateFlow<TrackInfo> = _trackInfo.asStateFlow()
 
 
-    // logs
+    // logs: callers include the video decode thread (benchmark line, under the renderer lock)
+    // and native audio threads, so addLog only queues; the UI list and airplay_logs.txt are
+    // updated off-thread in coalesced batches, appending to the file instead of rewriting it
     private val _logs = MutableStateFlow<List<String>>(emptyList())
     val logs: StateFlow<List<String>> = _logs.asStateFlow()
     private val _logLock = Any()
-    private val _logList = mutableListOf<String>()
+    private val _logList = ArrayDeque<String>()
+    private val _pendingLines = ArrayList<String>()
+    private var _flushScheduled = false
+    private var _clearFile = false
+    // serializes file IO; never taken by addLog
+    private val _fileLock = Any()
+    private var _fileLoaded = false
+    private var _fileLines = 0
+    // not viewModelScope: the last batch still lands after the activity finishes
+    private val _logScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val _dateFmt = object : ThreadLocal<SimpleDateFormat>() {
         override fun initialValue() = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
     }
 
     init {
-        loadPersistedLogs()
+        _scheduleLogFlush(0)
     }
 
     fun addLog(msg: String) {
         val line = "${_dateFmt.get()!!.format(Date())} $msg"
-        val snapshot: List<String>
+        val schedule: Boolean
         synchronized(_logLock) {
-            _logList.add(line)
-            while (_logList.size > 9999) _logList.removeAt(0)
-            persistLogsLocked()
-            snapshot = _logList.toList()
+            _logList.addLast(line)
+            while (_logList.size > MAX_LOG_LINES) _logList.removeFirst()
+            _pendingLines.add(line)
+            schedule = !_flushScheduled
+            _flushScheduled = true
         }
-        _logs.value = snapshot
+        if (schedule) _scheduleLogFlush(LOG_FLUSH_DELAY_MS)
     }
 
     fun clearLogs() {
         synchronized(_logLock) {
             _logList.clear()
-            runCatching { logFile.delete() }
+            _pendingLines.clear()
+            _clearFile = true
         }
         _logs.value = emptyList()
+        _scheduleLogFlush(0)
     }
 
     fun exportLogs() {
         val ctx = getApplication<Application>()
         val file = File(ctx.cacheDir, "airplay_logs.txt")
-        file.writeText(_logList.joinToString("\n"))
+        file.writeText(synchronized(_logLock) { _logList.joinToString("\n") })
         val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.fileprovider", file)
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
@@ -269,23 +216,70 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
         ctx.startActivity(Intent.createChooser(intent, chooserTitle).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
-    private fun loadPersistedLogs() {
+    private fun _scheduleLogFlush(delayMs: Long) {
+        _logScope.launch {
+            if (delayMs > 0) delay(delayMs)
+            _flushLogs()
+        }
+    }
+
+    // IO thread; _fileLock keeps batches in order across overlapping flushes
+    private fun _flushLogs(): Unit = synchronized(_fileLock) {
+        if (!_fileLoaded) _loadPersistedLogs()
+        val batch: List<String>
+        val clear: Boolean
         val snapshot: List<String>
         synchronized(_logLock) {
-            val restored = runCatching {
-                if (logFile.exists()) logFile.readLines().takeLast(9999) else emptyList()
-            }.getOrDefault(emptyList())
-            _logList.clear()
-            _logList.addAll(restored)
+            _flushScheduled = false
+            batch = _pendingLines.toList()
+            _pendingLines.clear()
+            clear = _clearFile
+            _clearFile = false
             snapshot = _logList.toList()
         }
         _logs.value = snapshot
+        try {
+            when {
+                clear -> {
+                    logFile.writeText(batch.joinToString("") { it + "\n" })
+                    _fileLines = batch.size
+                }
+                // compact once the appended file holds twice what the UI keeps
+                _fileLines + batch.size > 2 * MAX_LOG_LINES -> {
+                    logFile.writeText(snapshot.joinToString("") { it + "\n" })
+                    _fileLines = snapshot.size
+                }
+                batch.isNotEmpty() -> {
+                    logFile.appendText(batch.joinToString("") { it + "\n" })
+                    _fileLines += batch.size
+                }
+                else -> {}
+            }
+        } catch (_: java.io.IOException) {
+            // best effort: the in-memory list still has every line
+        }
     }
 
-    private fun persistLogsLocked() {
-        runCatching {
-            logFile.writeText(_logList.joinToString("\n"))
+    // holds _fileLock; restored lines go before anything logged since start
+    private fun _loadPersistedLogs() {
+        _fileLoaded = true
+        val restored = runCatching {
+            if (!logFile.exists()) return@runCatching emptyList()
+            val text = logFile.readText()
+            if (text.isEmpty()) return@runCatching emptyList()
+            // older builds wrote no trailing newline; terminate the last line before appending
+            if (!text.endsWith("\n")) logFile.appendText("\n")
+            text.lines().let { if (text.endsWith("\n")) it.dropLast(1) else it }
+        }.getOrDefault(emptyList())
+        _fileLines = restored.size
+        synchronized(_logLock) {
+            _logList.addAll(0, restored.takeLast(MAX_LOG_LINES))
+            while (_logList.size > MAX_LOG_LINES) _logList.removeFirst()
         }
+    }
+
+    override fun onCleared() {
+        _scheduleLogFlush(0)
     }
 
     // service binding
@@ -314,88 +308,6 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
         service?.clearVideoSurface(surface)
     }
 
-    fun onVideoPlaybackSurfaceAvailable(surface: Surface) {
-        service?.setVideoPlaybackSurface(surface)
-    }
-
-    fun onVideoPlaybackSurfaceDestroyed(surface: Surface) {
-        service?.clearVideoPlaybackSurface(surface)
-    }
-
-    fun toggleVideoPlayPause(showOverlay: Boolean = true) = setVideoPlaying(!_videoPlaying.value, showOverlay)
-
-    fun setVideoPlaying(playing: Boolean, showOverlay: Boolean = true) {
-        // pending session: there is no local media yet, nothing to toggle
-        if (!_videoPlaybackActive.value) return
-        _videoPlaying.value = playing
-        _videoActionAt = SystemClock.elapsedRealtime()
-        service?.setVideoPlaying(playing)
-        if (showOverlay) showVideoOverlay()
-    }
-
-    // hold the target until the reported position catches up (hls rebuffer)
-    private suspend fun _holdScrubUntilSettled(target: Long) {
-        val deadline = SystemClock.elapsedRealtime() + SCRUB_SETTLE_TIMEOUT_MS
-        while (SystemClock.elapsedRealtime() < deadline) {
-            delay(SCRUB_SETTLE_POLL_MS)
-            if (abs(_videoPositionMs.value - target) <= SCRUB_SETTLE_EPSILON_MS) break
-        }
-        _videoScrubPositionMs.value = null
-    }
-
-    // drag-seek: live seeks under scrubbing mode, settle-hold on release
-    fun startVideoScrub() {
-        _scrubJob?.cancel()
-        service?.setVideoScrubbing(true)
-    }
-
-    fun scrubVideoTo(positionMs: Long) {
-        val duration = _videoDurationMs.value
-        if (duration <= 0) return
-        val target = positionMs.coerceIn(0L, duration)
-        _videoScrubPositionMs.value = target
-        service?.seekVideoTo(target)
-    }
-
-    fun endVideoScrub() {
-        service?.setVideoScrubbing(false)
-        _scrubJob?.cancel()
-        _scrubJob = viewModelScope.launch {
-            _holdScrubUntilSettled(_videoScrubPositionMs.value ?: return@launch)
-        }
-    }
-
-    fun showVideoOverlay() {
-        _videoOverlayTick.value++
-    }
-
-    fun stopVideoPlayback() {
-        service?.stopVideoPlayback()
-    }
-
-    fun setVideoSpeed(speed: Float) {
-        val value = speed.coerceIn(0.2f, 4f)
-        _videoSpeed.value = value
-        _videoParamsActionAt = SystemClock.elapsedRealtime()
-        service?.setVideoSpeed(value)
-    }
-
-    fun setVideoSkipSilence(enabled: Boolean) {
-        _videoSkipSilence.value = enabled
-        _videoParamsActionAt = SystemClock.elapsedRealtime()
-        service?.setVideoSkipSilence(enabled)
-    }
-
-    fun seekVideoBy(deltaMs: Long) {
-        service?.seekVideoBy(deltaMs)
-    }
-
-    fun toggleVideoDownload() {
-        val svc = service ?: return
-        if (_videoDownloadProgress.value != null) svc.videoDownloader.cancel() else svc.downloadVideo()
-        showVideoOverlay()
-    }
-
     fun dismissPin() {
         _pinCode.value = null
     }
@@ -411,48 +323,7 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
             _clientName.value = it.clientName.value
             _connectionLost.value = it.connectionLost.value
             _connectionCount.value = it.connectionCount.value
-            _videoAspect.value = it.videoAspect.value
-            _videoResolution.value = it.videoResolution.value
             _audioOnly.value = it.audioOnly.value
-            val videoActive = it.videoPlaybackActive.value
-            val playSeq = it.videoPlaySeq.value
-            if (playSeq != _lastVideoPlaySeq) {
-                // fresh /play (incl. back-to-back): drop stale overlay and scrub state
-                _lastVideoPlaySeq = playSeq
-                _videoPlaying.value = true
-                _videoActionAt = 0
-                _videoOverlayTick.value = 0
-                _videoSpeed.value = 1f
-                _videoSkipSilence.value = false
-                _scrubJob?.cancel()
-                _videoScrubPositionMs.value = null
-            }
-            _videoPlaybackActive.value = videoActive
-            _videoSessionPending.value = it.videoSessionPending()
-            _videoDownloadProgress.value = it.videoDownloader.progress.value
-            if (videoActive) {
-                val info = it.videoPlaybackInfo.value
-                _videoPositionMs.value = info.positionMs
-                _videoDurationMs.value = info.durationMs
-                if (SystemClock.elapsedRealtime() - _videoParamsActionAt > VIDEO_ACTION_SYNC_HOLD_MS) {
-                    _videoSpeed.value = info.speed
-                    _videoSkipSilence.value = info.skipSilence
-                }
-                _videoBuffering.value = info.buffering
-                _videoPlaybackAspect.value = it.videoPlaybackAspect.value
-                _videoPlaybackSize.value = it.videoPlaybackSize.value
-                // stream metadata first, dmap second; senders rarely provide either for video
-                _videoTitle.value = it.videoTitle.value.ifEmpty { it.trackInfo.value.title }
-                _videoLocation.value = it.videoLocation.value
-                // stale snapshots must not overwrite a just-made optimistic action
-                if (SystemClock.elapsedRealtime() - _videoActionAt > VIDEO_ACTION_SYNC_HOLD_MS) {
-                    _videoPlaying.value = info.playing
-                }
-            } else {
-                _videoPositionMs.value = 0
-                _videoDurationMs.value = 0
-                _videoBuffering.value = false
-            }
             _mirroringActive.value = it.mirroringActive.value
             _trackInfo.value = it.trackInfo.value
             _clientVolume.value = it.clientVolume()
@@ -464,11 +335,7 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
     }
 
     private companion object {
-        // post-commit: show the target until within epsilon, give up after the timeout
-        const val SCRUB_SETTLE_POLL_MS = 100L
-        const val SCRUB_SETTLE_EPSILON_MS = 2_000L
-        const val SCRUB_SETTLE_TIMEOUT_MS = 3_000L
-        // raise if the play/pause icon flickers back right after a local toggle
-        const val VIDEO_ACTION_SYNC_HOLD_MS = 700L
+        const val MAX_LOG_LINES = 9999
+        const val LOG_FLUSH_DELAY_MS = 250L
     }
 }
