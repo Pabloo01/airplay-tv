@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.jqssun.airplay.R
 
-object Jd {
+object Atv {
     val Bg = Color(0xFF0B0A0D)
     val Surface1 = Color(0xFF1C1C1E)
     val Surface3 = Color(0xFF3A3A3C)
@@ -66,7 +66,7 @@ val Inter = FontFamily(
     Font(R.font.inter_bold, FontWeight.Bold),
 )
 
-object JdType {
+object AtvType {
     private fun style(size: Int, line: Int, weight: FontWeight, tracking: Float = 0f) = TextStyle(
         fontFamily = Inter,
         fontSize = size.sp,

@@ -1,6 +1,6 @@
-# Diseño de Air Play JD
+# Diseño de AirPlay TV
 
-- `brand/`: logos, icono de app (capas adaptativas) y banners de Android TV. Único color de marca: `#fc5858`.
+- `brand/`: logo, icono de app y banner de Android TV de AirPlay TV, generados con `brand/generate.py`. Color de marca: `#fc5858`.
 - `mocks/`: las 11 pantallas de TV a 960×540 (fuente `.dc.html`), con los tokens (`ds/airplayjd/tokens.json`, `tokens.css`) y los estilos de componentes (`components/bundle.css`) del design system.
 
 Versión interactiva de los mocks: https://claude.ai/artifact/7VoeriGH98DemQXVziTgSG
@@ -20,4 +20,4 @@ Design system: https://claude.ai/artifact/6nancAmD3HzieqHsU26a91
 | 10 | Salvapantallas (tras 2 min en espera) | `mocks/Screensaver.dc.html` |
 | 11 | Dispositivos permitidos | `mocks/Devices.dc.html` |
 
-Las imágenes `/_blob/...` de los mocks son el logo y el monograma de `brand/Logos/`.
+Los mocks son de la versión anterior de la marca (Air Play JD): sirven de referencia de pantallas, pero el logo y el nombre vigentes son los de `brand/`.

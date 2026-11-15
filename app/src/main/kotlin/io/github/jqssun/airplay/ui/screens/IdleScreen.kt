@@ -45,8 +45,8 @@ import io.github.jqssun.airplay.ui.design.StatusChip
 import io.github.jqssun.airplay.ui.design.Wall
 import io.github.jqssun.airplay.ui.design.Wordmark
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
-import io.github.jqssun.airplay.ui.theme.Jd
-import io.github.jqssun.airplay.ui.theme.JdType
+import io.github.jqssun.airplay.ui.theme.Atv
+import io.github.jqssun.airplay.ui.theme.AtvType
 import io.github.jqssun.airplay.viewmodel.LocalNetworkAccess
 
 fun deviceIcon(model: String): ImageVector = when (deviceKind(model)) {
@@ -65,7 +65,7 @@ fun TopBar(chipText: String, chipKind: ChipKind, modifier: Modifier = Modifier) 
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Wordmark()
-        StatusChip(chipText, chipKind, Modifier.padding(start = Jd.Space4))
+        StatusChip(chipText, chipKind, Modifier.padding(start = Atv.Space4))
     }
 }
 
@@ -120,41 +120,41 @@ fun IdleScreen(
                     Spacer(Modifier.height(36.dp))
                     GlassPanel(Modifier.widthIn(max = 560.dp)) {
                         Column(
-                            modifier = Modifier.padding(horizontal = 56.dp, vertical = Jd.Space8),
+                            modifier = Modifier.padding(horizontal = 56.dp, vertical = Atv.Space8),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(Jd.Space3),
+                            verticalArrangement = Arrangement.spacedBy(Atv.Space3),
                         ) {
-                            Text(stringResource(title), style = JdType.Display, textAlign = TextAlign.Center)
+                            Text(stringResource(title), style = AtvType.Display, textAlign = TextAlign.Center)
                             Text(
                                 stringResource(hint),
-                                style = JdType.Body,
-                                color = Jd.InkMuted,
+                                style = AtvType.Body,
+                                color = Atv.InkMuted,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.widthIn(max = 440.dp),
                             )
                             Text(
                                 serverName,
-                                style = JdType.Headline,
-                                color = Jd.Signal,
+                                style = AtvType.Headline,
+                                color = Atv.Signal,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(top = Jd.Space1),
+                                modifier = Modifier.padding(top = Atv.Space1),
                             )
                             if (action != null) {
                                 GlassButton(
                                     text = action.first,
                                     onClick = action.second,
-                                    modifier = Modifier.padding(top = Jd.Space2).focusRequester(firstFocus),
+                                    modifier = Modifier.padding(top = Atv.Space2).focusRequester(firstFocus),
                                 )
                             }
                         }
                     }
                 }
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(Jd.Space6),
+                    horizontalArrangement = Arrangement.spacedBy(Atv.Space6),
                     verticalAlignment = Alignment.Bottom,
                     modifier = Modifier
                         .horizontalScroll(rememberScrollState())
-                        .padding(start = Jd.Space3, end = Jd.Space3, top = Jd.Space8, bottom = Jd.Space6),
+                        .padding(start = Atv.Space3, end = Atv.Space3, top = Atv.Space8, bottom = Atv.Space6),
                 ) {
                     recentDevices.take(2).forEachIndexed { i, d ->
                         MediaCard(

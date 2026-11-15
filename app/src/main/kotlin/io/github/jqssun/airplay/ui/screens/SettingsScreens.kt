@@ -60,14 +60,14 @@ import io.github.jqssun.airplay.ui.SettingsScreen
 import io.github.jqssun.airplay.ui.design.GlassButton
 import io.github.jqssun.airplay.ui.design.GlassList
 import io.github.jqssun.airplay.ui.design.GlassRow
-import io.github.jqssun.airplay.ui.design.JdSwitch
+import io.github.jqssun.airplay.ui.design.AtvSwitch
 import io.github.jqssun.airplay.ui.design.Mark
 import io.github.jqssun.airplay.ui.design.SafeArea
 import io.github.jqssun.airplay.ui.design.Wall
 import io.github.jqssun.airplay.ui.design.isWide
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
-import io.github.jqssun.airplay.ui.theme.Jd
-import io.github.jqssun.airplay.ui.theme.JdType
+import io.github.jqssun.airplay.ui.theme.Atv
+import io.github.jqssun.airplay.ui.theme.AtvType
 import io.github.jqssun.airplay.viewmodel.MainViewModel
 import java.util.Calendar
 
@@ -85,10 +85,10 @@ private fun SplitLayout(
     list: @Composable ColumnScope.() -> Unit,
 ) {
     if (scope.isWide()) {
-        Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(Jd.Space12)) {
+        Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(Atv.Space12)) {
             Column(
-                modifier = Modifier.width(280.dp).fillMaxHeight().padding(top = Jd.Space6),
-                verticalArrangement = Arrangement.spacedBy(Jd.Space3),
+                modifier = Modifier.width(280.dp).fillMaxHeight().padding(top = Atv.Space6),
+                verticalArrangement = Arrangement.spacedBy(Atv.Space3),
                 content = header,
             )
             Column(
@@ -100,10 +100,10 @@ private fun SplitLayout(
     } else {
         Column(
             modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Jd.Space3),
+            verticalArrangement = Arrangement.spacedBy(Atv.Space3),
         ) {
             header()
-            Spacer(Modifier.height(Jd.Space4))
+            Spacer(Modifier.height(Atv.Space4))
             list()
         }
     }
@@ -114,7 +114,7 @@ private fun ScrollingGlassList(wide: Boolean, content: @Composable ColumnScope.(
     GlassList(Modifier.fillMaxWidth()) {
         Column(
             modifier = if (wide) Modifier.verticalScroll(rememberScrollState()) else Modifier,
-            verticalArrangement = Arrangement.spacedBy(Jd.Space2),
+            verticalArrangement = Arrangement.spacedBy(Atv.Space2),
             content = content,
         )
     }
@@ -124,9 +124,9 @@ private fun ScrollingGlassList(wide: Boolean, content: @Composable ColumnScope.(
 private fun SectionLabel(text: String) {
     Text(
         text.uppercase(),
-        style = JdType.CaptionStrong,
-        color = Jd.InkFaint,
-        modifier = Modifier.padding(start = 20.dp, top = Jd.Space3, bottom = Jd.Space1),
+        style = AtvType.CaptionStrong,
+        color = Atv.InkFaint,
+        modifier = Modifier.padding(start = 20.dp, top = Atv.Space3, bottom = Atv.Space1),
     )
 }
 
@@ -134,8 +134,8 @@ private fun SectionLabel(text: String) {
 private fun BackLink(onBack: () -> Unit) {
     Text(
         stringResource(R.string.back_to_settings),
-        style = JdType.Caption,
-        color = Jd.InkMuted,
+        style = AtvType.Caption,
+        color = Atv.InkMuted,
         modifier = Modifier.clickable(onClick = onBack),
     )
 }
@@ -172,15 +172,15 @@ fun SettingsHome(
             SplitLayout(
                 scope = this,
                 header = {
-                    Text(stringResource(R.string.settings_title), style = JdType.Title)
-                    Text(stringResource(R.string.settings_desc), style = JdType.Callout, color = Jd.InkMuted)
+                    Text(stringResource(R.string.settings_title), style = AtvType.Title)
+                    Text(stringResource(R.string.settings_desc), style = AtvType.Callout, color = Atv.InkMuted)
                     if (wide) Spacer(Modifier.weight(1f))
                     Mark(Modifier.size(72.dp))
                     Text(
                         if (ip != null) stringResource(R.string.settings_footer, version, ip)
                         else stringResource(R.string.settings_footer_offline, version),
-                        style = JdType.Caption,
-                        color = Jd.InkMuted,
+                        style = AtvType.Caption,
+                        color = Atv.InkMuted,
                     )
                 },
                 list = {
@@ -191,7 +191,7 @@ fun SettingsHome(
                             icon = Icons.Rounded.PowerSettingsNew,
                             onClick = { if (running) viewModel.stopServer() else viewModel.startServer() },
                             modifier = Modifier.focusRequester(firstFocus),
-                        ) { focused -> JdSwitch(running, focused) }
+                        ) { focused -> AtvSwitch(running, focused) }
                         GlassRow(
                             title = stringResource(R.string.row_name),
                             subtitle = stringResource(R.string.row_name_sub),
@@ -204,13 +204,13 @@ fun SettingsHome(
                             subtitle = stringResource(R.string.row_pin_sub),
                             icon = Icons.Rounded.Lock,
                             onClick = { viewModel.set(Prefs.REQUIRE_PIN, !requirePin) },
-                        ) { focused -> JdSwitch(requirePin, focused) }
+                        ) { focused -> AtvSwitch(requirePin, focused) }
                         GlassRow(
                             title = stringResource(R.string.row_request),
                             subtitle = stringResource(R.string.row_request_sub),
                             icon = Icons.Rounded.VerifiedUser,
                             onClick = { viewModel.set(Prefs.REQUEST_NEW_DEVICES, !requestNew) },
-                        ) { focused -> JdSwitch(requestNew, focused) }
+                        ) { focused -> AtvSwitch(requestNew, focused) }
                         GlassRow(
                             title = stringResource(R.string.row_devices),
                             subtitle = devices.takeIf { it.isNotEmpty() }?.joinToString { it.name }
@@ -235,7 +235,7 @@ fun SettingsHome(
                             subtitle = stringResource(R.string.row_debug_sub),
                             icon = Icons.Rounded.Info,
                             onClick = { viewModel.set(Prefs.DEBUG_ENABLED, !debug) },
-                        ) { focused -> JdSwitch(debug, focused) }
+                        ) { focused -> AtvSwitch(debug, focused) }
                         SectionLabel(stringResource(R.string.section_advanced))
                         GlassRow(
                             title = stringResource(R.string.row_advanced),
@@ -275,8 +275,8 @@ private fun NameDialog(current: String, onDismiss: () -> Unit, onSave: (String) 
     val save = { text.trim().takeIf { it.isNotEmpty() }?.let(onSave) ?: onDismiss() }
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Jd.Surface1,
-        title = { Text(stringResource(R.string.row_name), style = JdType.Headline) },
+        containerColor = Atv.Surface1,
+        title = { Text(stringResource(R.string.row_name), style = AtvType.Headline) },
         text = {
             OutlinedTextField(
                 value = text,
@@ -327,8 +327,8 @@ fun DevicesScreen(
                 scope = this,
                 header = {
                     BackLink(onBack)
-                    Text(stringResource(R.string.devices_title), style = JdType.Title)
-                    Text(stringResource(R.string.devices_desc), style = JdType.Callout, color = Jd.InkMuted)
+                    Text(stringResource(R.string.devices_title), style = AtvType.Title)
+                    Text(stringResource(R.string.devices_desc), style = AtvType.Callout, color = Atv.InkMuted)
                     if (wide) Spacer(Modifier.weight(1f))
                     if (devices.isNotEmpty()) {
                         GlassButton(stringResource(R.string.btn_remove_all), onClick = onRemoveAll)
@@ -359,9 +359,9 @@ fun DevicesScreen(
                         }
                         Text(
                             stringResource(R.string.devices_hint),
-                            style = JdType.Caption,
-                            color = Jd.InkMuted,
-                            modifier = Modifier.padding(start = Jd.Space2, top = Jd.Space3),
+                            style = AtvType.Caption,
+                            color = Atv.InkMuted,
+                            modifier = Modifier.padding(start = Atv.Space2, top = Atv.Space3),
                         )
                     }
                 },
@@ -374,9 +374,9 @@ fun DevicesScreen(
 fun AdvancedSettingsScreen(viewModel: MainViewModel, onBack: () -> Unit) {
     Wall(ambient = false) {
         SafeArea {
-            Column(verticalArrangement = Arrangement.spacedBy(Jd.Space3)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Atv.Space3)) {
                 BackLink(onBack)
-                Text(stringResource(R.string.row_advanced), style = JdType.Title)
+                Text(stringResource(R.string.row_advanced), style = AtvType.Title)
                 Box(Modifier.weight(1f)) { SettingsScreen(viewModel) }
             }
         }

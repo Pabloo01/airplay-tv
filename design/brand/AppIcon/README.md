@@ -1,7 +1,8 @@
 # AppIcon
-Recursos que piden Android TV y Google Play: la pantalla de vidrio con JD sobre el fondo ambiental en el rojo de marca.
+Icono y banners de AirPlay TV: la tele con el botón de play y las ondas, en blanco sobre el degradado de marca (#fc5858 → #8c2a2e).
 
-- `tv-banner-320x180.png` / `.svg`: banner obligatorio de Android TV (`android:banner` en el manifest, `res/drawable-xhdpi`). Aparece en la fila de apps de Google TV.
-- `tv-banner-1280x720.png` / `.svg`: banner de TV para la ficha de Google Play.
-- `app-icon-512.png` / `.svg`: icono de la ficha de Google Play (512×512, cuadrado completo; Play redondea las esquinas).
-- `adaptive-background.svg`, `adaptive-foreground.svg`, `adaptive-monochrome.svg`: capas del icono adaptativo (108dp, el símbolo dentro de la zona segura de 66dp). El fondo usa desenfoque SVG: expórtalo a PNG (432×432) en vez de a Vector Drawable, que no admite filtros.
+Todo lo genera `../generate.py` (ejecútalo desde la raíz del repo: `python3 design/brand/generate.py`, necesita Pillow). No edites a mano los ficheros generados.
+
+- `app-icon.svg` / `app-icon-512.png`: icono completo (ficha de tienda y vista previa).
+- `adaptive-background.svg`, `adaptive-foreground.svg`: capas del icono adaptativo (108dp, el símbolo dentro de la zona segura). En la app son vectores: `res/drawable/ic_launcher_{background,foreground,monochrome}.xml`.
+- `tv-banner-1280x720.png`: banner de TV a alta resolución. El de la app (`res/drawable-xhdpi/banner.png`, 640×360) sale del mismo script y es el que se ve en la fila de apps de Google TV.

@@ -1,9 +1,6 @@
 # Logos
-El símbolo es una pantalla de vidrio con el monograma JD y su peana: "lo que mandas, en tu tele". Todos son SVG de una sola tinta, con el texto convertido a trazos (Inter Display Bold).
+El símbolo es una tele con un botón de play y ondas inalámbricas encima: "lo que mandas, en tu tele". Lo genera `../generate.py`.
 
-- `airplayjd-wordmark.svg`: símbolo `signal` (#fc5858) + "Air Play JD" en `ink` (#f5f5f7), para fondos oscuros. Alto mínimo 24dp.
-- `airplayjd-wordmark-light.svg`: símbolo #c93636 (el rojo oscurecido para llegar a 5:1 sobre blanco) + texto #1d1d1f, para fondos claros (web, documentos).
-- `airplayjd-mark.svg`: símbolo en `signal`. Por defecto sobre fondos oscuros.
-- `airplayjd-mark-white.svg`: tinta `ink`, sobre fotos, vídeo o el fondo ambiental.
-- `airplayjd-mark-black.svg`: tinta #1d1d1f, sobre fondos claros.
-- Deja libre alrededor la altura de la peana × 2. No cambies colores, no lo deformes ni lo metas en otra forma.
+- `airplaytv-mark.svg`: símbolo en `signal` (#fc5858), para fondos oscuros. En la app: `res/drawable/logo_mark.xml`.
+- `airplaytv-mark-white.svg`: símbolo en blanco, sobre fotos, vídeo o el degradado de marca. En la app: `res/drawable/logo_mark_white.xml`.
+- `airplaytv-wordmark.svg`: símbolo + "AirPlay TV" en Inter Bold, para fondos oscuros. En la app el logotipo se compone con el símbolo y el texto `app_name` (`Wordmark()` en `ui/design/Components.kt`).

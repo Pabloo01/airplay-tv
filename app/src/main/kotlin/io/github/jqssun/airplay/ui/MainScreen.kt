@@ -63,7 +63,7 @@ import io.github.jqssun.airplay.ui.screens.RequestScreen
 import io.github.jqssun.airplay.ui.screens.Screensaver
 import io.github.jqssun.airplay.ui.screens.SettingsHome
 import io.github.jqssun.airplay.ui.screens.rememberLanAvailable
-import io.github.jqssun.airplay.ui.theme.Jd
+import io.github.jqssun.airplay.ui.theme.Atv
 import io.github.jqssun.airplay.viewmodel.DebugInfo
 import io.github.jqssun.airplay.viewmodel.MainViewModel
 import kotlin.math.abs
@@ -479,7 +479,7 @@ fun MainScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Jd.Bg)
+            .background(Atv.Bg)
             .onPreviewKeyEvent { e ->
                 if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 inputTick++
@@ -500,7 +500,7 @@ fun MainScreen(
         if (mirroring || lost != null) {
             Box(Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) { video() }
             if (debugEnabled && mirroring) {
-                DebugOverlay(debugInfo, Modifier.align(Alignment.TopStart).safeDrawingPadding().padding(Jd.Space4))
+                DebugOverlay(debugInfo, Modifier.align(Alignment.TopStart).safeDrawingPadding().padding(Atv.Space4))
             }
         }
         val pending = request

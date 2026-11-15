@@ -66,8 +66,8 @@ import io.github.jqssun.airplay.ui.formatVideoTime
 import io.github.jqssun.airplay.ui.gestures.ServerVolumeState
 import io.github.jqssun.airplay.ui.isTv
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
-import io.github.jqssun.airplay.ui.theme.Jd
-import io.github.jqssun.airplay.ui.theme.JdType
+import io.github.jqssun.airplay.ui.theme.Atv
+import io.github.jqssun.airplay.ui.theme.AtvType
 import io.github.jqssun.airplay.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
@@ -104,37 +104,37 @@ fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
             Column(Modifier.fillMaxSize()) {
                 TopBar(stringResource(R.string.chip_audio), ChipKind.LIVE)
                 val info: @Composable ColumnScope.() -> Unit = {
-                    Text(stringResource(R.string.source_from, sender), style = JdType.CaptionStrong, color = Jd.InkMuted)
+                    Text(stringResource(R.string.source_from, sender), style = AtvType.CaptionStrong, color = Atv.InkMuted)
                     Text(
                         track.title.ifEmpty { stringResource(R.string.unknown_track) },
-                        style = JdType.Display,
+                        style = AtvType.Display,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                     val subtitle = listOf(track.artist, track.album).filter { it.isNotEmpty() }.joinToString(" · ")
                     if (subtitle.isNotEmpty()) {
-                        Text(subtitle, style = JdType.Headline, color = Jd.InkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(subtitle, style = AtvType.Headline, color = Atv.InkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     Row(
                         modifier = Modifier.padding(top = 28.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(Jd.Space4),
+                        horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
                     ) {
-                        Text(formatVideoTime(positionMs), style = JdType.CaptionStrong, color = Jd.InkMuted)
+                        Text(formatVideoTime(positionMs), style = AtvType.CaptionStrong, color = Atv.InkMuted)
                         TrackBar(
                             if (durationMs > 0) positionMs / durationMs.toFloat() else 0f,
                             Modifier.weight(1f),
                         )
                         Text(
                             "−" + formatVideoTime((durationMs - positionMs).coerceAtLeast(0)),
-                            style = JdType.CaptionStrong,
-                            color = Jd.InkMuted,
+                            style = AtvType.CaptionStrong,
+                            color = Atv.InkMuted,
                         )
                     }
                     if (player != null) {
                         Row(
                             modifier = Modifier.padding(top = 20.dp),
-                            horizontalArrangement = Arrangement.spacedBy(Jd.Space4),
+                            horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
                         ) {
                             GlassIconButton(Icons.Rounded.SkipPrevious, stringResource(R.string.cd_previous), { player.seekToPrevious() })
                             GlassIconButton(
@@ -153,23 +153,23 @@ fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
                 }
                 if (wide) {
                     Row(
-                        modifier = Modifier.weight(1f).padding(horizontal = Jd.Space6),
+                        modifier = Modifier.weight(1f).padding(horizontal = Atv.Space6),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(Jd.Space12),
+                        horizontalArrangement = Arrangement.spacedBy(Atv.Space12),
                     ) {
                         Artwork(track.coverArt, Modifier.size(280.dp))
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp), content = info)
                     }
                 } else {
                     Column(
-                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = Jd.Space6),
+                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = Atv.Space6),
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         Artwork(track.coverArt, Modifier.widthIn(max = 360.dp).fillMaxWidth().align(Alignment.CenterHorizontally))
                         info()
                     }
                 }
-                if (tv) Text(stringResource(R.string.audio_dim_note), style = JdType.Caption, color = Jd.InkMuted)
+                if (tv) Text(stringResource(R.string.audio_dim_note), style = AtvType.Caption, color = Atv.InkMuted)
             }
         }
         val scrim by animateColorAsState(
@@ -186,8 +186,8 @@ private fun Artwork(cover: Bitmap?, modifier: Modifier) {
     Box(
         modifier = modifier
             .aspectRatio(1f)
-            .shadow(24.dp, Jd.ShapeLg, ambientColor = Color.Black, spotColor = Color.Black)
-            .glass(Jd.ShapeLg),
+            .shadow(24.dp, Atv.ShapeLg, ambientColor = Color.Black, spotColor = Color.Black)
+            .glass(Atv.ShapeLg),
         contentAlignment = Alignment.Center,
     ) {
         if (cover != null) {
@@ -195,10 +195,10 @@ private fun Artwork(cover: Bitmap?, modifier: Modifier) {
                 bitmap = cover.asImageBitmap(),
                 contentDescription = stringResource(R.string.cd_cover_art),
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize().clip(Jd.ShapeLg),
+                modifier = Modifier.fillMaxSize().clip(Atv.ShapeLg),
             )
         } else {
-            Icon(Icons.Rounded.MusicNote, null, tint = Jd.InkMuted, modifier = Modifier.size(48.dp))
+            Icon(Icons.Rounded.MusicNote, null, tint = Atv.InkMuted, modifier = Modifier.size(48.dp))
         }
     }
 }
@@ -212,7 +212,7 @@ private fun VolumeControls(viewModel: MainViewModel) {
     val clientAdjustable by viewModel.clientVolumeAdjustable.collectAsState()
     var clientDrag by remember { mutableStateOf<Float?>(null) }
     val clientShown = clientDrag ?: clientVolume
-    Column(Modifier.padding(top = Jd.Space6), verticalArrangement = Arrangement.spacedBy(Jd.Space2)) {
+    Column(Modifier.padding(top = Atv.Space6), verticalArrangement = Arrangement.spacedBy(Atv.Space2)) {
         VolumeRow(
             icon = Icons.AutoMirrored.Rounded.VolumeUp,
             label = stringResource(R.string.volume_server),
@@ -242,21 +242,21 @@ private fun VolumeRow(
     enabled: Boolean = true,
     onValueChangeFinished: (() -> Unit)? = null,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Jd.Space3)) {
-        Icon(icon, label, tint = Jd.InkMuted, modifier = Modifier.size(20.dp))
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Atv.Space3)) {
+        Icon(icon, label, tint = Atv.InkMuted, modifier = Modifier.size(20.dp))
         Slider(
             value = value,
             onValueChange = onValueChange,
             enabled = enabled,
             onValueChangeFinished = onValueChangeFinished,
             colors = SliderDefaults.colors(
-                thumbColor = Jd.Ink,
-                activeTrackColor = Jd.Ink,
+                thumbColor = Atv.Ink,
+                activeTrackColor = Atv.Ink,
                 inactiveTrackColor = Color.White.copy(alpha = 0.22f),
             ),
             modifier = Modifier.weight(1f).dpadAdjust(onLeft = { onStep(-1) }, onRight = { onStep(1) }),
         )
-        Text(stringResource(R.string.volume_value, (value * 100).roundToInt()), style = JdType.CaptionStrong, color = Jd.InkMuted)
+        Text(stringResource(R.string.volume_value, (value * 100).roundToInt()), style = AtvType.CaptionStrong, color = Atv.InkMuted)
     }
 }
 

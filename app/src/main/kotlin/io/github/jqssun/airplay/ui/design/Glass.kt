@@ -43,7 +43,7 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import io.github.jqssun.airplay.ui.theme.Jd
+import io.github.jqssun.airplay.ui.theme.Atv
 import kotlin.math.max
 
 val LocalHazeState = staticCompositionLocalOf<HazeState?> { null }
@@ -53,12 +53,12 @@ val blurSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 private data class Blob(val x: Float, val y: Float, val radius: Float, val color: Color)
 
 private val wallBlobs = listOf(
-    Blob(0.22f, 0.30f, 0.32f, Jd.Ambient1),
-    Blob(0.78f, 0.70f, 0.30f, Jd.Ambient2),
-    Blob(0.60f, 0.15f, 0.35f, Jd.Ambient3),
+    Blob(0.22f, 0.30f, 0.32f, Atv.Ambient1),
+    Blob(0.78f, 0.70f, 0.30f, Atv.Ambient2),
+    Blob(0.60f, 0.15f, 0.35f, Atv.Ambient3),
 )
 
-fun DrawScope.drawAmbient(alpha: Float = Jd.AmbientStrength) {
+fun DrawScope.drawAmbient(alpha: Float = Atv.AmbientStrength) {
     val span = max(size.width, size.height) * 1.4f
     wallBlobs.forEach { b ->
         val center = Offset(size.width * b.x, size.height * b.y)
@@ -83,13 +83,13 @@ fun Wall(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val haze = remember { HazeState() }
-    Box(modifier.fillMaxSize().background(Jd.Bg)) {
+    Box(modifier.fillMaxSize().background(Atv.Bg)) {
         if (ambient) {
             Canvas(Modifier.fillMaxSize().hazeSource(haze)) { drawAmbient() }
         }
         CompositionLocalProvider(
             LocalHazeState provides if (ambient) haze else null,
-            LocalContentColor provides Jd.Ink,
+            LocalContentColor provides Atv.Ink,
         ) { content() }
     }
 }
@@ -102,8 +102,8 @@ fun SafeArea(modifier: Modifier = Modifier, content: @Composable BoxWithConstrai
         val wide = isWide()
         BoxWithConstraints(
             Modifier.fillMaxSize().padding(
-                horizontal = if (wide) Jd.SafeX else Jd.Space4,
-                vertical = if (wide) Jd.SafeY else Jd.Space4,
+                horizontal = if (wide) Atv.SafeX else Atv.Space4,
+                vertical = if (wide) Atv.SafeY else Atv.Space4,
             ),
             content = content,
         )
@@ -127,9 +127,9 @@ private val focusSheen = Brush.linearGradient(
 )
 
 private val edge = Brush.linearGradient(
-    0f to Jd.GlassEdge,
-    0.35f to Jd.GlassEdgeLow,
-    1f to Jd.GlassEdgeLow,
+    0f to Atv.GlassEdge,
+    0.35f to Atv.GlassEdgeLow,
+    1f to Atv.GlassEdgeLow,
     start = Offset.Zero,
     end = Offset.Infinite,
 )
@@ -141,19 +141,19 @@ fun Modifier.glass(
     blur: Boolean = true,
 ): Modifier {
     val haze = LocalHazeState.current
-    val fill = if (strong) Jd.GlassStrong else Jd.Glass
+    val fill = if (strong) Atv.GlassStrong else Atv.Glass
     val body = when {
-        !blurSupported -> Modifier.background(Jd.GlassFallback)
+        !blurSupported -> Modifier.background(Atv.GlassFallback)
         blur && haze != null -> Modifier.hazeEffect(
             haze,
             HazeStyle(
-                backgroundColor = Jd.Bg,
-                tints = listOf(HazeTint(Jd.GlassTint), HazeTint(fill)),
-                blurRadius = if (strong) Jd.BlurStrong else Jd.BlurGlass,
+                backgroundColor = Atv.Bg,
+                tints = listOf(HazeTint(Atv.GlassTint), HazeTint(fill)),
+                blurRadius = if (strong) Atv.BlurStrong else Atv.BlurGlass,
                 noiseFactor = 0f,
             ),
         )
-        else -> Modifier.background(Jd.GlassTint).background(fill)
+        else -> Modifier.background(Atv.GlassTint).background(fill)
     }
     return this
         .clip(shape)
@@ -165,7 +165,7 @@ fun Modifier.glass(
 fun Modifier.focusedGlass(shape: Shape): Modifier = this
     .shadow(24.dp, shape, ambientColor = Color.Black, spotColor = Color.Black)
     .clip(shape)
-    .background(Jd.GlassFocus)
+    .background(Atv.GlassFocus)
     .background(focusSheen)
     .border(1.dp, Color.White.copy(alpha = 0.5f), shape)
 
@@ -173,10 +173,10 @@ fun Modifier.focusedGlass(shape: Shape): Modifier = this
 fun GlassSurface(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    shape: Shape = Jd.ShapePill,
+    shape: Shape = Atv.ShapePill,
     strong: Boolean = false,
     blur: Boolean = true,
-    focusScale: Float = Jd.ScaleFocus,
+    focusScale: Float = Atv.ScaleFocus,
     transparentAtRest: Boolean = false,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     content: @Composable BoxScope.(focused: Boolean) -> Unit,
@@ -185,14 +185,14 @@ fun GlassSurface(
     val pressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = when {
-            pressed -> Jd.ScalePressed
+            pressed -> Atv.ScalePressed
             focused -> focusScale
             else -> 1f
         },
         animationSpec = spring(dampingRatio = 0.55f, stiffness = Spring.StiffnessMediumLow),
         label = "focusScale",
     )
-    val ink by animateColorAsState(if (focused) Jd.OnFocus else Jd.Ink, tween(200), label = "ink")
+    val ink by animateColorAsState(if (focused) Atv.OnFocus else Atv.Ink, tween(200), label = "ink")
     val surface = when {
         focused -> Modifier.focusedGlass(shape)
         transparentAtRest -> Modifier.clip(shape)
@@ -211,7 +211,7 @@ fun GlassSurface(
 @Composable
 fun GlassPanel(
     modifier: Modifier = Modifier,
-    shape: Shape = Jd.ShapeLg,
+    shape: Shape = Atv.ShapeLg,
     strong: Boolean = false,
     content: @Composable BoxScope.() -> Unit,
 ) {

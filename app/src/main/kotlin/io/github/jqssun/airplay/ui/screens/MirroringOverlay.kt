@@ -37,8 +37,8 @@ import io.github.jqssun.airplay.ui.design.SafeArea
 import io.github.jqssun.airplay.ui.design.StatusChip
 import io.github.jqssun.airplay.ui.design.glass
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
-import io.github.jqssun.airplay.ui.theme.Jd
-import io.github.jqssun.airplay.ui.theme.JdType
+import io.github.jqssun.airplay.ui.theme.Atv
+import io.github.jqssun.airplay.ui.theme.AtvType
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
@@ -79,10 +79,10 @@ fun MirroringOverlay(clientName: String, onStop: () -> Unit) {
                     Modifier.align(Alignment.TopEnd),
                 )
                 Box(
-                    Modifier.align(Alignment.BottomStart).glass(Jd.ShapePill, blur = false)
-                        .padding(horizontal = 20.dp, vertical = Jd.Space3)
+                    Modifier.align(Alignment.BottomStart).glass(Atv.ShapePill, blur = false)
+                        .padding(horizontal = 20.dp, vertical = Atv.Space3)
                 ) {
-                    Text(stringResource(R.string.mirroring_help), style = JdType.Caption, color = Jd.InkMuted)
+                    Text(stringResource(R.string.mirroring_help), style = AtvType.Caption, color = Atv.InkMuted)
                 }
                 GlassButton(
                     text = stringResource(R.string.btn_stop_mirroring),

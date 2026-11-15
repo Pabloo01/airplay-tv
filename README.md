@@ -43,14 +43,14 @@ On devices without a display, settings can also be changed over ADB. The receive
 
 ```bash
 export KEY="server_name" VALUE="Speaker"
-am broadcast -n io.github.jqssun.airplay/.SettingsReceiver -a io.github.jqssun.airplay.SET_SETTING --es key "$KEY" --es value "$VALUE"
+am broadcast -n app.airplaytv/io.github.jqssun.airplay.SettingsReceiver -a io.github.jqssun.airplay.SET_SETTING --es key "$KEY" --es value "$VALUE"
 ```
 
 To list all settings with their current values as JSON:
 
 ```bash
-am start -n io.github.jqssun.airplay/.MainActivity
-am broadcast -n io.github.jqssun.airplay/.SettingsReceiver -a io.github.jqssun.airplay.LIST_SETTINGS
+am start -n app.airplaytv/io.github.jqssun.airplay.MainActivity
+am broadcast -n app.airplaytv/io.github.jqssun.airplay.SettingsReceiver -a io.github.jqssun.airplay.LIST_SETTINGS
 ```
 
 ## Implementation

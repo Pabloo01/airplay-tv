@@ -47,8 +47,8 @@ import io.github.jqssun.airplay.ui.design.TrackBar
 import io.github.jqssun.airplay.ui.design.Wall
 import io.github.jqssun.airplay.ui.design.glass
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
-import io.github.jqssun.airplay.ui.theme.Jd
-import io.github.jqssun.airplay.ui.theme.JdType
+import io.github.jqssun.airplay.ui.theme.Atv
+import io.github.jqssun.airplay.ui.theme.AtvType
 import kotlinx.coroutines.delay
 
 @Composable
@@ -86,24 +86,24 @@ fun RequestScreen(request: AirPlayService.ClientRequest, onAnswer: (Boolean) -> 
     Wall {
         CenteredPanel(width = 480) {
             Column(
-                modifier = Modifier.padding(start = 40.dp, end = 40.dp, top = 36.dp, bottom = Jd.Space8),
+                modifier = Modifier.padding(start = 40.dp, end = 40.dp, top = 36.dp, bottom = Atv.Space8),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(Jd.Space4),
+                verticalArrangement = Arrangement.spacedBy(Atv.Space4),
             ) {
-                Box(Modifier.size(72.dp).glass(Jd.ShapeMd, blur = false), contentAlignment = Alignment.Center) {
-                    Icon(deviceIcon(request.model), null, tint = Jd.Ink, modifier = Modifier.size(36.dp))
+                Box(Modifier.size(72.dp).glass(Atv.ShapeMd, blur = false), contentAlignment = Alignment.Center) {
+                    Icon(deviceIcon(request.model), null, tint = Atv.Ink, modifier = Modifier.size(36.dp))
                 }
-                Text(stringResource(R.string.request_title, name), style = JdType.Title, textAlign = TextAlign.Center)
+                Text(stringResource(R.string.request_title, name), style = AtvType.Title, textAlign = TextAlign.Center)
                 Text(
                     stringResource(R.string.request_desc),
-                    style = JdType.Callout,
-                    color = Jd.InkMuted,
+                    style = AtvType.Callout,
+                    color = Atv.InkMuted,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.widthIn(max = 380.dp),
                 )
                 Row(
-                    modifier = Modifier.padding(top = Jd.Space2),
-                    horizontalArrangement = Arrangement.spacedBy(Jd.Space4),
+                    modifier = Modifier.padding(top = Atv.Space2),
+                    horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
                 ) {
                     GlassButton(
                         stringResource(R.string.btn_allow_device),
@@ -114,15 +114,15 @@ fun RequestScreen(request: AirPlayService.ClientRequest, onAnswer: (Boolean) -> 
                 }
                 Text(
                     stringResource(R.string.request_note),
-                    style = JdType.Caption,
-                    color = Jd.InkMuted,
+                    style = AtvType.Caption,
+                    color = Atv.InkMuted,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = Jd.Space1),
+                    modifier = Modifier.padding(top = Atv.Space1),
                 )
                 Text(
                     stringResource(R.string.request_timeout, (remaining / 1000).toInt()),
-                    style = JdType.Caption,
-                    color = Jd.InkFaint,
+                    style = AtvType.Caption,
+                    color = Atv.InkFaint,
                 )
             }
         }
@@ -152,21 +152,21 @@ fun PinScreen(pin: String, clientName: String, onCancel: () -> Unit) {
                         Column(
                             modifier = Modifier.padding(horizontal = 56.dp, vertical = 40.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(Jd.Space4),
+                            verticalArrangement = Arrangement.spacedBy(Atv.Space4),
                         ) {
                             Text(
                                 stringResource(R.string.pin_label),
-                                style = JdType.Body,
-                                color = Jd.InkMuted,
+                                style = AtvType.Body,
+                                color = Atv.InkMuted,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.widthIn(max = 340.dp),
                             )
-                            Text(pin, style = JdType.Pin, color = Jd.Signal)
+                            Text(pin, style = AtvType.Pin, color = Atv.Signal)
                             TrackBar(remaining / PIN_SCREEN_MS.toFloat(), Modifier.width(200.dp), height = 4.dp)
                             Text(
                                 stringResource(R.string.pin_timer, (remaining / 1000).toInt()),
-                                style = JdType.Caption,
-                                color = Jd.InkMuted,
+                                style = AtvType.Caption,
+                                color = Atv.InkMuted,
                             )
                         }
                     }
@@ -174,7 +174,7 @@ fun PinScreen(pin: String, clientName: String, onCancel: () -> Unit) {
                 GlassButton(
                     stringResource(R.string.btn_cancel),
                     onClick = onCancel,
-                    modifier = Modifier.padding(top = Jd.Space6, bottom = Jd.Space2).focusRequester(cancelFocus),
+                    modifier = Modifier.padding(top = Atv.Space6, bottom = Atv.Space2).focusRequester(cancelFocus),
                 )
             }
         }
@@ -195,22 +195,22 @@ fun NoNetworkScreen(onOpenNetworkSettings: () -> Unit, onRetry: () -> Unit) {
                 Spacer(Modifier.height(40.dp))
                 GlassPanel(Modifier.widthIn(max = 560.dp).fillMaxWidth(), strong = true) {
                     Column(
-                        modifier = Modifier.padding(start = Jd.Space12, end = Jd.Space12, top = 36.dp, bottom = Jd.Space8),
+                        modifier = Modifier.padding(start = Atv.Space12, end = Atv.Space12, top = 36.dp, bottom = Atv.Space8),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
-                        Icon(Icons.Rounded.WifiOff, null, tint = Jd.Signal, modifier = Modifier.size(48.dp))
-                        Text(stringResource(R.string.no_network_title), style = JdType.Title, textAlign = TextAlign.Center)
+                        Icon(Icons.Rounded.WifiOff, null, tint = Atv.Signal, modifier = Modifier.size(48.dp))
+                        Text(stringResource(R.string.no_network_title), style = AtvType.Title, textAlign = TextAlign.Center)
                         Text(
                             stringResource(R.string.no_network_desc),
-                            style = JdType.Body,
-                            color = Jd.InkMuted,
+                            style = AtvType.Body,
+                            color = Atv.InkMuted,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.widthIn(max = 440.dp),
                         )
                         Row(
-                            modifier = Modifier.padding(top = Jd.Space2),
-                            horizontalArrangement = Arrangement.spacedBy(Jd.Space4),
+                            modifier = Modifier.padding(top = Atv.Space2),
+                            horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
                         ) {
                             GlassButton(
                                 stringResource(R.string.btn_network_settings),
@@ -238,22 +238,22 @@ fun ConnectionLostOverlay(senderName: String, onHome: () -> Unit) {
     Box(Modifier.fillMaxSize().background(Color(0xFF0A0A0C).copy(alpha = 0.55f))) {
         CenteredPanel(width = 520) {
             Column(
-                modifier = Modifier.padding(horizontal = 40.dp, vertical = Jd.Space8),
+                modifier = Modifier.padding(horizontal = 40.dp, vertical = Atv.Space8),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 StatusChip(stringResource(R.string.chip_lost), ChipKind.ERROR)
-                Text(stringResource(R.string.lost_title, sender), style = JdType.Title, textAlign = TextAlign.Center)
+                Text(stringResource(R.string.lost_title, sender), style = AtvType.Title, textAlign = TextAlign.Center)
                 Text(
                     stringResource(R.string.lost_desc, ((remaining + 999) / 1000).toInt()),
-                    style = JdType.Body,
-                    color = Jd.InkMuted,
+                    style = AtvType.Body,
+                    color = Atv.InkMuted,
                     textAlign = TextAlign.Center,
                 )
                 GlassButton(
                     stringResource(R.string.btn_home),
                     onClick = onHome,
-                    modifier = Modifier.padding(top = Jd.Space2).focusRequester(focus),
+                    modifier = Modifier.padding(top = Atv.Space2).focusRequester(focus),
                 )
             }
         }

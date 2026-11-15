@@ -106,8 +106,8 @@ import io.github.jqssun.airplay.ui.design.StatusChip
 import io.github.jqssun.airplay.ui.design.TrackBar
 import io.github.jqssun.airplay.ui.design.glass
 import io.github.jqssun.airplay.ui.design.isWide
-import io.github.jqssun.airplay.ui.theme.Jd
-import io.github.jqssun.airplay.ui.theme.JdType
+import io.github.jqssun.airplay.ui.theme.Atv
+import io.github.jqssun.airplay.ui.theme.AtvType
 import io.github.jqssun.airplay.ui.gestures.VideoContentScale
 import io.github.jqssun.airplay.viewmodel.MainViewModel
 import kotlin.math.abs
@@ -202,29 +202,29 @@ fun VideoPanel(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    start = if (wide) Jd.SafeX else Jd.Space4,
-                    end = if (wide) Jd.SafeX else Jd.Space4,
-                    bottom = if (wide) Jd.SafeY else Jd.Space4,
+                    start = if (wide) Atv.SafeX else Atv.Space4,
+                    end = if (wide) Atv.SafeX else Atv.Space4,
+                    bottom = if (wide) Atv.SafeY else Atv.Space4,
                 )
-                .glass(Jd.ShapeLg, strong = true, blur = false)
-                .padding(start = Jd.Space8, end = Jd.Space8, top = 20.dp, bottom = Jd.Space6),
-            verticalArrangement = Arrangement.spacedBy(Jd.Space3),
+                .glass(Atv.ShapeLg, strong = true, blur = false)
+                .padding(start = Atv.Space8, end = Atv.Space8, top = 20.dp, bottom = Atv.Space6),
+            verticalArrangement = Arrangement.spacedBy(Atv.Space3),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Jd.Space6)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Atv.Space6)) {
                 Column(Modifier.weight(1f)) {
-                    Text(title, style = JdType.PlayerTitle, color = Jd.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(source, style = JdType.Callout, color = Jd.InkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(title, style = AtvType.PlayerTitle, color = Atv.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(source, style = AtvType.Callout, color = Atv.InkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 StatusChip(stringResource(R.string.chip_streaming), ChipKind.LIVE)
             }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Jd.Space4)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Atv.Space4)) {
                 GlassIconButton(
                     icon = if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                     contentDescription = stringResource(R.string.cd_play_pause),
                     onClick = onPlayPause,
                     modifier = playPauseModifier,
                 )
-                Text(formatVideoTime(positionMs), style = JdType.CaptionStrong, color = Jd.InkMuted)
+                Text(formatVideoTime(positionMs), style = AtvType.CaptionStrong, color = Atv.InkMuted)
                 PlayerSeekbar(
                     positionMs = positionMs,
                     durationMs = durationMs,
@@ -234,15 +234,15 @@ fun VideoPanel(
                 )
                 Text(
                     "−" + formatVideoTime((durationMs - positionMs).coerceAtLeast(0)),
-                    style = JdType.CaptionStrong,
-                    color = Jd.InkMuted,
+                    style = AtvType.CaptionStrong,
+                    color = Atv.InkMuted,
                 )
                 GlassIconButton(Icons.Rounded.Stop, stringResource(R.string.cd_stop), onStop)
             }
             Row(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Jd.Space2),
+                horizontalArrangement = Arrangement.spacedBy(Atv.Space2),
             ) {
                 GlassIconButton(Icons.Rounded.Speed, stringResource(R.string.select_playback_speed), onSpeedClick)
                 GlassIconButton(contentScale.icon(), stringResource(contentScale.nameRes()), onContentScaleClick)
@@ -326,8 +326,8 @@ private fun PlayerSeekbar(
                     modifier = Modifier
                         .size(thumbSize)
                         .shadow(4.dp, CircleShape)
-                        .background(Jd.Ink)
-                        .then(if (isFocused) Modifier.border(3.dp, Jd.Signal, CircleShape) else Modifier),
+                        .background(Atv.Ink)
+                        .then(if (isFocused) Modifier.border(3.dp, Atv.Signal, CircleShape) else Modifier),
                 )
             },
             track = {

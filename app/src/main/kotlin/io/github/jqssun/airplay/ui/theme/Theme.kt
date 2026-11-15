@@ -5,34 +5,34 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 
-private val JdColors = darkColorScheme(
-    primary = Jd.Signal,
-    onPrimary = Jd.OnSignal,
-    primaryContainer = Jd.SignalSoft,
-    onPrimaryContainer = Jd.Ink,
-    secondary = Jd.InkMuted,
-    onSecondary = Jd.OnFocus,
-    secondaryContainer = Jd.Surface3,
-    onSecondaryContainer = Jd.Ink,
-    tertiary = Jd.Signal,
-    background = Jd.Bg,
-    onBackground = Jd.Ink,
-    surface = Jd.Bg,
-    onSurface = Jd.Ink,
-    surfaceVariant = Jd.Surface1,
-    onSurfaceVariant = Jd.InkMuted,
-    surfaceContainerLowest = Jd.Bg,
-    surfaceContainerLow = Jd.Surface1,
-    surfaceContainer = Jd.Surface1,
-    surfaceContainerHigh = Jd.Surface1,
-    surfaceContainerHighest = Jd.Surface3,
-    outline = Jd.InkFaint,
-    outlineVariant = Jd.Surface3,
-    error = Jd.Signal,
-    onError = Jd.OnSignal,
+private val AtvColors = darkColorScheme(
+    primary = Atv.Signal,
+    onPrimary = Atv.OnSignal,
+    primaryContainer = Atv.SignalSoft,
+    onPrimaryContainer = Atv.Ink,
+    secondary = Atv.InkMuted,
+    onSecondary = Atv.OnFocus,
+    secondaryContainer = Atv.Surface3,
+    onSecondaryContainer = Atv.Ink,
+    tertiary = Atv.Signal,
+    background = Atv.Bg,
+    onBackground = Atv.Ink,
+    surface = Atv.Bg,
+    onSurface = Atv.Ink,
+    surfaceVariant = Atv.Surface1,
+    onSurfaceVariant = Atv.InkMuted,
+    surfaceContainerLowest = Atv.Bg,
+    surfaceContainerLow = Atv.Surface1,
+    surfaceContainer = Atv.Surface1,
+    surfaceContainerHigh = Atv.Surface1,
+    surfaceContainerHighest = Atv.Surface3,
+    outline = Atv.InkFaint,
+    outlineVariant = Atv.Surface3,
+    error = Atv.Signal,
+    onError = Atv.OnSignal,
 )
 
-private val JdTypography = Typography().let { t ->
+private val AtvTypography = Typography().let { t ->
     Typography(
         displayLarge = t.displayLarge.copy(fontFamily = Inter),
         displayMedium = t.displayMedium.copy(fontFamily = Inter),
@@ -54,5 +54,5 @@ private val JdTypography = Typography().let { t ->
 
 @Composable
 fun AirPlayTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = JdColors, typography = JdTypography, content = content)
+    MaterialTheme(colorScheme = AtvColors, typography = AtvTypography, content = content)
 }

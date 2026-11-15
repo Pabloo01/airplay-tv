@@ -44,20 +44,24 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.jqssun.airplay.R
-import io.github.jqssun.airplay.ui.theme.Jd
-import io.github.jqssun.airplay.ui.theme.JdType
+import io.github.jqssun.airplay.ui.theme.Atv
+import io.github.jqssun.airplay.ui.theme.AtvType
 
 @Composable
 fun Wordmark(modifier: Modifier = Modifier) {
-    Image(
-        painter = painterResource(R.drawable.logo_wordmark),
-        contentDescription = "AirPlay",
-        modifier = modifier.height(28.dp).aspectRatio(372f / 96f),
-    )
+    Row(
+        modifier = modifier.height(32.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Atv.Space2),
+    ) {
+        Mark(Modifier.size(32.dp))
+        Text(stringResource(R.string.app_name), style = AtvType.Headline, color = Atv.Ink, maxLines = 1)
+    }
 }
 
 @Composable
@@ -74,21 +78,21 @@ enum class ChipKind { IDLE, OK, LIVE, ERROR }
 @Composable
 fun StatusChip(text: String, kind: ChipKind, modifier: Modifier = Modifier) {
     val content = when (kind) {
-        ChipKind.LIVE -> Jd.OnSignal
-        ChipKind.ERROR -> Jd.Signal
-        ChipKind.IDLE -> Jd.InkMuted
-        ChipKind.OK -> Jd.Ink
+        ChipKind.LIVE -> Atv.OnSignal
+        ChipKind.ERROR -> Atv.Signal
+        ChipKind.IDLE -> Atv.InkMuted
+        ChipKind.OK -> Atv.Ink
     }
-    val shape = Jd.ShapePill
+    val shape = Atv.ShapePill
     val surface = if (kind == ChipKind.LIVE) {
-        Modifier.shadow(12.dp, shape).clip(shape).background(Jd.Signal)
+        Modifier.shadow(12.dp, shape).clip(shape).background(Atv.Signal)
     } else {
         Modifier.glass(shape, blur = false)
     }
     Row(
-        modifier = modifier.height(34.dp).then(surface).padding(start = Jd.Space3, end = Jd.Space4),
+        modifier = modifier.height(34.dp).then(surface).padding(start = Atv.Space3, end = Atv.Space4),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Jd.Space2),
+        horizontalArrangement = Arrangement.spacedBy(Atv.Space2),
     ) {
         if (kind == ChipKind.ERROR) {
             Icon(Icons.Rounded.Warning, null, tint = content, modifier = Modifier.size(14.dp))
@@ -102,11 +106,11 @@ fun StatusChip(text: String, kind: ChipKind, modifier: Modifier = Modifier) {
                 ).value
             } else 1f
             Box(
-                Modifier.size(10.dp).alpha(pulse).clip(Jd.ShapePill)
-                    .background(if (kind == ChipKind.OK) Jd.Ink else content)
+                Modifier.size(10.dp).alpha(pulse).clip(Atv.ShapePill)
+                    .background(if (kind == ChipKind.OK) Atv.Ink else content)
             )
         }
-        Text(text, style = JdType.CaptionStrong, color = content, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(text, style = AtvType.CaptionStrong, color = content, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -121,10 +125,10 @@ fun GlassButton(
         Row(
             modifier = Modifier.fillMaxHeight().padding(horizontal = 28.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Jd.Space2),
+            horizontalArrangement = Arrangement.spacedBy(Atv.Space2),
         ) {
             if (icon != null) Icon(icon, null, modifier = Modifier.size(20.dp))
-            Text(text, style = JdType.Button, color = LocalContentColor.current)
+            Text(text, style = AtvType.Button, color = LocalContentColor.current)
         }
     }
 }
@@ -162,19 +166,19 @@ fun MediaCard(
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val lift by animateFloatAsState(if (focused) 1f else 0f, label = "lift")
-    val titleColor by animateColorAsState(if (focused) Jd.Ink else Jd.InkMuted, label = "cardTitle")
-    Column(modifier.width(150.dp), verticalArrangement = Arrangement.spacedBy(Jd.Space3)) {
+    val titleColor by animateColorAsState(if (focused) Atv.Ink else Atv.InkMuted, label = "cardTitle")
+    Column(modifier.width(150.dp), verticalArrangement = Arrangement.spacedBy(Atv.Space3)) {
         GlassSurface(
             onClick = onClick,
-            shape = Jd.ShapeMd,
+            shape = Atv.ShapeMd,
             interactionSource = interaction,
             modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f).offset(y = (-4).dp * lift),
         ) {
             Icon(icon, null, modifier = Modifier.size(40.dp).align(Alignment.Center))
         }
-        Column(Modifier.offset(y = 8.dp * lift).padding(horizontal = Jd.Space1)) {
-            Text(title, style = JdType.CardTitle, color = titleColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            if (meta != null) Text(meta, style = JdType.Caption, color = Jd.InkMuted, maxLines = 1)
+        Column(Modifier.offset(y = 8.dp * lift).padding(horizontal = Atv.Space1)) {
+            Text(title, style = AtvType.CardTitle, color = titleColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (meta != null) Text(meta, style = AtvType.Caption, color = Atv.InkMuted, maxLines = 1)
         }
     }
 }
@@ -182,8 +186,8 @@ fun MediaCard(
 @Composable
 fun GlassList(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(
-        modifier = modifier.glass(RoundedCornerShape(Jd.RadiusMd + Jd.Space2)).padding(Jd.Space2),
-        verticalArrangement = Arrangement.spacedBy(Jd.Space2),
+        modifier = modifier.glass(RoundedCornerShape(Atv.RadiusMd + Atv.Space2)).padding(Atv.Space2),
+        verticalArrangement = Arrangement.spacedBy(Atv.Space2),
         content = content,
     )
 }
@@ -200,28 +204,28 @@ fun GlassRow(
 ) {
     GlassSurface(
         onClick = onClick,
-        shape = Jd.ShapeMd,
-        focusScale = Jd.ScaleRow,
+        shape = Atv.ShapeMd,
+        focusScale = Atv.ScaleRow,
         transparentAtRest = true,
         modifier = modifier.fillMaxWidth().heightIn(min = 64.dp),
     ) { focused ->
-        val muted = if (focused) Jd.OnFocusMuted else Jd.InkMuted
+        val muted = if (focused) Atv.OnFocusMuted else Atv.InkMuted
         Row(
-            modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(horizontal = 20.dp, vertical = Jd.Space3),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(horizontal = 20.dp, vertical = Atv.Space3),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Jd.Space4),
+            horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
         ) {
             if (icon != null) {
-                Icon(icon, null, tint = if (focused) Jd.OnFocus else Jd.InkMuted, modifier = Modifier.size(24.dp))
+                Icon(icon, null, tint = if (focused) Atv.OnFocus else Atv.InkMuted, modifier = Modifier.size(24.dp))
             }
             Column(Modifier.weight(1f)) {
-                Text(title, style = JdType.BodyStrong, color = LocalContentColor.current)
+                Text(title, style = AtvType.BodyStrong, color = LocalContentColor.current)
                 if (subtitle != null) {
-                    Text(subtitle, style = JdType.Caption, color = muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(subtitle, style = AtvType.Caption, color = muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
             }
             if (value != null) {
-                Text(value, style = JdType.Callout, color = muted, maxLines = 1, textAlign = TextAlign.End)
+                Text(value, style = AtvType.Callout, color = muted, maxLines = 1, textAlign = TextAlign.End)
             }
             trailing?.invoke(this, focused)
         }
@@ -229,28 +233,28 @@ fun GlassRow(
 }
 
 @Composable
-fun JdSwitch(checked: Boolean, focused: Boolean) {
+fun AtvSwitch(checked: Boolean, focused: Boolean) {
     val track by animateColorAsState(
         when {
-            checked -> Jd.Signal
-            focused -> Jd.OnFocusMuted
+            checked -> Atv.Signal
+            focused -> Atv.OnFocusMuted
             else -> Color.White.copy(alpha = 0.2f)
         },
         label = "switchTrack",
     )
     val knob by animateFloatAsState(if (checked) 1f else 0f, label = "switchKnob")
-    Box(Modifier.size(50.dp, 30.dp).clip(Jd.ShapePill).background(track)) {
+    Box(Modifier.size(50.dp, 30.dp).clip(Atv.ShapePill).background(track)) {
         Box(
             Modifier.padding(2.dp).offset(x = 20.dp * knob).size(26.dp)
-                .shadow(3.dp, Jd.ShapePill).clip(Jd.ShapePill).background(Jd.Ink)
+                .shadow(3.dp, Atv.ShapePill).clip(Atv.ShapePill).background(Atv.Ink)
         )
     }
 }
 
 @Composable
 fun TrackBar(fraction: Float, modifier: Modifier = Modifier, height: androidx.compose.ui.unit.Dp = 6.dp) {
-    Box(modifier.height(height).clip(Jd.ShapePill).background(Color.White.copy(alpha = 0.22f))) {
-        Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceIn(0f, 1f)).clip(Jd.ShapePill).background(Jd.Ink))
+    Box(modifier.height(height).clip(Atv.ShapePill).background(Color.White.copy(alpha = 0.22f))) {
+        Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceIn(0f, 1f)).clip(Atv.ShapePill).background(Atv.Ink))
     }
 }
 
