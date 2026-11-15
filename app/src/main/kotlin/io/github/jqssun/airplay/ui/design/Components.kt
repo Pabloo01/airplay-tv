@@ -55,7 +55,7 @@ import io.github.jqssun.airplay.ui.theme.JdType
 fun Wordmark(modifier: Modifier = Modifier) {
     Image(
         painter = painterResource(R.drawable.logo_wordmark),
-        contentDescription = "Air Play JD",
+        contentDescription = "AirPlay",
         modifier = modifier.height(28.dp).aspectRatio(372f / 96f),
     )
 }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Air Play JD</string>
+    <string name="app_name">AirPlay</string>
 
     <!-- Notification -->
     <string name="notification_channel">Servicio AirPlay</string>
-    <string name="notification_title">Air Play JD en marcha</string>
+    <string name="notification_title">AirPlay en marcha</string>
     <string name="notification_text">Aceptando conexiones AirPlay</string>
     <string name="notification_pin_title">Se necesita código AirPlay</string>
     <string name="notification_pin_text">Código: %1$s</string>
@@ -202,7 +202,7 @@
     <string name="debug_audio_decode">Decodificación: %1$s</string>
     <string name="debug_clients">Emisores: %1$d</string>
 
-    <!-- Air Play JD: shared -->
+    <!-- AirPlay: shared -->
     <string name="device_generic">tu dispositivo</string>
     <string name="btn_cancel">Cancelar</string>
     <string name="btn_save">Guardar</string>
@@ -257,8 +257,8 @@
     <!-- Settings home -->
     <string name="settings_title">Ajustes</string>
     <string name="settings_desc">Cómo te ven los dispositivos Apple de tu red y quién puede conectarse.</string>
-    <string name="settings_footer">Air Play JD %1$s · %2$s</string>
-    <string name="settings_footer_offline">Air Play JD %1$s · sin red</string>
+    <string name="settings_footer">AirPlay %1$s · %2$s</string>
+    <string name="settings_footer_offline">AirPlay %1$s · sin red</string>
     <string name="row_server">Receptor</string>
     <string name="row_server_running">Visible para tus dispositivos</string>
     <string name="row_server_stopped">Ahora no está visible</string>
