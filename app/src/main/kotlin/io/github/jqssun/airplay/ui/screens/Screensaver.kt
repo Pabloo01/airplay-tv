@@ -29,12 +29,13 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import io.github.jqssun.airplay.R
 import io.github.jqssun.airplay.ui.design.FloorShadow
@@ -47,17 +48,37 @@ import io.github.jqssun.airplay.ui.theme.Atv
 import io.github.jqssun.airplay.ui.theme.AtvType
 import kotlinx.coroutines.delay
 
-// Offsets (dp) the clock and Pepe travel through together, about one stop a minute.
-// They keep the whole group (x 96..830, y 150..500 on the 960x540 stage) on screen.
-private val driftPath = listOf(0f to 0f, 100f to -40f, 60f to -120f, -70f to -100f, -60f to 10f, 0f to 0f)
+// Offsets (dp) the clock and Pepe travel through together as a closed loop, about one stop a
+// minute. They keep the whole group (x 96..830, y 150..500 on the 960x540 stage) on screen.
+private val driftPath = listOf(0f to 0f, 100f to -40f, 60f to -120f, -70f to -100f, -60f to 10f)
 
+// closed Catmull-Rom spline through driftPath: passes every stop with no sharp turns, so the
+// speed and direction change smoothly instead of snapping at each corner
 private fun drift(t: Float): Pair<Float, Float> {
-    val segments = driftPath.size - 1
-    val segment = (t * segments).toInt().coerceIn(0, segments - 1)
-    val local = t * segments - segment
-    val (x0, y0) = driftPath[segment]
-    val (x1, y1) = driftPath[segment + 1]
-    return (x0 + (x1 - x0) * local) to (y0 + (y1 - y0) * local)
+    val n = driftPath.size
+    val pos = (t - kotlin.math.floor(t)) * n
+    val i = pos.toInt().coerceIn(0, n - 1)
+    val u = pos - i
+    val (x0, y0) = driftPath[(i - 1 + n) % n]
+    val (x1, y1) = driftPath[i]
+    val (x2, y2) = driftPath[(i + 1) % n]
+    val (x3, y3) = driftPath[(i + 2) % n]
+    return catmullRom(x0, x1, x2, x3, u) to catmullRom(y0, y1, y2, y3, u)
+}
+
+private fun catmullRom(p0: Float, p1: Float, p2: Float, p3: Float, u: Float): Float {
+    val u2 = u * u
+    val u3 = u2 * u
+    return 0.5f * (2f * p1 + (p2 - p0) * u + (2f * p0 - 5f * p1 + 4f * p2 - p3) * u2 + (3f * p1 - p0 - 3f * p2 + p3) * u3)
+}
+
+// moves the content by a fractional pixel amount: rendered offscreen and drawn as a filtered
+// texture, so a drift of a few px/s glides instead of stepping one whole pixel at a time
+private fun Modifier.glide(offset: () -> Pair<Float, Float>): Modifier = graphicsLayer {
+    val (dx, dy) = offset()
+    translationX = dx.dp.toPx()
+    translationY = dy.dp.toPx()
+    compositingStrategy = CompositingStrategy.Offscreen
 }
 
 private val NightStars = listOf(
@@ -88,20 +109,17 @@ fun Screensaver(serverName: String) {
             Text(stringResource(R.string.screensaver_status, serverName), style = StatusLine, color = Atv.InkFaint)
         }
     }
-    // the drift is read at placement time only: no recomposition while it moves
-    val shift = Modifier.offset {
-        val (dx, dy) = drift(progress.value)
-        IntOffset(dx.dp.roundToPx(), dy.dp.roundToPx())
-    }
+    // the drift is read in the draw layer only: no recomposition or relayout while it moves
+    val shift = Modifier.glide { drift(progress.value) }
 
     Wall(color = Atv.Deep) {
         Stage(
             modifier = Modifier.focusRequester(focus).focusable(),
             narrow = {
                 Column(
-                    modifier = Modifier.offset {
+                    modifier = Modifier.glide {
                         val (dx, dy) = drift(progress.value)
-                        IntOffset((dx * 0.2f).dp.roundToPx(), (dy * 0.5f).dp.roundToPx())
+                        (dx * 0.2f) to (dy * 0.5f)
                     },
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(Atv.Space6),
