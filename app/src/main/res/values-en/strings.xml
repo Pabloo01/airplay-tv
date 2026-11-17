@@ -174,14 +174,12 @@
     <string name="status_stopped">Stopped</string>
     <string name="status_error">Error</string>
     <string name="status_permission">Permission needed</string>
-    <string name="status_connecting">Connecting to %1$s</string>
     <string name="idle_title">Shall we watch a movie?</string>
     <string name="idle_hint">On your iPhone, open Control Center, tap Screen Mirroring and choose this TV.</string>
     <string name="idle_title_stopped">Receiver stopped</string>
     <string name="idle_hint_stopped">Start the receiver so your Apple devices can find it.</string>
     <string name="idle_title_error">The receiver could not start</string>
     <string name="idle_hint_error">Check the network and try again.</string>
-    <string name="idle_title_connecting">Connecting…</string>
     <string name="idle_title_permission">Nearby devices access needed</string>
     <string name="greeting_morning">Good morning!</string>
     <string name="greeting_afternoon">Good afternoon!</string>

@@ -53,7 +53,6 @@ import java.util.Calendar
 /** What the home screen is showing: the receiver waiting (the prototype) or one of its other states. */
 private enum class Home(val mood: ZagaloMood, @param:StringRes val title: Int, @param:StringRes val hint: Int) {
     WAITING(ZagaloMood.HOLA, R.string.idle_title, R.string.idle_hint),
-    CONNECTING(ZagaloMood.CURIOSO, R.string.idle_title_connecting, R.string.waiting_for_playback),
     STOPPED(ZagaloMood.DORMIDO, R.string.idle_title_stopped, R.string.idle_hint_stopped),
     ERROR(ZagaloMood.MAREADO, R.string.idle_title_error, R.string.idle_hint_error),
     PERMISSION(ZagaloMood.BUSCANDO, R.string.idle_title_permission, R.string.local_network_desc),
@@ -71,8 +70,6 @@ fun IdleScreen(
     state: ServerState,
     localNetwork: LocalNetworkAccess,
     serverName: String,
-    clientName: String,
-    connections: Int,
     onStart: () -> Unit,
     onLocalNetwork: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -81,13 +78,10 @@ fun IdleScreen(
         state != ServerState.RUNNING && localNetwork != LocalNetworkAccess.GRANTED -> Home.PERMISSION
         state == ServerState.ERROR -> Home.ERROR
         state == ServerState.STOPPED -> Home.STOPPED
-        connections > 0 -> Home.CONNECTING
         else -> Home.WAITING
     }
-    val sender = clientName.ifBlank { stringResource(R.string.device_generic) }
     val (chipText, chipKind) = when (home) {
         Home.WAITING -> stringResource(R.string.status_waiting) to ChipKind.WAITING
-        Home.CONNECTING -> stringResource(R.string.status_connecting, sender) to ChipKind.WAITING
         Home.STOPPED -> stringResource(R.string.status_stopped) to ChipKind.NEUTRAL
         Home.ERROR -> stringResource(R.string.status_error) to ChipKind.ALERT
         Home.PERMISSION -> stringResource(R.string.status_permission) to ChipKind.ALERT
@@ -98,7 +92,7 @@ fun IdleScreen(
         ) to onLocalNetwork
         Home.ERROR -> stringResource(R.string.btn_retry) to onStart
         Home.STOPPED -> stringResource(R.string.btn_start) to onStart
-        Home.WAITING, Home.CONNECTING -> null
+        Home.WAITING -> null
     }
     // the remote starts on the primary action when there is one, else on "Ajustes"
     val firstFocus = remember { FocusRequester() }

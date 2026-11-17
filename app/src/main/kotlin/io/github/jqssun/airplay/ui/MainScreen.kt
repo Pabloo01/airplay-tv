@@ -185,8 +185,6 @@ fun MainScreen(
                 state = state,
                 localNetwork = localNetwork,
                 serverName = serverName,
-                clientName = clientName,
-                connections = connections,
                 onStart = viewModel::startServer,
                 onLocalNetwork = onLocalNetwork,
                 onOpenSettings = { go(Route.SETTINGS) },
