@@ -119,15 +119,25 @@ fun GlassButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
+    // destructive action: solid red at rest, white with red text when focused (same focus cue as
+    // every other button)
+    danger: Boolean = false,
 ) {
-    GlassSurface(onClick = onClick, modifier = modifier.height(52.dp)) {
+    GlassSurface(onClick = onClick, modifier = modifier.height(52.dp), transparentAtRest = danger) { focused ->
+        val ink = when {
+            !danger -> LocalContentColor.current
+            focused -> Atv.Danger
+            else -> Color.White
+        }
         Row(
-            modifier = Modifier.fillMaxHeight().padding(horizontal = 28.dp),
+            modifier = Modifier.fillMaxHeight()
+                .then(if (danger && !focused) Modifier.background(Atv.Danger) else Modifier)
+                .padding(horizontal = 28.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Atv.Space2),
         ) {
-            if (icon != null) Icon(icon, null, modifier = Modifier.size(20.dp))
-            Text(text, style = AtvType.Button, color = LocalContentColor.current)
+            if (icon != null) Icon(icon, null, modifier = Modifier.size(20.dp), tint = ink)
+            Text(text, style = AtvType.Button, color = ink)
         }
     }
 }

@@ -350,8 +350,8 @@ class BlackBarsTest {
         repeat(8) { assertFalse(s.offer(hud, t, 0.04f)); t += 300 }  // 2.4 s on screen
         repeat(3) { assertFalse(s.offer(movie, t)); t += 300 }
         assertEquals(movie.rect, s.current)
-        // left up: shown after ~3 s
-        val took = holdUntil(s, hud, t, share = 0.04f)
+        // left up (e.g. a long pause with controls): shown after MINOR_REVEAL_MS
+        val took = holdUntil(s, hud, t, limit = 40_000, share = 0.04f)
         assertEquals(hud.rect, s.current)
         assertTrue("took $took ms", took in CropStabilizer.MINOR_REVEAL_MS..CropStabilizer.MINOR_REVEAL_MS + 600)
     }

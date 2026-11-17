@@ -187,9 +187,8 @@
 
     <!-- Mirroring -->
     <string name="chip_mirroring">Mirroring · %1$s</string>
-    <string name="mirroring_help">Back to hide</string>
     <string name="btn_stop_mirroring">Stop</string>
-    <string name="btn_keep_watching">Keep watching</string>
+    <string name="btn_keep_sharing">Keep sharing</string>
     <string name="stop_confirm_title">Stop mirroring?</string>
     <string name="stop_confirm_desc">%1$s will stop showing on this TV.</string>
     <string name="btn_stop_confirm">Yes, stop</string>

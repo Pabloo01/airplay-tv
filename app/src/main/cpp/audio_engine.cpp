@@ -186,17 +186,22 @@ struct AudioEngine {
     }
 
 private:
-    // decode thread: playout buffer health every TIMELINE_LOG_NS (drift steering, skips, gaps)
+    // decode thread: playout buffer health every TIMELINE_LOG_NS (drift steering, skips, gaps).
+    // breaks: sender stopped and restarted (seek / pause in the mirrored app; no FLUSH reaches
+    // the engine in mirroring, the timeline detects them from the stream); resyncs: playout
+    // restarted on its old schedule after one; resync-timeouts: the sender stayed off it
     void logTimeline() {
         const int64_t now = monoNs();
         if (now < mNextTimelineLogNs) return;
         mNextTimelineLogNs = now + TIMELINE_LOG_NS;
         const TimelineBuffer::Debug d = mTimeline->debugInfo();
         mLog->info("timeline: backlog=%ums cushion=%ums steer=%+dppm slips=%llu trims=%u underruns=%u "
-                   "silences=%u drops=%u",
+                   "silences=%u drops=%u breaks=%u resyncs=%u resync-timeouts=%u",
                    (unsigned)d.backlogMs, (unsigned)d.tunedCushionMs, (int)mTimeline->steerPpm(),
                    (unsigned long long)mTimeline->slips(), (unsigned)d.metrics.trims,
-                   (unsigned)d.metrics.underruns, (unsigned)d.metrics.silences, (unsigned)d.metrics.drops);
+                   (unsigned)d.metrics.underruns, (unsigned)d.metrics.silences, (unsigned)d.metrics.drops,
+                   (unsigned)mTimeline->breaks(), (unsigned)mTimeline->resyncs(),
+                   (unsigned)mTimeline->resyncAbandons());
     }
 
     static int ctIndex(int ct) {

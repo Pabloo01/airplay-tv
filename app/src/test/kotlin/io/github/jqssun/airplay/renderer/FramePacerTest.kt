@@ -14,8 +14,10 @@ import kotlin.random.Random
 
 class FramePacerTest {
 
-    // a 24 fps mirror stream: pts on the sender clock (as realtime), arrival on the monotonic clock
-    private class Sim(val p: FramePacer = FramePacer()) {
+    // a 24 fps (or fps) mirror stream: pts on the sender clock (as realtime), arrival on the
+    // monotonic clock
+    private class Sim(val p: FramePacer = FramePacer(), val fps: Int = 24) {
+        val frameNs = 1_000_000_000L / fps
         var now = 10_000 * MS
         var ptsMono = now
         var audioNs: Long? = null
@@ -33,12 +35,12 @@ class FramePacerTest {
             val feedAt = p.schedule(ptsMono + OFFSET + ptsShiftNs, now)
             events += p.takeEvents()
             val fed = Fed(ptsMono, now, feedAt, p.delayNs)
-            ptsMono += FRAME_NS
+            ptsMono += frameNs
             return fed
         }
 
         fun run(seconds: Double, lateness: (Int) -> Long): List<Fed> =
-            (0 until (seconds * 24).toInt()).map { frame(lateness(it)) }
+            (0 until (seconds * fps).toInt()).map { frame(lateness(it)) }
 
         // scheduler housekeeping while no frame arrives: audio polled every 250 ms
         fun idle(ns: Long) {
@@ -64,7 +66,7 @@ class FramePacerTest {
         // sender paused / screen static: nothing captured, nothing sent
         fun pause(ns: Long) {
             idle(ns)
-            while (ptsMono + FRAME_NS <= now) ptsMono += FRAME_NS
+            while (ptsMono + frameNs <= now) ptsMono += frameNs
         }
     }
 
@@ -495,6 +497,100 @@ class FramePacerTest {
         assertTrue(sim.p.report(sim.now).endsWith("stalls=1"))
         sim.p.resetInterval()
         assertTrue(sim.p.report(sim.now).contains("late=0/0"))
+    }
+
+    // the seek on the TV: audio stops, the re-primed audio pipeline then reports 2.6 s, ~1 s for
+    // ten seconds, then the old ~235 ms. the picture must not move (it slewed 217 -> 800 -> 220)
+    @Test
+    fun seekExcursionOfTheAudioDelayDoesNotMoveThePicture() {
+        val sim = Sim()
+        sim.audioNs = 233 * MS
+        sim.run(10.0) { 40 * MS }
+        val d = sim.p.delayNs
+        assertEquals(217 * MS, d)
+
+        sim.audioNs = null
+        val gap = sim.run(2.5) { 40 * MS }
+        assertEquals(Mode.VIDEO, sim.p.mode)
+        sim.audioNs = 2_600 * MS
+        val restart = sim.run(1.5) { 40 * MS }
+        assertEquals(Mode.AUDIO, sim.p.mode)
+        sim.audioNs = 984 * MS
+        val inflated = sim.run(10.0) { 40 * MS }
+        sim.audioNs = 235 * MS
+        val back = sim.run(5.0) { 40 * MS }
+
+        val all = gap + restart + inflated + back
+        assertTrue("delay ${all.maxOf { abs(it.delay - d) } / MS} ms off", all.all { abs(it.delay - d) <= 3 * MS })
+        // no speed change either: frames keep their cadence
+        assertTrue(intervals(all.map { it.fedAt }).all { abs(it - FRAME_NS) <= 2 * MS })
+        assertEquals(219 * MS, sim.p.delayNs)
+        val log = sim.events.joinToString("\n")
+        assertTrue(log, sim.events.any { it.startsWith("lip-sync: pacing to audio delay 233 ms") })
+        assertTrue(log, sim.events.any { it.startsWith("audio delay 2600 ms") && it.contains("picture held") })
+        assertTrue(log, sim.events.any { it.contains("excursion ignored") })
+        assertTrue(log, sim.events.none { it.contains("lip-sync moves there") })
+    }
+
+    // a real change of the audio delay (cushion grew, another output device) is followed: held
+    // while it could be a transient, then slewed at the usual rate
+    @Test
+    fun persistentAudioDelayChangeIsFollowed() {
+        val sim = Sim()
+        sim.audioNs = 233 * MS
+        sim.run(10.0) { 40 * MS }
+        assertEquals(217 * MS, sim.p.delayNs)
+        sim.audioNs = 400 * MS
+        val fed = sim.run(10.0) { 40 * MS }
+        assertTrue(fed.take(2 * 24).all { it.delay == 217 * MS })
+        val maxStep = (FRAME_NS * FramePacer.SLEW_RATE).toLong()
+        assertTrue(intervals(fed.map { it.delay }).all { abs(it) <= maxStep })
+        assertEquals(384 * MS, sim.p.delayNs)
+        assertTrue(sim.events.any { it.startsWith("audio delay settled at 400 ms: lip-sync moves there from 233 ms") })
+    }
+
+    @Test
+    fun shortAudioDelayExcursionIsIgnored() {
+        val sim = Sim()
+        sim.audioNs = 233 * MS
+        sim.run(10.0) { 40 * MS }
+        sim.audioNs = 500 * MS
+        val a = sim.run(1.5) { 40 * MS }
+        sim.audioNs = 240 * MS
+        val b = sim.run(3.0) { 40 * MS }
+        assertTrue((a + b).all { abs(it.delay - 217 * MS) <= 7 * MS })
+        assertEquals(224 * MS, sim.p.delayNs)
+        assertTrue(sim.events.any { it.contains("excursion ignored") })
+    }
+
+    // beyond lip-sync range (target clamped at MAX_DELAY_NS) a value must persist much longer
+    // before the picture goes to the cap
+    @Test
+    fun audioDelayBeyondLipSyncRangeNeedsTheLongPersistence() {
+        val sim = Sim()
+        sim.audioNs = 233 * MS
+        sim.run(10.0) { 40 * MS }
+        sim.audioNs = 1_200 * MS
+        val held = sim.run(14.5) { 40 * MS }
+        assertTrue(held.all { it.delay == 217 * MS })
+        sim.run(17.0) { 40 * MS }
+        assertEquals(FramePacer.MAX_DELAY_NS, sim.p.delayNs)
+    }
+
+    // at 60 fps a big downward retarget still changes speed by at most SLEW_RATE (it was 1 ms
+    // per frame minimum: 6% faster at 60 fps, a visible fast-forward)
+    @Test
+    fun downwardRetargetAtHighFrameRateNeverFastForwards() {
+        val sim = Sim(fps = 60)
+        sim.audioNs = 600 * MS
+        sim.run(5.0) { 20 * MS }
+        assertEquals(584 * MS, sim.p.delayNs)
+        sim.audioNs = 233 * MS
+        val fed = sim.run(15.0) { 20 * MS }
+        val minInterval = (sim.frameNs * (1 - FramePacer.SLEW_RATE)).toLong() - 1
+        val shortest = intervals(fed.map { it.fedAt }).minOf { it }
+        assertTrue("shortest ${shortest / 1e6} ms", shortest >= minInterval)
+        assertEquals(217 * MS, sim.p.delayNs)
     }
 
     private fun assertNotNullLong(v: Long?): Long {

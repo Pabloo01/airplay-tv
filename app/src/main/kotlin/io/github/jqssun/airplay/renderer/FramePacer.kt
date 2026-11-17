@@ -18,6 +18,11 @@ import kotlin.math.max
  * per frame so motion never visibly speeds up or stalls, except where nothing is moving anyway
  * (first lip-sync lock, or no frame fed for a while: paused / static screen, stall)
  *
+ * a seek or pause restarts the audio pipeline, whose delay can pass through far-off values for
+ * a while: lip-sync stays locked to the delay it had until a far value persists
+ * (AUDIO_PERSIST_NS; AUDIO_FAR_PERSIST_NS beyond what lip-sync can reach), so the picture
+ * never slews out and back for a transient
+ *
  * wi-fi stalls: frames stop, then the queued ones arrive at once. that backlog is fed as soon as
  * possible and kept out of the statistics (one stall must not look like chronic lateness and
  * pull the picture behind the sound), and a long stall is never mistaken for a clock jump: a
@@ -65,8 +70,11 @@ class FramePacer {
     private var jumpCandPtsNs = 0L
     private var jumpCandCorrNs = 0L
 
-    // last audio delay this session (lip-sync floor while audio is missing), null = none yet
+    // audio delay lip-sync is locked to (also the floor while audio is missing), null = none yet
+    // this session; and a far-off value waiting to persist before lip-sync moves there
     private var lastAudioDelayNs: Long? = null
+    private var candAudioNs = 0L
+    private var candSinceNs = NONE
     private var snapPending = false
     private var overrideStreak = 0
 
@@ -110,6 +118,7 @@ class FramePacer {
         backlogUntilNs = NONE
         jumpCandFrames = 0
         lastAudioDelayNs = null
+        candSinceNs = NONE
         snapPending = false
         overrideStreak = 0
         _clearWindow()
@@ -245,18 +254,19 @@ class FramePacer {
         val videoNeed = videoNeedNs()
         val audio = if (correctionNs == 0L) audioDelayNs(nowNs) else null
         val prev = mode
+        var locked: Long? = null
         if (audio == null) {
             mode = Mode.VIDEO
             overrideStreak = 0
+            candSinceNs = NONE
             if (videoNeed != null) targetDelayNs = videoNeed
             // keep the session's last lip-sync delay as a floor: when sound returns after a
             // pause or a stall the picture is already there instead of slewing for seconds
             lastAudioDelayNs?.let { targetDelayNs = max(targetDelayNs, audioTargetNs(it)) }
         } else {
-            // first lip-sync lock of the session: jump there rather than slew for seconds
-            if (lastAudioDelayNs == null) snapPending = true
-            lastAudioDelayNs = audio
-            val audioTarget = audioTargetNs(audio)
+            val lockedAudio = _lockAudio(audio, nowNs)
+            locked = lockedAudio
+            val audioTarget = audioTargetNs(lockedAudio)
             if (mode != Mode.SMOOTH_OVER_SYNC) {
                 // only chronic lateness trades lip-sync for smoothness: late frames spread over
                 // the window (not one congested second) for several policy intervals in a row.
@@ -287,9 +297,49 @@ class FramePacer {
                     "pacing by video arrival" +
                     (lastAudioDelayNs?.let { ", holding >= ${audioTargetNs(it) / MS} ms for lip-sync" } ?: "")
                 prev == Mode.VIDEO -> events += String.format(Locale.US,
-                    "lip-sync: pacing to audio delay %d ms (target %d ms)", audio!! / MS, targetDelayNs / MS)
+                    "lip-sync: pacing to audio delay %d ms (target %d ms)", locked!! / MS, targetDelayNs / MS)
             }
         }
+    }
+
+    // the audio delay lip-sync follows, given the latest one. near the current lock it is
+    // followed at once (slewed as usual). far from it (a seek / pause re-primes the audio
+    // pipeline, which reports far-off delays until it settles) the picture holds until the
+    // value persists, consistently, for AUDIO_PERSIST_NS; for AUDIO_FAR_PERSIST_NS when lip-sync
+    // couldn't follow it anyway (target clamped at MAX_DELAY_NS)
+    private fun _lockAudio(audio: Long, nowNs: Long): Long {
+        val locked = lastAudioDelayNs
+        if (locked == null) {
+            // first lip-sync lock of the session: jump there rather than slew for seconds
+            snapPending = true
+            lastAudioDelayNs = audio
+            return audio
+        }
+        if (abs(audio - locked) <= AUDIO_RETARGET_NS) {
+            if (candSinceNs != NONE) {
+                events += String.format(Locale.US,
+                    "audio delay back at %d ms: excursion ignored, lip-sync stayed at %d ms", audio / MS, locked / MS)
+                candSinceNs = NONE
+            }
+            lastAudioDelayNs = audio
+            return audio
+        }
+        if (candSinceNs == NONE) {
+            events += String.format(Locale.US,
+                "audio delay %d ms, %+d ms off lip-sync (%d ms): picture held until it persists",
+                audio / MS, (audio - locked) / MS, locked / MS)
+            candSinceNs = nowNs
+        } else if (abs(audio - candAudioNs) > AUDIO_RETARGET_NS) {
+            candSinceNs = nowNs  // still moving: not a new steady value yet
+        }
+        candAudioNs = audio
+        val persist = if (audio - DISPLAY_COMP_NS > MAX_DELAY_NS) AUDIO_FAR_PERSIST_NS else AUDIO_PERSIST_NS
+        if (nowNs - candSinceNs < persist) return locked
+        events += String.format(Locale.US,
+            "audio delay settled at %d ms: lip-sync moves there from %d ms", audio / MS, locked / MS)
+        candSinceNs = NONE
+        lastAudioDelayNs = audio
+        return audio
     }
 
     // delay that keeps picture with sound: audio delay minus display latency, plus user trim
@@ -361,8 +411,8 @@ class FramePacer {
 
     // move delay toward target: free during the first SNAP_WINDOW_NS of a session, on the first
     // lip-sync lock, and when no frame was fed for FREE_SLEW_IDLE_NS (the picture is still, so
-    // the change can't show); otherwise at most SLEW_RATE of the frame interval (speed change
-    // <= 4%) but at least SLEW_MIN_STEP_NS
+    // the change can't show); otherwise at most SLEW_RATE of the frame interval, at any frame
+    // rate (speed change <= 4%: a big downward retarget never plays as a fast-forward)
     private fun _slew(ptsMonoNs: Long, nowNs: Long) {
         val target = targetDelayNs
         val idle = lastFeedAtNs != NONE && nowNs - lastFeedAtNs > FREE_SLEW_IDLE_NS
@@ -372,7 +422,7 @@ class FramePacer {
             return
         }
         val dPts = if (lastPtsMonoNs == NONE) 0L else (ptsMonoNs - lastPtsMonoNs).coerceIn(0L, MAX_SLEW_INTERVAL_NS)
-        val step = max(SLEW_MIN_STEP_NS, (dPts * SLEW_RATE).toLong())
+        val step = (dPts * SLEW_RATE).toLong()
         delayNs += (target - delayNs).coerceIn(-step, step)
     }
 
@@ -501,7 +551,6 @@ class FramePacer {
         const val STALL_GAP_NS = 250 * MS
         const val MAX_BACKLOG_NS = 2_000 * MS
 
-        const val SLEW_MIN_STEP_NS = 1 * MS
         const val SLEW_RATE = 0.04
         const val MAX_SLEW_INTERVAL_NS = 1_000 * MS
         const val SNAP_WINDOW_NS = 2_000 * MS
@@ -509,6 +558,12 @@ class FramePacer {
         const val FREE_SLEW_IDLE_NS = 500 * MS
 
         const val AUDIO_STALE_NS = 2_000 * MS
+        // audio delay within this of the lip-sync lock is followed at once; further off it is held
+        // until it persists (consistently: samples within this of each other) this long, or this
+        // long when beyond lip-sync range (a re-primed pipeline's transient, e.g. after a seek)
+        const val AUDIO_RETARGET_NS = 80 * MS
+        const val AUDIO_PERSIST_NS = 2_000 * MS
+        const val AUDIO_FAR_PERSIST_NS = 15_000 * MS
         const val AUDIO_MEDIAN = 5
         const val AUDIO_VALID_MIN_NS = -200 * MS
         const val AUDIO_VALID_MAX_NS = 3_000 * MS

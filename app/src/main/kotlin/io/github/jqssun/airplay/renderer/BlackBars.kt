@@ -239,7 +239,9 @@ class CropStabilizer(
         const val RETURN_MS = 2000L
         // reveals lighting less than this share of the bar area (small HUD, thin controls)
         const val MINOR_REVEAL_SHARE = 0.10f
-        const val MINOR_REVEAL_MS = 3000L
+        // owner's choice: touching the phone must not move the picture; player controls and the
+        // volume HUD stay phone-only unless they persist (e.g. a long pause with controls up)
+        const val MINOR_REVEAL_MS = 30_000L
         // ~1.5 probe samples; true bars repeat exactly
         const val TOLERANCE = 0.012f
         const val MIN_SAMPLES = 3

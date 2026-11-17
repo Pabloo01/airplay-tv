@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -139,6 +140,15 @@ class MainActivity : ComponentActivity() {
         } else {
             permissions.launch(arrayOf(Manifest.permission.ACCESS_LOCAL_NETWORK))
         }
+    }
+
+    // Compose spends the first Back press moving focus out of the focused group (FocusDirection.Exit),
+    // so every screen needed two presses; send Back straight to the BackHandlers instead.
+    // An open IME still gets Back first: it sits in its own window.
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode != KeyEvent.KEYCODE_BACK) return super.dispatchKeyEvent(event)
+        if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) onBackPressedDispatcher.onBackPressed()
+        return true
     }
 
     override fun onStart() {

@@ -45,7 +45,6 @@ import io.github.jqssun.airplay.ui.design.GlassButton
 import io.github.jqssun.airplay.ui.design.GlassPanel
 import io.github.jqssun.airplay.ui.design.SafeArea
 import io.github.jqssun.airplay.ui.design.StatusChip
-import io.github.jqssun.airplay.ui.design.glass
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
 import io.github.jqssun.airplay.ui.theme.Atv
 import io.github.jqssun.airplay.ui.theme.AtvType
@@ -56,8 +55,8 @@ import kotlinx.coroutines.delay
  * accident:
  * - hidden (the default, also at session start): Back, OK and the D-pad only reveal the overlay
  *   and are swallowed, so they never reach a button;
- * - visible: focus starts on the harmless "Keep watching"; Back hides the overlay;
- * - "Stop" only opens a confirmation whose focus again starts on "Keep watching";
+ * - visible: focus starts on the harmless "Keep sharing"; Back hides the overlay;
+ * - "Stop" (red) only opens a confirmation whose focus again starts on "Keep sharing";
  * - auto-repeat of a held OK / D-pad key is ignored, so holding OK can't walk into a button that
  *   just took focus (a button also needs its own key-down before a key-up clicks it).
  */
@@ -138,18 +137,12 @@ fun MirroringOverlay(clientName: String, onStop: () -> Unit) {
                         ChipKind.LIVE,
                         Modifier.align(Alignment.TopEnd),
                     )
-                    Box(
-                        Modifier.align(Alignment.BottomStart).glass(Atv.ShapePill, blur = false)
-                            .padding(horizontal = 20.dp, vertical = Atv.Space3)
-                    ) {
-                        Text(stringResource(R.string.mirroring_help), style = AtvType.Caption, color = Atv.InkMuted)
-                    }
                     Row(
                         modifier = Modifier.align(Alignment.BottomEnd),
                         horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
                     ) {
                         GlassButton(
-                            text = stringResource(R.string.btn_keep_watching),
+                            text = stringResource(R.string.btn_keep_sharing),
                             icon = Icons.Rounded.PlayArrow,
                             onClick = ::hide,
                             modifier = Modifier.focusRequester(keepFocus),
@@ -158,6 +151,7 @@ fun MirroringOverlay(clientName: String, onStop: () -> Unit) {
                             text = stringResource(R.string.btn_stop_mirroring),
                             icon = Icons.Rounded.Stop,
                             onClick = { confirming = true },
+                            danger = true,
                         )
                     }
                 }
@@ -195,11 +189,11 @@ private fun StopConfirmation(
                     horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
                 ) {
                     GlassButton(
-                        text = stringResource(R.string.btn_keep_watching),
+                        text = stringResource(R.string.btn_keep_sharing),
                         onClick = onKeepWatching,
                         modifier = Modifier.focusRequester(keepFocus),
                     )
-                    GlassButton(text = stringResource(R.string.btn_stop_confirm), onClick = onStop)
+                    GlassButton(text = stringResource(R.string.btn_stop_confirm), onClick = onStop, danger = true)
                 }
             }
         }

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -219,6 +220,14 @@ private:
  * output frames (no step, no pitch wobble; bit-exact passthrough between slips). only errors
  * above HARD_SKIP_MS still skip, and every skip / underrun / inserted silence is faded (~5 ms).
  *
+ * sender breaks (seek / pause in the mirrored app): the sender stops, the output underruns, and
+ * the sender restarts with its timeline jumped, often delivering late at first and catching up
+ * in a burst. that transient is not network jitter: the tuner ignores SETTLE_MS of arrivals
+ * after a break. and playout restarts on the schedule it had (the read head's lag behind its pts
+ * on the output clock): audio already too late for its slot is dropped while still silent, so
+ * the presentation delay comes back where it was instead of carrying the sender's lateness. a
+ * plain wi-fi stall (same timeline, delivered late) keeps the usual cushion refill.
+ *
  * One concurrent reader + one concurrent writer OK; multiple readers or writers NOT safe.
  * samples = frames * channels
  */
@@ -250,28 +259,50 @@ public:
         const size_t ch = (size_t)mChannels;
         samples -= samples % ch;
         if (samples == 0) return;
+        const int64_t arrivalGapNs = mLastArrivalNs == NO_TIME ? 0 : arrivalNs - mLastArrivalNs;
+        mLastArrivalNs = arrivalNs;
         // pts 0 = sender clock not NTP synced yet
         if (ptsNs == 0) {
             push(pcm, samples);
-            mRingStartPtsNs.store(NO_PTS, std::memory_order_release);
+            publishAnchor(NO_PTS);
             return;
         }
         const int64_t durNs = framesToNs(samples / ch);
 
-        // consumer underran since last write: it already played the gap as real-time
-        // silence, re-anchor so we don't also insert it here
-        if (mUnderran.exchange(false, std::memory_order_relaxed)) {
+        // codec switch / stream (re)start asked elsewhere: settle the tuner, no playout resync
+        bool settle = mSettleRequested.exchange(false, std::memory_order_acquire);
+        const bool firstAnchor = mExpectedPtsNs == 0;  // stream start: no break to count
+        int64_t gapNs = ptsNs - mExpectedPtsNs;
+        bool senderBreak = false;
+        if (mUnderran.exchange(false, std::memory_order_acquire)) {
+            // consumer underran since last write: it already played the gap as real-time
+            // silence, re-anchor so we don't also insert it here. a wi-fi stall delivers the same
+            // timeline late (pts continue, short arrival gap): its burst is real network jitter.
+            // anything else is a sender break: the sender stopped (seek, pause), or the gap
+            // outlasted any cushion
+            senderBreak = gapNs > CONTINUOUS_NS || gapNs < -CONTINUOUS_NS || arrivalGapNs > STALL_LEARN_MAX_NS;
             mExpectedPtsNs = ptsNs;
+            gapNs = 0;
         }
-        const int64_t gapNs = ptsNs - mExpectedPtsNs;
         const bool discontinuity = gapNs > MAX_GAP_NS || gapNs < -MAX_GAP_NS;
+        if (discontinuity || senderBreak) {
+            // consumer, priming: restart on the old schedule. stored before this packet lands in
+            // the ring, so a consumer that sees the data sees the flag
+            mSenderBreak.store(true, std::memory_order_relaxed);
+            if (!firstAnchor) mBreaks.fetch_add(1, std::memory_order_relaxed);
+            settle = true;
+        }
 
-        // large gap: possible discontinuity or clock shift. reanchor() must precede
-        // observe() so the reset applies to this observation
-        if (discontinuity) mTracker.reanchor();
-
-        // no-op in static-cushion mode
-        mTracker.observe(ptsNs, arrivalNs, durNs);
+        // tuner learns network jitter, not the transient around a discontinuity (arrival gap, a
+        // late restart, the catch-up burst): it skips SETTLE_NS of arrivals, keeping the cushion
+        // it had, then measures from a fresh base (clock shift / new latency). no-op in
+        // static-cushion mode
+        if (settle) mSettleUntilNs = arrivalNs + SETTLE_NS;
+        if (mSettleUntilNs != NO_TIME && arrivalNs >= mSettleUntilNs) {
+            mSettleUntilNs = NO_TIME;
+            mTracker.reanchor();  // before observe(), so the reset applies to this observation
+        }
+        if (mSettleUntilNs == NO_TIME) mTracker.observe(ptsNs, arrivalNs, durNs);
 
         bool fadeIn = false;
         if (discontinuity) {
@@ -296,8 +327,7 @@ public:
         // ring content is one gapless timeline (gaps became silence, overlaps were dropped), so
         // a single anchor gives every sample's pts: publish the pts ring sample 0 would carry.
         // one atomic, so readers never see a pts and a write position from different writes
-        mRingStartPtsNs.store(mExpectedPtsNs - framesToNs(mRing.written() / ch),
-                              std::memory_order_release);
+        publishAnchor(mExpectedPtsNs - framesToNs(mRing.written() / ch));
     }
 
     // consumer (oboe data callback): frames frames into out, silence-padded on underrun
@@ -309,40 +339,99 @@ public:
      */
     void read(int16_t *out, int32_t frames, int64_t nowNs) {
         if (frames <= 0) return;
+        tickOutputClock((size_t)frames, nowNs);
+        readFrames(out, (size_t)frames, nowNs);
+        mOutFrames += (uint64_t)frames;
+    }
+
+    // call after discontinuity or clock shift/resync (e.g. codec switch); any thread: the
+    // producer applies it on its next write (the tuner skips SETTLE_NS of arrivals, then re-bases)
+    void reanchorTracker() { mSettleRequested.store(true, std::memory_order_release); }
+
+    // rebuild prebuffer cushion before resuming, e.g. after output stream restart;
+    // must not run concurrently with read()
+    void reprime() {
+        resetConsumer();
+    }
+
+    // drop buffered audio + rebuild cushion, so resume after pause doesn't play stale
+    // tail; only while output callback is stopped (skip() is consumer-side). a new stream:
+    // the tuner settles, playout primes on the cushion (no old schedule to keep)
+    void flushAndReprime() {
+        mRing.skip(mRing.available());
+        resetConsumer();
+        reanchorTracker();
+    }
+
+private:
+    static constexpr int64_t WAIT = -1;     // resyncStart: keep priming
+    static constexpr int64_t ABANDON = -2;  // resyncStart: off the old schedule, cushion rules
+
+    void readFrames(int16_t *out, size_t n, int64_t nowNs) {
         const size_t ch = (size_t)mChannels;
-        const size_t n = (size_t)frames;
         const size_t tuned = mTracker.target() / ch;  // frames
         size_t avail = mRing.available() / ch;        // frames
+        const int64_t outNowNs = outputTimeNs();      // when this callback's first frame plays
+
+        if (!mPriming) noteLag(outNowNs, tuned);
 
         // prebuffer: hold output until cushion fills, builds jitter headroom
+        size_t k = 0;  // first output frame played from the ring
         if (mPriming) {
-            // time the wait only while holding partial data; reset on empty ring so the
-            // producer gets the full window once a sound starts, otherwise we could time
-            // out on pre-sound silence and underrun the instant the first frame lands
-            if (avail == 0) mPrimeSilenceFrames = 0;
-            else mPrimeSilenceFrames += (uint32_t)n;
-            // short sound can end before filling cushion; after holding partial data
-            // through 2x cushion of silence the sound is complete: play it
-            const bool starved = avail > 0 && mPrimeSilenceFrames >= 2 * tuned;
-            // also keep priming on empty ring: with 0 cushion `avail < tuned` is never
-            // true, so we'd otherwise underrun on every empty read between sounds
-            if (avail == 0 || (avail < tuned && !starved)) {
-                writeSilence(out, 0, n);
-                mFlowing.store(false, std::memory_order_relaxed);
-                return;
+            // the sender broke off and came back (seek, pause): restart on the old schedule
+            if (!mResync && mHaveLag && mSenderBreak.load(std::memory_order_acquire)) mResync = true;
+            bool started = false;
+            if (mResync) {
+                const int64_t lead = resyncStart(n, nowNs, outNowNs, tuned, avail);
+                if (lead == WAIT) {
+                    writeSilence(out, 0, n);
+                    mFlowing.store(false, std::memory_order_relaxed);
+                    return;
+                }
+                if (lead == ABANDON) {
+                    // sender off the old schedule for good (or no timestamps): new schedule,
+                    // set by the cushion like a fresh start
+                    mResync = false;
+                    mHaveLag = false;
+                    mResyncAbandons.fetch_add(1, std::memory_order_relaxed);
+                } else {
+                    k = (size_t)lead;
+                    started = true;
+                    mResync = false;
+                    mResyncs.fetch_add(1, std::memory_order_relaxed);
+                }
+            }
+            if (!started) {
+                // time the wait only while holding partial data; reset on empty ring so the
+                // producer gets the full window once a sound starts, otherwise we could time
+                // out on pre-sound silence and underrun the instant the first frame lands
+                if (avail == 0) mPrimeSilenceFrames = 0;
+                else mPrimeSilenceFrames += (uint32_t)n;
+                // short sound can end before filling cushion; after holding partial data
+                // through 2x cushion of silence the sound is complete: play it
+                const bool starved = avail > 0 && mPrimeSilenceFrames >= 2 * tuned;
+                // also keep priming on empty ring: with 0 cushion `avail < tuned` is never
+                // true, so we'd otherwise underrun on every empty read between sounds
+                if (avail == 0 || (avail < tuned && !starved)) {
+                    writeSilence(out, 0, n);
+                    mFlowing.store(false, std::memory_order_relaxed);
+                    return;
+                }
+                // resuming with more than the cushion buffered (a burst that landed after a wi-fi
+                // stall underran us): the gap already played as silence, so drop the stale excess
+                // and keep the presentation delay where it was. output is silent here: no glitch
+                if (avail > tuned + mCatchupFrames) {
+                    mRing.skip((avail - tuned) * ch);
+                    avail = tuned;
+                    mMetrics.countTrim();
+                }
             }
             mPriming = false;
             mPrimeSilenceFrames = 0;
-            // resuming with more than the cushion buffered (a burst that landed after a wi-fi
-            // stall underran us): the gap already played as silence, so drop the stale excess
-            // and keep the presentation delay where it was. output is silent here: no glitch
-            if (avail > tuned + mCatchupFrames) {
-                mRing.skip((avail - tuned) * ch);
-                avail = tuned;
-                mMetrics.countTrim();
-            }
             mFadeInLeft = mFadeFrames;
             mAboveSinceNs = NO_TIME;
+            // on schedule to the frame: silence until the head's slot inside this callback
+            if (k > 0) writeSilence(out, 0, k);
         }
 
         // bound latency: only a large excess skips (fade out, skip, fade in), the drift
@@ -379,7 +468,6 @@ public:
         const size_t ri = mRing.indexOf(head);
         size_t pos = 0;           // input frames advanced past the ring head
         uint32_t frac = mFrac;    // read head = pos + frac / SLIP_FRAMES
-        size_t k = 0;
         for (; k < n; k++) {
             // owe a whole frame to the drift correction: slip it over the next SLIP_FRAMES
             if (mSlipLeft == 0 && mFadeOutLeft == 0) {
@@ -445,7 +533,13 @@ public:
             mFadeOutLeft = 0;
             mPriming = true;
             mLastTrimBlockNs = nowNs;  // hold off trims while rebuilding
-            mUnderran.store(true, std::memory_order_relaxed);  // producer re-anchors
+            mResync = false;
+            mResyncDataNs = NO_TIME;
+            mResyncDropped = false;
+            // the producer classifies what comes next (stall or sender break): clear the old
+            // verdict before it can see the underrun
+            mSenderBreak.store(false, std::memory_order_relaxed);
+            mUnderran.store(true, std::memory_order_release);  // producer re-anchors
             mMetrics.countUnderrun();
             mFlowing.store(false, std::memory_order_relaxed);
         } else {
@@ -456,23 +550,106 @@ public:
         mHeadPos.store((head / ch + pos) * SLIP_FRAMES + frac, std::memory_order_release);
     }
 
-    // call after discontinuity or clock shift/resync; producer-side, must not run
-    // concurrently with write()
-    void reanchorTracker() { mTracker.reanchor(); }
-
-    // rebuild prebuffer cushion before resuming, e.g. after output stream restart;
-    // must not run concurrently with read()
-    void reprime() {
-        resetConsumer();
+    // consumer: output clock. frames written so far, pinned to nowNs by a slowly smoothed offset:
+    // callbacks jitter (and come in bursts on deep buffers), the DAC plays frames back to back.
+    // keeps running through underruns (silence is output too), so a schedule outlives them
+    void tickOutputClock(size_t n, int64_t nowNs) {
+        const int64_t sample = nowNs - framesToNs(mOutFrames);
+        if (!mHaveClock) {
+            mClockOffsetNs = sample;
+            mHaveClock = true;
+            return;
+        }
+        double a = (double)n / (CLOCK_SMOOTH_S * mSampleRate);
+        if (a > 1.0) a = 1.0;
+        mClockOffsetNs += (int64_t)std::llround(a * (double)(sample - mClockOffsetNs));
     }
 
-    // drop buffered audio + rebuild cushion, so resume after pause doesn't play stale
-    // tail; only while output callback is stopped (skip() is consumer-side)
-    void flushAndReprime() {
-        mRing.skip(mRing.available());
-        resetConsumer();
+    // consumer: when the next output frame plays, on the output clock (minus the constant output
+    // latency, which cancels: lags are compared on this clock only)
+    int64_t outputTimeNs() const { return framesToNs(mOutFrames) + mClockOffsetNs; }
+
+    // consumer: pts of the ring head frame once the producer published an anchor covering it
+    // (anchor frames load first: the pts then stored is at least as new); false when unknown
+    bool anchoredHeadPts(int64_t &pts, size_t &anchoredFrames) const {
+        const uint64_t covered = mAnchorFrames.load(std::memory_order_acquire);
+        const int64_t start = mRingStartPtsNs.load(std::memory_order_acquire);
+        const uint64_t head = mRing.consumed() / (uint64_t)mChannels;
+        if (start == NO_PTS || covered <= head) return false;
+        pts = start + framesToNs(head);
+        anchoredFrames = (size_t)(covered - head);
+        return true;
     }
 
+    // consumer, while playing: how far the read head trails its pts on the output clock (with the
+    // cushion it rests on). a sender break restarts playout on this schedule (resyncStart)
+    void noteLag(int64_t outNowNs, size_t tuned) {
+        int64_t headPts;
+        size_t anchored;
+        if (!anchoredHeadPts(headPts, anchored)) return;
+        const int64_t fracNs = (int64_t)mFrac * NS_PER_SEC / ((int64_t)mSampleRate * SLIP_FRAMES);
+        mLagNs = outNowNs - headPts - fracNs;
+        mLagCushion = tuned;
+        mHaveLag = true;
+    }
+
+    // ns -> frames, rounded; ns >= 0, overflow-free
+    size_t nsToFramesRound(int64_t ns) const {
+        const uint64_t rate = (uint64_t)mSampleRate;
+        const uint64_t q = (uint64_t)(ns / NS_PER_SEC), r = (uint64_t)(ns % NS_PER_SEC);
+        return (size_t)(q * rate + (r * rate + NS_PER_SEC / 2) / NS_PER_SEC);
+    }
+
+    /*
+     * consumer, priming after a sender break: restart playout where the schedule it had puts the
+     * head (its lag, moved by any cushion change since), so the presentation delay comes back
+     * unchanged. audio already too late for its slot is dropped while still silent (a restarting
+     * sender often delivers late, then catches up in a burst); audio early for its slot waits.
+     * returns output frames of silence before the head plays (< n), WAIT (keep priming), or
+     * ABANDON (no timestamps, or the sender stayed off the old schedule: cushion rules)
+     */
+    int64_t resyncStart(size_t n, int64_t nowNs, int64_t outNowNs, size_t tuned, size_t &avail) {
+        const size_t ch = (size_t)mChannels;
+        if (avail > 0 && mResyncDataNs == NO_TIME) mResyncDataNs = nowNs;
+        if (mResyncDataNs != NO_TIME && nowNs - mResyncDataNs >= RESYNC_TIMEOUT_NS) return ABANDON;
+        int64_t headPts;
+        size_t anchored;
+        if (!anchoredHeadPts(headPts, anchored)) {
+            // sender not NTP synced: nothing to schedule by. else the anchor is a write behind
+            const bool unsynced = avail > 0 && mRingStartPtsNs.load(std::memory_order_acquire) == NO_PTS;
+            return unsynced ? ABANDON : WAIT;
+        }
+        size_t usable = std::min(avail, anchored);
+        const int64_t lagNs = mLagNs + framesToNs(tuned) - framesToNs(mLagCushion);
+        int64_t lateNs = outNowNs - lagNs - headPts;  // > 0: the head's slot already passed
+        if (lateNs > 0) {
+            const size_t drop = lateNs >= framesToNs(usable) ? usable : nsToFramesRound(lateNs);
+            if (drop > 0) {
+                mRing.skip(drop * ch);
+                avail -= drop;
+                if (!mResyncDropped) {
+                    mResyncDropped = true;
+                    mMetrics.countTrim();
+                }
+                // all of it too late: wait for audio on schedule
+                if (drop == usable || !anchoredHeadPts(headPts, anchored)) return WAIT;
+                usable = std::min(avail, anchored);
+                lateNs = outNowNs - lagNs - headPts;
+            }
+        }
+        const size_t lead = lateNs < 0 ? nsToFramesRound(-lateNs) : 0;
+        if (lead >= n) {
+            // slot not in this callback yet. a sender this far ahead of its old schedule moved
+            // it: don't wait for a backlog the hard skip would trim anyway
+            return avail >= tuned + mHardSkipFrames ? ABANDON : WAIT;
+        }
+        // slot is now: start once there's enough on schedule to play on (less than the cushion
+        // only while the sender is still a little late; the drift steering refills it)
+        if (usable < std::max(tuned / 2, n)) return WAIT;
+        return (int64_t)lead;
+    }
+
+public:
     // pts of the next frame the output callback will write, NO_PTS when unknown: not
     // playing ring data (priming / underrun / stopped) or sender not NTP synced. any thread.
     // exact under drift steering: includes the head's fractional position between frames.
@@ -494,6 +671,12 @@ public:
     // and frames slipped so far
     int32_t steerPpm() const { return mSteerPpm.load(std::memory_order_relaxed); }
     uint64_t slips() const { return mSlips.load(std::memory_order_relaxed); }
+
+    // sender-break diagnostics, any thread: breaks seen (seek / pause / timestamp jump), playout
+    // restarts on the old schedule, and restarts that gave up on it (sender stayed off it)
+    uint32_t breaks() const { return mBreaks.load(std::memory_order_relaxed); }
+    uint32_t resyncs() const { return mResyncs.load(std::memory_order_relaxed); }
+    uint32_t resyncAbandons() const { return mResyncAbandons.load(std::memory_order_relaxed); }
 
     static constexpr int64_t NO_PTS = INT64_MIN;
 
@@ -519,6 +702,8 @@ public:
     static constexpr double STEER_SMOOTH_S = 10.0;       // backlog error smoothing time constant
     static constexpr double STEER_CORRECT_S = 30.0;      // proportional gain: error s / this = rate
     static constexpr double STEER_MAX_DEV = 0.002;       // +-0.2 % (3.5 cents): inaudible
+    static constexpr int SETTLE_MS = 2500;               // tuner ignores arrivals this long after a break
+    static constexpr int RESYNC_TIMEOUT_MS = 5000;       // sender misses its old schedule this long: new one
 
 private:
     static constexpr int64_t NO_TIME = INT64_MIN;
@@ -586,8 +771,21 @@ private:
         mDecayLeft = 0;
         mAboveSinceNs = NO_TIME;
         for (int c = 0; c < mChannels; c++) mLastOut[c] = 0;
+        // new output stream (new clock) or new input stream: no schedule to keep
+        mHaveClock = false;
+        mHaveLag = false;
+        mResync = false;
+        mResyncDataNs = NO_TIME;
+        mResyncDropped = false;
         mHeadPos.store(mRing.consumed() / (size_t)mChannels * SLIP_FRAMES, std::memory_order_release);
         mFlowing.store(false, std::memory_order_relaxed);
+    }
+
+    // producer: publish the pts of ring frame 0 and the frames it covers (pts first: a reader
+    // loading the frame count first gets a pts at least that new)
+    void publishAnchor(int64_t ringStartPtsNs) {
+        mRingStartPtsNs.store(ringStartPtsNs, std::memory_order_release);
+        mAnchorFrames.store(mRing.written() / (uint64_t)mChannels, std::memory_order_release);
     }
 
     // producer: append whole frames, remembering the last one for the next silence ramp
@@ -648,6 +846,13 @@ private:
     static constexpr int64_t TRIM_THROTTLE_NS = (int64_t)TRIM_THROTTLE_MS * 1'000'000LL;
     static constexpr int TRIM_SUSTAIN_MS = 2000;         // excess must hold this long before a skip
     static constexpr int64_t TRIM_SUSTAIN_NS = (int64_t)TRIM_SUSTAIN_MS * 1'000'000LL;
+    // across an underrun: pts gap still a wi-fi stall (lost packets), and the longest arrival gap
+    // whose burst the tuner learns from (no cushion absorbs a longer one, it'd only pin the ceiling)
+    static constexpr int64_t CONTINUOUS_NS = 100'000'000LL;
+    static constexpr int64_t STALL_LEARN_MAX_NS = 1'000'000'000LL;
+    static constexpr int64_t SETTLE_NS = (int64_t)SETTLE_MS * 1'000'000LL;
+    static constexpr int64_t RESYNC_TIMEOUT_NS = (int64_t)RESYNC_TIMEOUT_MS * 1'000'000LL;
+    static constexpr double CLOCK_SMOOTH_S = 2.0;        // output clock offset smoothing
 
     const int mSampleRate;
     const int mChannels;
@@ -674,12 +879,29 @@ private:
     uint32_t mDecayLeft = 0;             // output frames left ramping mDecayFrom to silence
     std::unique_ptr<int32_t[]> mLastOut;    // last output frame
     std::unique_ptr<int32_t[]> mDecayFrom;  // level the silence ramp starts from
+    uint64_t mOutFrames = 0;             // frames output so far: the output clock
+    int64_t mClockOffsetNs = 0;          // smoothed nowNs - output clock
+    bool mHaveClock = false;
+    int64_t mLagNs = 0;                  // while playing: output clock - pts of the head frame
+    size_t mLagCushion = 0;              // tuned cushion (frames) mLagNs was measured on
+    bool mHaveLag = false;
+    bool mResync = false;                // priming after a sender break: restart on mLagNs
+    int64_t mResyncDataNs = NO_TIME;     // first resync callback holding data (timeout start)
+    bool mResyncDropped = false;         // stale audio of this restart already counted as a trim
 
     // producer-only state
     int64_t mExpectedPtsNs = 0;          // presentation time expected at write head
+    int64_t mLastArrivalNs = NO_TIME;    // arrival of the previous write
+    int64_t mSettleUntilNs = NO_TIME;    // tuner ignores arrivals before this, NO_TIME = learning
     std::unique_ptr<int16_t[]> mLastWritten;  // last frame written, start of the next silence ramp
     std::unique_ptr<int16_t[]> mScratch;      // fade staging, SCRATCH_FRAMES frames
 
+    std::atomic<bool> mSettleRequested{false};  // any->producer: settle the tuner on next write
+    std::atomic<bool> mSenderBreak{false};  // producer->consumer: break since the last underrun
+    std::atomic<uint64_t> mAnchorFrames{0};  // producer->consumer: ring frames mRingStartPtsNs covers
+    std::atomic<uint32_t> mBreaks{0};       // producer->any: diagnostics
+    std::atomic<uint32_t> mResyncs{0};      // consumer->any: diagnostics
+    std::atomic<uint32_t> mResyncAbandons{0};  // consumer->any: diagnostics
     std::atomic<bool> mUnderran{false};  // consumer->producer: underrun happened
     std::atomic<bool> mFlowing{false};   // consumer->any: last callback played ring data (not priming/underrun)
     std::atomic<uint64_t> mHeadPos{0};   // consumer->any: read head, ring frame * SLIP_FRAMES + frac

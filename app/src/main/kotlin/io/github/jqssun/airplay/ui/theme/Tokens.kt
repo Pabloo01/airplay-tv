@@ -32,6 +32,8 @@ object Atv {
     val Signal = Color(0xFFFC5858)
     val OnSignal = Color(0xFF1A0606)
     val SignalSoft = Color(0xFF3A1414)
+    // destructive buttons: darker than Signal so white text keeps ~6:1 contrast
+    val Danger = Color(0xFFD63B3B)
 
     val Space1 = 4.dp
     val Space2 = 8.dp

@@ -188,9 +188,8 @@
 
     <!-- Mirroring -->
     <string name="chip_mirroring">Duplicando · %1$s</string>
-    <string name="mirroring_help">Atrás para ocultar</string>
     <string name="btn_stop_mirroring">Detener</string>
-    <string name="btn_keep_watching">Seguir viendo</string>
+    <string name="btn_keep_sharing">Seguir compartiendo</string>
     <string name="stop_confirm_title">¿Dejar de duplicar la pantalla?</string>
     <string name="stop_confirm_desc">%1$s dejará de verse en este televisor.</string>
     <string name="btn_stop_confirm">Sí, detener</string>
