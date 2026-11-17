@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Pepe, la mascota</title>
+<title>Zagalo, la mascota</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -175,16 +175,16 @@ class Component extends DCLogic {
       palomitas: { values: '0 0; 0 -2; 0 0', dur: '3s' },
     };
     const labels = {
-      hola: 'Pepe saluda', curioso: 'Pepe, curioso', palomitas: 'Pepe con gafas 3D y palomitas',
-      triste: 'Pepe, triste', musica: 'Pepe con cascos', mareado: 'Pepe, mareado',
-      dormido: 'Pepe, dormido', buscando: 'Pepe buscando Wi-Fi con una lupa',
-      herramientas: 'Pepe con una llave inglesa', lista: 'Pepe con su lista',
+      hola: 'Zagalo saluda', curioso: 'Zagalo, curioso', palomitas: 'Zagalo con gafas 3D y palomitas',
+      triste: 'Zagalo, triste', musica: 'Zagalo con cascos', mareado: 'Zagalo, mareado',
+      dormido: 'Zagalo, dormido', buscando: 'Zagalo buscando Wi-Fi con una lupa',
+      herramientas: 'Zagalo con una llave inglesa', lista: 'Zagalo con su lista',
     };
     return {
       px: size + 'px',
       v,
       motion: motions[mood] || { values: '0 0; 0 -5; 0 0', dur: '2.4s' },
-      label: labels[mood] || 'Pepe',
+      label: labels[mood] || 'Zagalo',
     };
   }
 }

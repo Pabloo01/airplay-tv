@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Generate every AirPlay TV brand asset from Pepe, the mascot (approved prototypes `Icono` and `Pepe`).
+"""Generate every AirPlay TV brand asset from Zagalo, the mascot (approved prototypes `Icono` and `Zagalo`).
 
 Outputs (run from the repo root: `python3 design/brand/generate.py`):
-  app/src/main/res/drawable/logo_mark.xml                         small Pepe-TV glyph next to the wordmark (vector)
+  app/src/main/res/drawable/logo_mark.xml                         small Zagalo-TV glyph next to the wordmark (vector)
   app/src/main/res/drawable/ic_launcher_{background,foreground,monochrome}.xml  adaptive icon layers
   app/src/main/res/mipmap-*/ic_launcher.png, ic_launcher_round.png  legacy icons (API < 26), simplified when small
   app/src/main/res/drawable-xhdpi/banner.png                      Android TV banner (320x180 dp)
@@ -10,7 +10,7 @@ Outputs (run from the repo root: `python3 design/brand/generate.py`):
   fastlane/metadata/android/en-US/images/{icon,featureGraphic}.png  store listing
 
 Requires Pillow. Text uses the variable Fredoka from app/src/main/res/font (weight set per string).
-The Pepe geometry mirrors app/src/main/kotlin/.../ui/design/Pepe.kt (both come from the 200x200
+The Zagalo geometry mirrors app/src/main/kotlin/.../ui/design/Zagalo.kt (both come from the 200x200
 prototype SVG); keep them in step.
 """
 import math
@@ -70,10 +70,10 @@ def text(x, y, size, weight, s, **st):
     return ("text", (x, y, size, weight, s), st)
 
 
-# ---------- Pepe (viewBox 200x200), parts in paint order with the moods that show them ----------
+# ---------- Zagalo (viewBox 200x200), parts in paint order with the moods that show them ----------
 MOODS = ["hola", "curioso", "palomitas", "triste", "musica", "mareado", "dormido", "buscando", "herramientas", "lista"]
 EVERY = set(MOODS)
-PEPE_PARTS = [
+ZAGALO_PARTS = [
     (EVERY, [rect(68, 166, 20, 20, 10, fill=CORAL_DARK), rect(112, 166, 20, 20, 10, fill=CORAL_DARK)]),
     (EVERY - {"mareado"}, [line("M86 54 L66 22", PALOMITA, 5), line("M114 54 L136 18", PALOMITA, 5),
                            circle(65, 20, 7, fill=PALOMITA), circle(137, 16, 7, fill=PALOMITA)]),
@@ -130,10 +130,10 @@ PEPE_PARTS = [
 ]
 
 
-def pepe(mood):
-    """Pepe in `mood`, at rest, with his soft contact shadow."""
+def zagalo(mood):
+    """Zagalo in `mood`, at rest, with his soft contact shadow."""
     shapes = [ellipse(100, 191, 50, 7, fill="#000000", opacity=0.28)]
-    for moods, part in PEPE_PARTS:
+    for moods, part in ZAGALO_PARTS:
         if mood in moods:
             shapes += part
     return shapes
@@ -144,8 +144,8 @@ ICON_V = 240
 ICON_RADIUS = 54
 
 
-def icon_pepe(detail):
-    """Pepe's face for the icon. detail: "full" (large), "medium" (~96 px), "small" (~48 px)."""
+def icon_zagalo(detail):
+    """Zagalo's face for the icon. detail: "full" (large), "medium" (~96 px), "small" (~48 px)."""
     antenna_w, ball_r, eye = {"full": (10, 12, (10, 12)), "medium": (12, 13, (11, 13)), "small": (16, 0, (13, 15))}[detail]
     shapes = [line("M104 82 L80 36 M136 82 L162 32", PALOMITA, antenna_w)]
     if ball_r:
@@ -164,7 +164,7 @@ def icon_pepe(detail):
 
 
 def icon_silhouette(color):
-    """One-colour Pepe for the monochrome layer: body with the screen cut out, face inside."""
+    """One-colour Zagalo for the monochrome layer: body with the screen cut out, face inside."""
     body = f"{rrect_d(38, 78, 202, 210, 36)}{rrect_d(56, 96, 184, 186, 26)}"
     return [line("M104 82 L80 36 M136 82 L162 32", color, 12),
             circle(79, 33, 13, fill=color), circle(163, 29, 13, fill=color),
@@ -173,7 +173,7 @@ def icon_silhouette(color):
             line("M104 158 Q120 174 136 158", color, 8)]
 
 
-# adaptive icon: 108 dp layers; the 66 dp safe circle must hold all of Pepe (the prototype puts the
+# adaptive icon: 108 dp layers; the 66 dp safe circle must hold all of Zagalo (the prototype puts the
 # 240 artboard on the 72 dp visible square, i.e. 0.3 dp/unit; the antenna tips need 0.29)
 ADAPTIVE = 108
 ADAPTIVE_SCALE = 0.29
@@ -267,7 +267,7 @@ def write_vectors():
     d = os.path.join(RES, "drawable")
     write(os.path.join(d, "logo_mark.xml"), vector_doc(vector_paths(mark()), MARK_V, MARK_V))
     # the TV draws the launcher icon at ~48 dp = ~96 px: the prototype's 96 px level of detail
-    write(os.path.join(d, "ic_launcher_foreground.xml"), vector_doc(adaptive_group(icon_pepe("medium")), ADAPTIVE, ADAPTIVE))
+    write(os.path.join(d, "ic_launcher_foreground.xml"), vector_doc(adaptive_group(icon_zagalo("medium")), ADAPTIVE, ADAPTIVE))
     write(os.path.join(d, "ic_launcher_monochrome.xml"), vector_doc(adaptive_group(icon_silhouette(WHITE)), ADAPTIVE, ADAPTIVE))
     write(os.path.join(d, "ic_launcher_background.xml"),
           vector_doc(vector_paths([rect(0, 0, ADAPTIVE, ADAPTIVE, 0, fill=ICON_BG)]), ADAPTIVE, ADAPTIVE))
@@ -325,12 +325,12 @@ def write_svgs():
                 f"font-weight=\"600\" font-size=\"20\" letter-spacing=\"0.2\" fill=\"{CREMA}\">{NAME}</text>")
     write(os.path.join(logos, "airplaytv-wordmark.svg"), svg(math.ceil(40 + text_w + 4), MARK_V, wordmark))
     for mood in MOODS:
-        write(os.path.join(BRAND, "Pepe", f"pepe-{mood}.svg"), svg(200, 200, svg_shapes(pepe(mood))))
+        write(os.path.join(BRAND, "Zagalo", f"zagalo-{mood}.svg"), svg(200, 200, svg_shapes(zagalo(mood))))
     write(os.path.join(app_icon, "app-icon.svg"),
-          svg(ICON_V, ICON_V, svg_shapes([rect(0, 0, ICON_V, ICON_V, ICON_RADIUS, fill=ICON_BG)] + icon_pepe("full"))))
+          svg(ICON_V, ICON_V, svg_shapes([rect(0, 0, ICON_V, ICON_V, ICON_RADIUS, fill=ICON_BG)] + icon_zagalo("full"))))
     s = ADAPTIVE_SCALE
     t = ADAPTIVE / 2 - ICON_V / 2 * s
-    fg = f'<g transform="translate({num(t)} {num(t)}) scale({num(s)})">\n  {svg_shapes(icon_pepe("medium"))}\n  </g>'
+    fg = f'<g transform="translate({num(t)} {num(t)}) scale({num(s)})">\n  {svg_shapes(icon_zagalo("medium"))}\n  </g>'
     write(os.path.join(app_icon, "adaptive-background.svg"), svg(ADAPTIVE, ADAPTIVE, f'<rect width="108" height="108" fill="{ICON_BG}"/>'))
     write(os.path.join(app_icon, "adaptive-foreground.svg"), svg(ADAPTIVE, ADAPTIVE, fg))
 
@@ -515,7 +515,7 @@ def icon_png(px, shape="square", detail=None):
     """The whole icon (rounded square art) at `px`; `shape` masks it (square = prototype radius, round = circle)."""
     detail = detail or ("small" if px <= 48 else "medium" if px <= 96 else "full")
     r = Raster(px, px, ICON_BG)
-    r.shapes(icon_pepe(detail), px / ICON_V)
+    r.shapes(icon_zagalo(detail), px / ICON_V)
     if shape == "round":
         return r.image(lambda d, n: d.ellipse([0, 0, n - 1, n - 1], fill=255))
     return r.image(lambda d, n: d.rounded_rectangle([0, 0, n - 1, n - 1], radius=n * ICON_RADIUS / ICON_V, fill=255))
@@ -540,7 +540,7 @@ def banner(w, h, out):
     r.shapes([rect(-ox / k, BANNER_H - 64, w / k, 64, 0, fill=FLOOR),
               circle(333.5, 43.5, 3.5, fill=PALOMITA, opacity=0.5),
               circle(522.5, 92.5, 2.5, fill=CREMA, opacity=0.4)], k, ox)
-    r.shapes(pepe("palomitas"), 1.25 * k, ox + 22 * k, 52 * k)
+    r.shapes(zagalo("palomitas"), 1.25 * k, ox + 22 * k, 52 * k)
     # "AirPlay TV": Fredoka 700 56/60 at (290, 108); tagline Fredoka 500 24 in Palomita, 6 below
     title, tag = font(56, 700), font(24, 500)
     asc, desc = title.getmetrics()

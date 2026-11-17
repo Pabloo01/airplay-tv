@@ -6,12 +6,12 @@ Nunito en los textos, y todo lo que el mando tiene enfocado se pinta de amarillo
 (`#ffc94a`). El coral (`#ff6b5b`) es el color de marca y de lo que está "en directo"; el rojo
 (`#d63b3b`) solo aparece en las acciones que paran algo.
 
-**Pepe** es la mascota: una tele con orejas de conejo que vive en cada pantalla y pone cara según el
+**Zagalo** es la mascota: una tele con orejas de conejo que vive en cada pantalla y pone cara según el
 momento (saluda en el inicio, se asoma curioso cuando alguien llama, come palomitas con gafas 3D
 mientras ves la peli, se marea si se corta la conexión, duerme en el salvapantallas…). Está dibujado
-en código (`app/src/main/kotlin/…/ui/design/Pepe.kt`) a partir de `brand/Pepe/`.
+en código (`app/src/main/kotlin/…/ui/design/Zagalo.kt`) a partir de `brand/Zagalo/`.
 
-- `brand/`: logo, icono de la app, banner de Android TV y las 10 caras de Pepe, generados con `brand/generate.py`.
+- `brand/`: logo, icono de la app, banner de Android TV y las 10 caras de Zagalo, generados con `brand/generate.py`.
 - `fonts/`: licencias de Fredoka y Nunito, las fuentes variables de `app/src/main/res/font`.
 - `mocks/`: los prototipos aprobados a 960×540 (1 px = 1 dp en la tele), fuente `.dc.html`, y el lienzo que los ordena (`canvas.json`). Los textos entre corchetes y los nombres de ejemplo («iPhone de Ana», «TV Pablo», «4827»…) son datos de muestra.
 
@@ -19,14 +19,14 @@ en código (`app/src/main/kotlin/…/ui/design/Pepe.kt`) a partir de `brand/Pepe
 
 | Tablero | Fichero |
 |---|---|
-| Mascota: candidatas y caras de Pepe | `mocks/Mascota.dc.html` |
-| Pepe (componente con 10 caras) | `mocks/Pepe.dc.html` |
+| Mascota: candidatas y caras de Zagalo | `mocks/Mascota.dc.html` |
+| Zagalo (componente con 10 caras) | `mocks/Zagalo.dc.html` |
 | Icono y banner de la tele | `mocks/Icono.dc.html` |
 | Estilo: color, letra y botones | `mocks/Estilo.dc.html` |
 
 ## Pantallas
 
-| # | Pantalla | Pepe | Fichero |
+| # | Pantalla | Zagalo | Fichero |
 |---|---|---|---|
 | 1 | Inicio: esperando | saluda | `mocks/Main.dc.html` |
 | 2 | Alguien quiere conectarse | curioso | `mocks/Solicitud.dc.html` |
@@ -43,4 +43,4 @@ en código (`app/src/main/kotlin/…/ui/design/Pepe.kt`) a partir de `brand/Pepe
 En las pantallas 4, 5 y 9 el paisaje nocturno solo representa la película: en la app se ve el vídeo
 real y encima únicamente el menú. Los demás estados del inicio (conectando, receptor detenido,
 error y falta de permiso) usan la misma composición que la pantalla 1 con su texto, su acción y otra
-cara de Pepe. Los ajustes avanzados y los registros no tienen prototipo: siguen la misma estética.
+cara de Zagalo. Los ajustes avanzados y los registros no tienen prototipo: siguen la misma estética.

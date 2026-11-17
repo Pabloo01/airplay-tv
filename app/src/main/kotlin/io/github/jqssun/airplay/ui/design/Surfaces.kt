@@ -169,8 +169,8 @@ class FocusStyle(
         /** Round icon button (prev / play / next): like [Button] with a wider glow. */
         val Round = FocusStyle(Atv.ButacaAlta, Atv.Crema, Atv.Palomita, Atv.OnPalomita, glow, Atv.RingRound)
 
-        /** Setting / device row: Butaca; focused Crema + Pepe ink + solid 4dp Palomita ring. */
-        val Row = FocusStyle(Atv.Butaca, Atv.Crema, Atv.Crema, Atv.PepeInk, Atv.Palomita, Atv.RingRow)
+        /** Setting / device row: Butaca; focused Crema + Zagalo ink + solid 4dp Palomita ring. */
+        val Row = FocusStyle(Atv.Butaca, Atv.Crema, Atv.Crema, Atv.ZagaloInk, Atv.Palomita, Atv.RingRow)
     }
 }
 

@@ -158,20 +158,20 @@
     <string name="cd_previous">Anterior</string>
     <string name="cd_next">Siguiente</string>
 
-    <!-- Pepe, the mascot (content descriptions) -->
-    <string name="cd_pepe_hola">Pepe saluda</string>
-    <string name="cd_pepe_curioso">Pepe, curioso</string>
-    <string name="cd_pepe_palomitas">Pepe con gafas 3D y palomitas</string>
-    <string name="cd_pepe_triste">Pepe, triste</string>
-    <string name="cd_pepe_musica">Pepe con cascos</string>
-    <string name="cd_pepe_mareado">Pepe, mareado</string>
-    <string name="cd_pepe_dormido">Pepe, dormido</string>
-    <string name="cd_pepe_buscando">Pepe buscando Wi-Fi con una lupa</string>
-    <string name="cd_pepe_herramientas">Pepe con una llave inglesa</string>
-    <string name="cd_pepe_lista">Pepe con su lista</string>
+    <!-- Zagalo, the mascot (content descriptions) -->
+    <string name="cd_zagalo_hola">Zagalo saluda</string>
+    <string name="cd_zagalo_curioso">Zagalo, curioso</string>
+    <string name="cd_zagalo_palomitas">Zagalo con gafas 3D y palomitas</string>
+    <string name="cd_zagalo_triste">Zagalo, triste</string>
+    <string name="cd_zagalo_musica">Zagalo con cascos</string>
+    <string name="cd_zagalo_mareado">Zagalo, mareado</string>
+    <string name="cd_zagalo_dormido">Zagalo, dormido</string>
+    <string name="cd_zagalo_buscando">Zagalo buscando Wi-Fi con una lupa</string>
+    <string name="cd_zagalo_herramientas">Zagalo con una llave inglesa</string>
+    <string name="cd_zagalo_lista">Zagalo con su lista</string>
 
     <!-- Idle -->
-    <string name="status_waiting">Esperando · %1$s</string>
+    <string name="status_waiting">Esperando</string>
     <string name="status_stopped">Detenido</string>
     <string name="status_error">Error</string>
     <string name="status_permission">Falta un permiso</string>
@@ -184,10 +184,10 @@
     <string name="idle_hint_error">Comprueba la red y vuelve a intentarlo.</string>
     <string name="idle_title_connecting">Conectando…</string>
     <string name="idle_title_permission">Se necesita acceso a dispositivos cercanos</string>
-    <string name="greeting_morning">Buenos días, familia</string>
-    <string name="greeting_afternoon">Buenas tardes, familia</string>
-    <string name="greeting_night">Buenas noches, familia</string>
-    <string name="idle_bubble">¡Hola! Te guardo el sitio</string>
+    <string name="greeting_morning">¡Buenos días!</string>
+    <string name="greeting_afternoon">¡Buenas tardes!</string>
+    <string name="greeting_night">¡Buenas noches!</string>
+    <string name="idle_bubble">¡Hola! Qué bien verte</string>
     <string name="idle_step_control_center">Centro de control</string>
     <string name="idle_step_mirroring">Duplicar pantalla</string>
     <string name="btn_settings">Ajustes</string>
@@ -197,7 +197,7 @@
     <string name="request_desc">Podrá mostrar su pantalla, vídeos, fotos y música en este televisor.</string>
     <string name="btn_allow_device">Permitir</string>
     <string name="btn_reject">Rechazar</string>
-    <string name="request_note">Si le dejas pasar, Pepe lo apunta en su lista y no volverá a preguntar.</string>
+    <string name="request_note">Si le dejas pasar, Zagalo lo apunta en su lista y no volverá a preguntar.</string>
     <string name="request_timeout">Se rechazará en %1$d s</string>
     <string name="request_eyebrow">Visita nueva</string>
     <string name="request_bubble">¡Toc, toc!</string>
@@ -207,28 +207,28 @@
     <string name="pin_label">Escribe este código en tu iPhone</string>
     <string name="pin_timer">Esta pantalla se cerrará en %1$d s</string>
     <string name="pin_desc">El iPhone te lo pedirá al conectar. Así nadie del vecindario se cuela en tu sala.</string>
-    <string name="pin_bubble">Psst… es secreto</string>
+    <string name="pin_bubble">Es secreto</string>
     <string name="cd_pin">Código %1$s</string>
 
     <!-- Mirroring -->
     <string name="chip_mirroring">Duplicando · %1$s</string>
-    <string name="btn_stop_mirroring">Detener</string>
-    <string name="btn_keep_sharing">Seguir compartiendo</string>
-    <string name="stop_confirm_title">¿Se acabó la sesión?</string>
-    <string name="stop_confirm_desc">Dejarás de duplicar la pantalla: %1$s dejará de verse en este televisor.</string>
-    <string name="btn_stop_confirm">Sí, detener</string>
-    <string name="overlay_title">¡Que aproveche!</string>
-    <string name="overlay_sub">Pepe no se pierde ni un minuto</string>
+    <string name="btn_stop_mirroring">Dejar de duplicar</string>
+    <string name="btn_keep_sharing">Seguir viendo</string>
+    <string name="stop_confirm_title">¿Dejar de duplicar la pantalla?</string>
+    <string name="stop_confirm_desc">La pantalla de %1$s dejará de verse en este televisor.</string>
+    <string name="btn_stop_confirm">Dejar de duplicar</string>
+    <string name="overlay_title">¿Qué quieres hacer?</string>
+    <string name="overlay_sub">Sigue viendo o deja de duplicar la pantalla</string>
 
     <!-- Audio -->
-    <string name="chip_audio">Transmitiendo audio · Desde %1$s</string>
-    <string name="chip_audio_idle">Esperando audio · %1$s está conectado</string>
+    <string name="chip_audio">Transmitiendo audio · %1$s</string>
+    <string name="chip_audio_idle">Esperando audio · %1$s</string>
     <string name="audio_untitled">Reproduciendo audio</string>
 
     <!-- Settings home -->
     <string name="settings_title">Ajustes</string>
     <string name="settings_desc">Cómo te ven los dispositivos Apple de tu red y quién puede conectarse.</string>
-    <string name="settings_eyebrow">El taller de Pepe</string>
+    <string name="settings_eyebrow">El taller de Zagalo</string>
     <string name="settings_footer">AirPlay TV %1$s · %2$s</string>
     <string name="settings_footer_offline">AirPlay TV %1$s · sin red</string>
     <string name="row_server">Receptor</string>
@@ -283,7 +283,7 @@
     <string name="no_network_bubble">Wi-Fi, ¿dónde estás?</string>
     <string name="chip_lost">Conexión perdida</string>
     <string name="lost_title">Se ha cortado la conexión con %1$s</string>
-    <string name="lost_desc">Comprueba que sigue cerca y con Wi-Fi. Pepe espera %1$d s a que vuelva…</string>
+    <string name="lost_desc">Comprueba que sigue cerca y con Wi-Fi. Zagalo espera %1$d s a que vuelva…</string>
     <string name="lost_kicker">¿Hola? ¿Sigues ahí?</string>
 
     <!-- Screensaver -->

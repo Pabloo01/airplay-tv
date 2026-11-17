@@ -40,15 +40,15 @@ import androidx.compose.ui.unit.dp
 import io.github.jqssun.airplay.R
 import io.github.jqssun.airplay.ui.design.FloorShadow
 import io.github.jqssun.airplay.ui.design.Stage
-import io.github.jqssun.airplay.ui.design.Pepe
-import io.github.jqssun.airplay.ui.design.PepeMood
+import io.github.jqssun.airplay.ui.design.Zagalo
+import io.github.jqssun.airplay.ui.design.ZagaloMood
 import io.github.jqssun.airplay.ui.design.Wall
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
 import io.github.jqssun.airplay.ui.theme.Atv
 import io.github.jqssun.airplay.ui.theme.AtvType
 import kotlinx.coroutines.delay
 
-// Offsets (dp) the clock and Pepe travel through together as a closed loop, about one stop a
+// Offsets (dp) the clock and Zagalo travel through together as a closed loop, about one stop a
 // minute. They keep the whole group (x 96..830, y 150..500 on the 960x540 stage) on screen.
 private val driftPath = listOf(0f to 0f, 100f to -40f, 60f to -120f, -70f to -100f, -60f to 10f)
 
@@ -125,7 +125,7 @@ fun Screensaver(serverName: String) {
                     verticalArrangement = Arrangement.spacedBy(Atv.Space6),
                 ) {
                     clock()
-                    Pepe(PepeMood.DORMIDO, Modifier.alpha(0.85f), size = 160.dp)
+                    Zagalo(ZagaloMood.DORMIDO, Modifier.alpha(0.85f), size = 160.dp)
                 }
             },
         ) {
@@ -134,7 +134,7 @@ fun Screensaver(serverName: String) {
             Box(Modifier.fillMaxSize().then(shift)) {
                 Box(Modifier.offset(96.dp, 150.dp)) { clock() }
                 FloorShadow(Modifier.offset(600.dp, 440.dp).size(220.dp, 36.dp), color = NightFloor)
-                Pepe(PepeMood.DORMIDO, Modifier.offset(610.dp, 250.dp).alpha(0.85f), size = 210.dp)
+                Zagalo(ZagaloMood.DORMIDO, Modifier.offset(610.dp, 250.dp).alpha(0.85f), size = 210.dp)
             }
         }
     }

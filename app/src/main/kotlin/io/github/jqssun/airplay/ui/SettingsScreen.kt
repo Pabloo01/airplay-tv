@@ -502,8 +502,8 @@ private fun SliderCard(value: String, slider: @Composable RowScope.() -> Unit) {
 @Composable
 private fun atvSliderColors() = SliderDefaults.colors(
     thumbColor = Atv.Crema,
-    activeTrackColor = Atv.Pepe,
-    activeTickColor = Atv.OnPepe,
+    activeTrackColor = Atv.Zagalo,
+    activeTickColor = Atv.OnZagalo,
     inactiveTrackColor = Atv.Pasillo,
     inactiveTickColor = Atv.Lavanda,
 )
@@ -536,8 +536,8 @@ private fun AtvChip(selected: Boolean, label: String, onClick: () -> Unit) {
         colors = FilterChipDefaults.filterChipColors(
             containerColor = Atv.ButacaAlta,
             labelColor = Atv.Crema,
-            selectedContainerColor = Atv.Pepe,
-            selectedLabelColor = Atv.OnPepe,
+            selectedContainerColor = Atv.Zagalo,
+            selectedLabelColor = Atv.OnZagalo,
         ),
         modifier = Modifier.dpadFocus(Atv.ShapePill),
     )

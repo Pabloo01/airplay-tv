@@ -45,42 +45,42 @@ import androidx.compose.ui.unit.sp
 import io.github.jqssun.airplay.R
 import io.github.jqssun.airplay.ui.theme.Fredoka
 
-/** Pepe, the TV with bunny-ear antennas who lives in the app: one face per moment. */
-enum class PepeMood(@param:StringRes val label: Int) {
+/** Zagalo, the TV with bunny-ear antennas who lives in the app: one face per moment. */
+enum class ZagaloMood(@param:StringRes val label: Int) {
     /** Waiting on the home screen: smiles and waves. */
-    HOLA(R.string.cd_pepe_hola),
+    HOLA(R.string.cd_zagalo_hola),
 
     /** "Who's knocking?": a new device asks to connect. */
-    CURIOSO(R.string.cd_pepe_curioso),
+    CURIOSO(R.string.cd_zagalo_curioso),
 
     /** Watching the movie: 3D glasses and popcorn. */
-    PALOMITAS(R.string.cd_pepe_palomitas),
+    PALOMITAS(R.string.cd_zagalo_palomitas),
 
     /** Stop confirmation. */
-    TRISTE(R.string.cd_pepe_triste),
+    TRISTE(R.string.cd_zagalo_triste),
 
     /** Audio playing: headphones and notes. */
-    MUSICA(R.string.cd_pepe_musica),
+    MUSICA(R.string.cd_zagalo_musica),
 
     /** Connection lost. */
-    MAREADO(R.string.cd_pepe_mareado),
+    MAREADO(R.string.cd_zagalo_mareado),
 
     /** Screensaver. */
-    DORMIDO(R.string.cd_pepe_dormido),
+    DORMIDO(R.string.cd_zagalo_dormido),
 
     /** No network: looking for Wi-Fi with a magnifier. */
-    BUSCANDO(R.string.cd_pepe_buscando),
+    BUSCANDO(R.string.cd_zagalo_buscando),
 
     /** Settings. */
-    HERRAMIENTAS(R.string.cd_pepe_herramientas),
+    HERRAMIENTAS(R.string.cd_zagalo_herramientas),
 
     /** PIN code and allowed devices: holds his list. */
-    LISTA(R.string.cd_pepe_lista),
+    LISTA(R.string.cd_zagalo_lista),
 }
 
 /**
- * Pepe, drawn from the prototype's 200x200 SVG. He bobs (or wobbles, or dances) and waves on
- * [PepeMood.HOLA]; all motion stops when the system's animator duration scale is 0.
+ * Zagalo, drawn from the prototype's 200x200 SVG. He bobs (or wobbles, or dances) and waves on
+ * [ZagaloMood.HOLA]; all motion stops when the system's animator duration scale is 0.
  *
  * The art may poke a little outside [size] (antenna tips, the "?", the waving hand): leave a few
  * dp of room around him. His own soft black contact shadow is included; the coloured floor
@@ -89,16 +89,16 @@ enum class PepeMood(@param:StringRes val label: Int) {
  * @param contentDescription defaults to the mood's label; pass null when the screen already says it.
  */
 @Composable
-fun Pepe(
-    mood: PepeMood,
+fun Zagalo(
+    mood: ZagaloMood,
     modifier: Modifier = Modifier,
     size: Dp = 200.dp,
     contentDescription: String? = stringResource(mood.label),
 ) {
-    val art = remember(mood) { PepeArt.forMood(mood) }
+    val art = remember(mood) { ZagaloArt.forMood(mood) }
     val measurer = rememberTextMeasurer(cacheSize = 0)
     val glyphs = remember(mood, measurer) {
-        PepeArt.glyphsFor(mood).map { g ->
+        ZagaloArt.glyphsFor(mood).map { g ->
             val layout = measurer.measure(
                 text = g.text,
                 style = TextStyle(
@@ -122,19 +122,19 @@ fun Pepe(
         bob = remember { mutableFloatStateOf(0f) }
         wave = bob
     } else {
-        val transition = rememberInfiniteTransition(label = "pepe")
+        val transition = rememberInfiniteTransition(label = "zagalo")
         bob = transition.animateFloat(
             initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(tween(motion.halfMs, easing = EaseInOutSine), RepeatMode.Reverse),
-            label = "pepeBob",
+            label = "zagaloBob",
         )
-        wave = if (mood == PepeMood.HOLA) {
+        wave = if (mood == ZagaloMood.HOLA) {
             transition.animateFloat(
                 initialValue = 0f,
                 targetValue = WAVE_DEGREES,
                 animationSpec = infiniteRepeatable(tween(WAVE_HALF_MS, easing = EaseInOutSine), RepeatMode.Reverse),
-                label = "pepeWave",
+                label = "zagaloWave",
             )
         } else {
             remember { mutableFloatStateOf(0f) }
@@ -149,7 +149,7 @@ fun Pepe(
     } else Modifier
     Box(modifier.size(size).then(described)) {
         Canvas(Modifier.matchParentSize()) {
-            inUnits { drawOp(PepeArt.contactShadow) }
+            inUnits { drawOp(ZagaloArt.contactShadow) }
         }
         // the bob is a layer translation: nothing is re-recorded while he moves
         Box(
@@ -168,14 +168,14 @@ fun Pepe(
                     glyphs.forEach { drawText(it.layout, topLeft = it.topLeft) }
                 }
             }
-            if (mood == PepeMood.HOLA) {
+            if (mood == ZagaloMood.HOLA) {
                 Canvas(
                     Modifier.matchParentSize().graphicsLayer {
                         rotationZ = wave.value
                         transformOrigin = WAVE_PIVOT
                     }
                 ) {
-                    inUnits { PepeArt.wave.forEach { drawOp(it) } }
+                    inUnits { ZagaloArt.wave.forEach { drawOp(it) } }
                 }
             }
         }
@@ -189,13 +189,13 @@ private class Motion(val fromX: Float, val fromY: Float, val toX: Float, val toY
 
 private val defaultMotion = Motion(0f, 0f, 0f, -5f, 1_200)
 private val motions = mapOf(
-    PepeMood.DORMIDO to Motion(0f, 0f, 0f, -3f, 2_000),
-    PepeMood.MAREADO to Motion(-3f, 0f, 3f, 0f, 800),
-    PepeMood.MUSICA to Motion(0f, 0f, 0f, -9f, 350),
-    PepeMood.PALOMITAS to Motion(0f, 0f, 0f, -2f, 1_500),
+    ZagaloMood.DORMIDO to Motion(0f, 0f, 0f, -3f, 2_000),
+    ZagaloMood.MAREADO to Motion(-3f, 0f, 3f, 0f, 800),
+    ZagaloMood.MUSICA to Motion(0f, 0f, 0f, -9f, 350),
+    ZagaloMood.PALOMITAS to Motion(0f, 0f, 0f, -2f, 1_500),
 )
 
-private fun motionOf(mood: PepeMood) = motions[mood] ?: defaultMotion
+private fun motionOf(mood: ZagaloMood) = motions[mood] ?: defaultMotion
 
 private const val VIEWBOX = 200f
 private const val WAVE_DEGREES = -18f
@@ -222,13 +222,13 @@ private class Glyph(val text: String, val x: Float, val y: Float, val size: Int,
 private class PlacedGlyph(val layout: TextLayoutResult, val topLeft: Offset)
 
 /** The prototype's `<g display=...>` groups, in paint order, with the moods that show them. */
-private class Part(val moods: Set<PepeMood>?, val ops: List<Op>)
+private class Part(val moods: Set<ZagaloMood>?, val ops: List<Op>)
 
 /**
- * Paths of `Pepe.dc.html` (viewBox 200x200), parsed once. Colours are the prototype's; the face
- * ink is Atv.PepeInk, the body Atv.Pepe.
+ * Paths of `Zagalo.dc.html` (viewBox 200x200), parsed once. Colours are the prototype's; the face
+ * ink is Atv.ZagaloInk, the body Atv.Zagalo.
  */
-private object PepeArt {
+private object ZagaloArt {
     private val coral = Color(0xFFFF6B5B)
     private val coralDark = Color(0xFFD9483B)
     private val coralLight = Color(0xFFFF8D80)
@@ -243,7 +243,7 @@ private object PepeArt {
 
     val contactShadow = Op(oval(100f, 191f, 50f, 7f), Color.Black, alpha = 0.28f)
 
-    private val allButMareado = PepeMood.entries.toSet() - PepeMood.MAREADO
+    private val allButMareado = ZagaloMood.entries.toSet() - ZagaloMood.MAREADO
 
     private val parts: List<Part> by lazy {
         listOf(
@@ -258,7 +258,7 @@ private object PepeArt {
                 ),
             ),
             Part(
-                setOf(PepeMood.MAREADO),
+                setOf(ZagaloMood.MAREADO),
                 listOf(
                     stroke("M86 54 Q74 36 62 42 Q52 48 48 34", yellow, 5f),
                     stroke("M114 54 Q130 44 140 52 Q150 60 158 46", yellow, 5f),
@@ -266,7 +266,7 @@ private object PepeArt {
                     fill(circle(159f, 44f, 7f), yellow),
                 ),
             ),
-            Part(setOf(PepeMood.MUSICA), listOf(stroke("M40 104 Q40 38 100 38 Q160 38 160 104", ink, 8f))),
+            Part(setOf(ZagaloMood.MUSICA), listOf(stroke("M40 104 Q40 38 100 38 Q160 38 160 104", ink, 8f))),
             Part(
                 null,
                 listOf(
@@ -281,7 +281,7 @@ private object PepeArt {
                 ),
             ),
             Part(
-                PepeMood.entries.toSet() - PepeMood.DORMIDO - PepeMood.MAREADO,
+                ZagaloMood.entries.toSet() - ZagaloMood.DORMIDO - ZagaloMood.MAREADO,
                 listOf(
                     fill(oval(80f, 103f, 8f, 10f), ink),
                     fill(oval(120f, 103f, 8f, 10f), ink),
@@ -289,30 +289,30 @@ private object PepeArt {
                     fill(circle(123f, 99f, 3f), Color.White),
                 ),
             ),
-            Part(setOf(PepeMood.DORMIDO), listOf(stroke("M72 104 Q80 110 88 104", ink, 4f), stroke("M112 104 Q120 110 128 104", ink, 4f))),
+            Part(setOf(ZagaloMood.DORMIDO), listOf(stroke("M72 104 Q80 110 88 104", ink, 4f), stroke("M112 104 Q120 110 128 104", ink, 4f))),
             Part(
-                setOf(PepeMood.MAREADO),
+                setOf(ZagaloMood.MAREADO),
                 listOf(stroke("M73 96 L87 110 M87 96 L73 110", ink, 4f), stroke("M113 96 L127 110 M127 96 L113 110", ink, 4f)),
             ),
-            Part(setOf(PepeMood.TRISTE), listOf(stroke("M70 88 L88 82", ink, 4f), stroke("M112 82 L130 88", ink, 4f))),
-            Part(setOf(PepeMood.CURIOSO, PepeMood.BUSCANDO), listOf(stroke("M110 84 Q120 75 131 81", ink, 4f))),
-            Part(setOf(PepeMood.TRISTE), listOf(fill(path("M130 112 Q135 121 130 125 Q125 121 130 112 Z"), Color(0xFF7FC8FF)))),
+            Part(setOf(ZagaloMood.TRISTE), listOf(stroke("M70 88 L88 82", ink, 4f), stroke("M112 82 L130 88", ink, 4f))),
+            Part(setOf(ZagaloMood.CURIOSO, ZagaloMood.BUSCANDO), listOf(stroke("M110 84 Q120 75 131 81", ink, 4f))),
+            Part(setOf(ZagaloMood.TRISTE), listOf(fill(path("M130 112 Q135 121 130 125 Q125 121 130 112 Z"), Color(0xFF7FC8FF)))),
             Part(
-                setOf(PepeMood.HOLA, PepeMood.HERRAMIENTAS, PepeMood.LISTA),
+                setOf(ZagaloMood.HOLA, ZagaloMood.HERRAMIENTAS, ZagaloMood.LISTA),
                 listOf(stroke("M86 123 Q100 137 114 123", ink, 4.5f)),
             ),
             Part(
-                setOf(PepeMood.PALOMITAS, PepeMood.MUSICA),
+                setOf(ZagaloMood.PALOMITAS, ZagaloMood.MUSICA),
                 listOf(
                     fill(path("M84 120 Q100 144 116 120 Z"), ink),
                     fill(path("M92 131 Q100 139 108 131 Q100 127 92 131 Z"), coral),
                 ),
             ),
-            Part(setOf(PepeMood.CURIOSO, PepeMood.BUSCANDO, PepeMood.MAREADO), listOf(fill(oval(100f, 128f, 6f, 7f), ink))),
-            Part(setOf(PepeMood.TRISTE), listOf(stroke("M88 133 Q100 123 112 133", ink, 4.5f))),
-            Part(setOf(PepeMood.DORMIDO), listOf(stroke("M93 128 Q100 132 107 128", ink, 4f))),
+            Part(setOf(ZagaloMood.CURIOSO, ZagaloMood.BUSCANDO, ZagaloMood.MAREADO), listOf(fill(oval(100f, 128f, 6f, 7f), ink))),
+            Part(setOf(ZagaloMood.TRISTE), listOf(stroke("M88 133 Q100 123 112 133", ink, 4.5f))),
+            Part(setOf(ZagaloMood.DORMIDO), listOf(stroke("M93 128 Q100 132 107 128", ink, 4f))),
             Part(
-                setOf(PepeMood.PALOMITAS),
+                setOf(ZagaloMood.PALOMITAS),
                 listOf(
                     fill(rrect(63f, 90f, 33f, 25f, 8f), Color(0xFF4FB3FF), 0.9f),
                     fill(rrect(104f, 90f, 33f, 25f, 8f), Color(0xFFFF5A7A), 0.9f),
@@ -322,7 +322,7 @@ private object PepeArt {
                 ),
             ),
             Part(
-                setOf(PepeMood.MUSICA),
+                setOf(ZagaloMood.MUSICA),
                 listOf(
                     fill(rrect(22f, 90f, 20f, 36f, 9f), yellow),
                     stroke(rrect(22f, 90f, 20f, 36f, 9f), ink, 4f, StrokeCap.Butt),
@@ -331,7 +331,7 @@ private object PepeArt {
                 ),
             ),
             Part(
-                setOf(PepeMood.PALOMITAS),
+                setOf(ZagaloMood.PALOMITAS),
                 listOf(
                     fill(circle(12f, 128f, 8f), Color(0xFFFFE7A8)),
                     fill(circle(23f, 121f, 9f), Color(0xFFFFF0C7)),
@@ -344,7 +344,7 @@ private object PepeArt {
                 ),
             ),
             Part(
-                setOf(PepeMood.MUSICA),
+                setOf(ZagaloMood.MUSICA),
                 listOf(
                     fill(oval(181f, 64f, 7f, 5.5f), yellow),
                     stroke("M187 63 V38 L197 34", yellow, 4f),
@@ -353,7 +353,7 @@ private object PepeArt {
                 ),
             ),
             Part(
-                setOf(PepeMood.MAREADO),
+                setOf(ZagaloMood.MAREADO),
                 listOf(
                     fill(path("M58 26 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z"), yellow),
                     fill(path("M140 18 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5 Z"), yellow),
@@ -361,7 +361,7 @@ private object PepeArt {
                 ),
             ),
             Part(
-                setOf(PepeMood.BUSCANDO),
+                setOf(ZagaloMood.BUSCANDO),
                 listOf(
                     stroke("M164 84 L150 102", coral, 12f),
                     fill(circle(176f, 70f, 15f), screen, 0.3f),
@@ -370,7 +370,7 @@ private object PepeArt {
                 ),
             ),
             Part(
-                setOf(PepeMood.HERRAMIENTAS),
+                setOf(ZagaloMood.HERRAMIENTAS),
                 listOf(
                     stroke("M166 132 L182 112", coral, 12f),
                     stroke("M176 116 L190 96", steel, 7f),
@@ -379,7 +379,7 @@ private object PepeArt {
                 ),
             ),
             Part(
-                setOf(PepeMood.LISTA),
+                setOf(ZagaloMood.LISTA),
                 listOf(
                     fill(rrect(158f, 96f, 36f, 46f, 6f), screen),
                     stroke(rrect(158f, 96f, 36f, 46f, 6f), ink, 4f, StrokeCap.Butt),
@@ -401,19 +401,19 @@ private object PepeArt {
         )
     }
 
-    private val byMood = mutableMapOf<PepeMood, List<Op>>()
+    private val byMood = mutableMapOf<ZagaloMood, List<Op>>()
 
-    fun forMood(mood: PepeMood): List<Op> = byMood.getOrPut(mood) {
+    fun forMood(mood: ZagaloMood): List<Op> = byMood.getOrPut(mood) {
         parts.filter { it.moods == null || mood in it.moods }.flatMap { it.ops }
     }
 
-    fun glyphsFor(mood: PepeMood): List<Glyph> = when (mood) {
-        PepeMood.DORMIDO -> listOf(
+    fun glyphsFor(mood: ZagaloMood): List<Glyph> = when (mood) {
+        ZagaloMood.DORMIDO -> listOf(
             Glyph("z", 148f, 46f, 20, 600, lavender),
             Glyph("Z", 164f, 30f, 26, 600, lavender),
             Glyph("z", 184f, 14f, 16, 600, lavender),
         )
-        PepeMood.CURIOSO -> listOf(Glyph("?", 152f, 42f, 40, 700, yellow))
+        ZagaloMood.CURIOSO -> listOf(Glyph("?", 152f, 42f, 40, 700, yellow))
         else -> emptyList()
     }
 

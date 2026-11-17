@@ -73,8 +73,8 @@ import io.github.jqssun.airplay.ui.design.SettingRow
 import io.github.jqssun.airplay.ui.design.SettingsList
 import io.github.jqssun.airplay.ui.design.SpeechBubble
 import io.github.jqssun.airplay.ui.design.Stage
-import io.github.jqssun.airplay.ui.design.Pepe
-import io.github.jqssun.airplay.ui.design.PepeMood
+import io.github.jqssun.airplay.ui.design.Zagalo
+import io.github.jqssun.airplay.ui.design.ZagaloMood
 import io.github.jqssun.airplay.ui.design.Toggle
 import io.github.jqssun.airplay.ui.design.Wall
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
@@ -201,7 +201,7 @@ fun SettingsHome(
             narrow = {
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp), content = header)
                 SettingsList(Modifier.fillMaxWidth(), content = rows)
-                Pepe(PepeMood.HERRAMIENTAS, size = 140.dp)
+                Zagalo(ZagaloMood.HERRAMIENTAS, size = 140.dp)
                 Text(footer, style = AtvType.Footnote, color = Atv.InkMuted)
             },
         ) {
@@ -210,7 +210,7 @@ fun SettingsHome(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 content = header,
             )
-            Pepe(PepeMood.HERRAMIENTAS, Modifier.offset(60.dp, 236.dp), size = 200.dp)
+            Zagalo(ZagaloMood.HERRAMIENTAS, Modifier.offset(60.dp, 236.dp), size = 200.dp)
             Text(
                 footer,
                 style = AtvType.Footnote,
@@ -341,7 +341,7 @@ fun DevicesScreen(
                     content = list,
                 )
                 removeAll(Modifier)
-                Pepe(PepeMood.LISTA, size = 140.dp)
+                Zagalo(ZagaloMood.LISTA, size = 140.dp)
             },
         ) {
             Column(
@@ -358,7 +358,7 @@ fun DevicesScreen(
                 )
             }
             FloorShadow(Modifier.offset(50.dp, 470.dp).size(200.dp, 38.dp))
-            Pepe(PepeMood.LISTA, Modifier.offset(56.dp, 316.dp), size = 180.dp)
+            Zagalo(ZagaloMood.LISTA, Modifier.offset(56.dp, 316.dp), size = 180.dp)
             // rows at x=420, y=96, scrolling above "Quitar todos"; padded by the focus ring
             Column(
                 modifier = Modifier
@@ -393,7 +393,7 @@ private fun DeviceRow(device: AllowedDevice, onRemove: () -> Unit, modifier: Mod
             IconTile(
                 deviceIcon(device.model),
                 background = if (focused) Atv.PalomitaSoft else Atv.Pasillo,
-                tint = if (focused) Atv.PepeInk else Atv.Palomita,
+                tint = if (focused) Atv.ZagaloInk else Atv.Palomita,
             )
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(

@@ -2,6 +2,6 @@
 <resources>
     <!-- Noche: window background behind the Compose UI (Atv.Noche) -->
     <color name="atv_bg">#16122B</color>
-    <!-- Pepe coral, the brand colour (Atv.Pepe) -->
+    <!-- Zagalo coral, the brand colour (Atv.Zagalo) -->
     <color name="atv_signal">#FF6B5B</color>
 </resources>

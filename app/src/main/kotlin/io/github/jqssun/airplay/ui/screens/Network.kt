@@ -36,8 +36,8 @@ import io.github.jqssun.airplay.ui.design.FloorShadow
 import io.github.jqssun.airplay.ui.design.PillButton
 import io.github.jqssun.airplay.ui.design.SpeechBubble
 import io.github.jqssun.airplay.ui.design.Stage
-import io.github.jqssun.airplay.ui.design.Pepe
-import io.github.jqssun.airplay.ui.design.PepeMood
+import io.github.jqssun.airplay.ui.design.Zagalo
+import io.github.jqssun.airplay.ui.design.ZagaloMood
 import io.github.jqssun.airplay.ui.design.Wall
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
 import io.github.jqssun.airplay.ui.theme.Atv
@@ -101,7 +101,7 @@ fun NoNetworkScreen(onOpenNetworkSettings: () -> Unit) {
                 TopBar(chip, ChipKind.NEUTRAL)
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp), content = copy)
                 SpeechBubble(bubble)
-                Pepe(PepeMood.BUSCANDO, size = 180.dp)
+                Zagalo(ZagaloMood.BUSCANDO, size = 180.dp)
             },
         ) {
             TopBar(chip, ChipKind.NEUTRAL, Modifier.padding(horizontal = Atv.SafeX).padding(top = Atv.SafeY))
@@ -112,7 +112,7 @@ fun NoNetworkScreen(onOpenNetworkSettings: () -> Unit) {
             )
             SpeechBubble(bubble, Modifier.offset(590.dp, 104.dp))
             FloorShadow(Modifier.offset(600.dp, 420.dp).size(280.dp, 48.dp))
-            Pepe(PepeMood.BUSCANDO, Modifier.offset(610.dp, 160.dp), size = 280.dp)
+            Zagalo(ZagaloMood.BUSCANDO, Modifier.offset(610.dp, 160.dp), size = 280.dp)
         }
     }
 }

@@ -12,11 +12,11 @@ import androidx.compose.ui.unit.sp
 // Material is only used by the advanced settings, the logs and dialogs; the TV screens draw with
 // the Atv tokens directly.
 private val AtvColors = darkColorScheme(
-    primary = Atv.Pepe,
-    onPrimary = Atv.OnPepe,
+    primary = Atv.Zagalo,
+    onPrimary = Atv.OnZagalo,
     primaryContainer = Atv.ButacaAlta,
     onPrimaryContainer = Atv.Crema,
-    inversePrimary = Atv.PepeDark,
+    inversePrimary = Atv.ZagaloDark,
     secondary = Atv.Palomita,
     onSecondary = Atv.OnPalomita,
     secondaryContainer = Atv.Pasillo,
@@ -31,7 +31,7 @@ private val AtvColors = darkColorScheme(
     onSurfaceVariant = Atv.Lavanda,
     surfaceTint = Color.Transparent,
     inverseSurface = Atv.Crema,
-    inverseOnSurface = Atv.PepeInk,
+    inverseOnSurface = Atv.ZagaloInk,
     surfaceContainerLowest = Atv.Deep,
     surfaceContainerLow = Atv.Butaca,
     surfaceContainer = Atv.Butaca,

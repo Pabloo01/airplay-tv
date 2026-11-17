@@ -40,8 +40,8 @@ import io.github.jqssun.airplay.ui.design.FloorShadow
 import io.github.jqssun.airplay.ui.design.PillButton
 import io.github.jqssun.airplay.ui.design.SpeechBubble
 import io.github.jqssun.airplay.ui.design.Stage
-import io.github.jqssun.airplay.ui.design.Pepe
-import io.github.jqssun.airplay.ui.design.PepeMood
+import io.github.jqssun.airplay.ui.design.Zagalo
+import io.github.jqssun.airplay.ui.design.ZagaloMood
 import io.github.jqssun.airplay.ui.design.Wall
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
 import io.github.jqssun.airplay.ui.theme.Atv
@@ -51,12 +51,12 @@ import kotlinx.coroutines.delay
 import java.util.Calendar
 
 /** What the home screen is showing: the receiver waiting (the prototype) or one of its other states. */
-private enum class Home(val mood: PepeMood, @param:StringRes val title: Int, @param:StringRes val hint: Int) {
-    WAITING(PepeMood.HOLA, R.string.idle_title, R.string.idle_hint),
-    CONNECTING(PepeMood.CURIOSO, R.string.idle_title_connecting, R.string.waiting_for_playback),
-    STOPPED(PepeMood.DORMIDO, R.string.idle_title_stopped, R.string.idle_hint_stopped),
-    ERROR(PepeMood.MAREADO, R.string.idle_title_error, R.string.idle_hint_error),
-    PERMISSION(PepeMood.BUSCANDO, R.string.idle_title_permission, R.string.local_network_desc),
+private enum class Home(val mood: ZagaloMood, @param:StringRes val title: Int, @param:StringRes val hint: Int) {
+    WAITING(ZagaloMood.HOLA, R.string.idle_title, R.string.idle_hint),
+    CONNECTING(ZagaloMood.CURIOSO, R.string.idle_title_connecting, R.string.waiting_for_playback),
+    STOPPED(ZagaloMood.DORMIDO, R.string.idle_title_stopped, R.string.idle_hint_stopped),
+    ERROR(ZagaloMood.MAREADO, R.string.idle_title_error, R.string.idle_hint_error),
+    PERMISSION(ZagaloMood.BUSCANDO, R.string.idle_title_permission, R.string.local_network_desc),
 }
 
 private val HomeStars = listOf(
@@ -86,7 +86,7 @@ fun IdleScreen(
     }
     val sender = clientName.ifBlank { stringResource(R.string.device_generic) }
     val (chipText, chipKind) = when (home) {
-        Home.WAITING -> stringResource(R.string.status_waiting, serverName) to ChipKind.WAITING
+        Home.WAITING -> stringResource(R.string.status_waiting) to ChipKind.WAITING
         Home.CONNECTING -> stringResource(R.string.status_connecting, sender) to ChipKind.WAITING
         Home.STOPPED -> stringResource(R.string.status_stopped) to ChipKind.NEUTRAL
         Home.ERROR -> stringResource(R.string.status_error) to ChipKind.ALERT
@@ -134,7 +134,7 @@ fun IdleScreen(
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp), content = copy)
                 if (waiting) Steps(serverName, Modifier.fillMaxWidth(), stacked = true)
                 if (waiting) SpeechBubble(stringResource(R.string.idle_bubble))
-                Pepe(home.mood, size = 180.dp)
+                Zagalo(home.mood, size = 180.dp)
                 settings()
             },
         ) {
@@ -149,7 +149,7 @@ fun IdleScreen(
                 if (waiting) Steps(serverName, Modifier.padding(top = 10.dp))
             }
             if (waiting) SpeechBubble(stringResource(R.string.idle_bubble), Modifier.offset(568.dp, 92.dp))
-            Pepe(home.mood, Modifier.offset(612.dp, 150.dp), size = 280.dp)
+            Zagalo(home.mood, Modifier.offset(612.dp, 150.dp), size = 280.dp)
             Box(
                 Modifier
                     .align(Alignment.BottomStart)
@@ -181,20 +181,20 @@ private fun Steps(serverName: String, modifier: Modifier = Modifier, stacked: Bo
 
 @Composable
 private fun Step(number: Int, text: String, modifier: Modifier = Modifier, highlight: Boolean = false) {
-    val ink = if (highlight) Atv.OnPepe else Atv.Ink
+    val ink = if (highlight) Atv.OnZagalo else Atv.Ink
     Row(
         modifier = modifier
             .clip(Atv.ShapeTile)
-            .background(if (highlight) Atv.Pepe else Atv.Butaca)
+            .background(if (highlight) Atv.Zagalo else Atv.Butaca)
             .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Atv.Space2),
     ) {
         Box(
-            modifier = Modifier.size(22.dp).clip(Atv.ShapePill).background(if (highlight) Atv.PepeScreen else Atv.Pasillo),
+            modifier = Modifier.size(22.dp).clip(Atv.ShapePill).background(if (highlight) Atv.ZagaloScreen else Atv.Pasillo),
             contentAlignment = Alignment.Center,
         ) {
-            Text(number.toString(), style = AtvType.Footnote, color = if (highlight) Atv.OnPepe else Atv.Palomita)
+            Text(number.toString(), style = AtvType.Footnote, color = if (highlight) Atv.OnZagalo else Atv.Palomita)
         }
         Text(
             text,

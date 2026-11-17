@@ -51,7 +51,7 @@ import io.github.jqssun.airplay.ui.theme.AtvType
 
 // ---------- brand ----------
 
-/** Pepe-TV glyph + "AirPlay TV" in Fredoka (top-left of the home screen). */
+/** Zagalo-TV glyph + "AirPlay TV" in Fredoka (top-left of the home screen). */
 @Composable
 fun Wordmark(modifier: Modifier = Modifier) {
     Row(
@@ -69,7 +69,7 @@ fun Wordmark(modifier: Modifier = Modifier) {
     }
 }
 
-/** The small Pepe TV glyph (`R.drawable.logo_mark`, 30x30 viewport). */
+/** The small Zagalo TV glyph (`R.drawable.logo_mark`, 30x30 viewport). */
 @Composable
 fun Mark(modifier: Modifier = Modifier) {
     Image(
@@ -96,7 +96,7 @@ enum class ChipKind {
     /** Like [WAITING] with a Lavanda dot ("Sin red", "Detenido"). */
     NEUTRAL,
 
-    /** Pepe coral fill, dark ink and dot ("Duplicando · iPhone"). */
+    /** Zagalo coral fill, dark ink and dot ("Duplicando · iPhone"). */
     LIVE,
 
     /** Butaca + 2dp coral border + coral icon ("Conexión perdida"). */
@@ -104,18 +104,18 @@ enum class ChipKind {
 }
 
 /**
- * Pill-shaped status chip, 34dp high. [icon] replaces the dot (tinted Palomita, or OnPepe on
+ * Pill-shaped status chip, 34dp high. [icon] replaces the dot (tinted Palomita, or OnZagalo on
  * [ChipKind.LIVE]); on [ChipKind.ALERT] it defaults to a warning sign tinted coral.
  */
 @Composable
 fun StatusChip(text: String, kind: ChipKind, modifier: Modifier = Modifier, icon: ImageVector? = null) {
     val shape = Atv.ShapePill
     val surface = when (kind) {
-        ChipKind.LIVE -> Modifier.card(shape, Atv.Pepe)
-        ChipKind.ALERT -> Modifier.card(shape, Atv.Butaca, border = Atv.Pepe, borderWidth = 2.dp)
+        ChipKind.LIVE -> Modifier.card(shape, Atv.Zagalo)
+        ChipKind.ALERT -> Modifier.card(shape, Atv.Butaca, border = Atv.Zagalo, borderWidth = 2.dp)
         ChipKind.WAITING, ChipKind.NEUTRAL -> Modifier.card(shape, Atv.Butaca, border = Atv.Pasillo)
     }
-    val ink = if (kind == ChipKind.LIVE) Atv.OnPepe else Atv.Ink
+    val ink = if (kind == ChipKind.LIVE) Atv.OnZagalo else Atv.Ink
     val loud = kind == ChipKind.LIVE || kind == ChipKind.ALERT
     Row(
         modifier = modifier.height(34.dp).then(surface).padding(start = Atv.Space3, end = Atv.Space4),
@@ -124,12 +124,12 @@ fun StatusChip(text: String, kind: ChipKind, modifier: Modifier = Modifier, icon
     ) {
         when {
             kind == ChipKind.ALERT ->
-                Icon(icon ?: Icons.Rounded.Warning, null, tint = Atv.Pepe, modifier = Modifier.size(16.dp))
+                Icon(icon ?: Icons.Rounded.Warning, null, tint = Atv.Zagalo, modifier = Modifier.size(16.dp))
             icon != null ->
-                Icon(icon, null, tint = if (kind == ChipKind.LIVE) Atv.OnPepe else Atv.Palomita, modifier = Modifier.size(16.dp))
+                Icon(icon, null, tint = if (kind == ChipKind.LIVE) Atv.OnZagalo else Atv.Palomita, modifier = Modifier.size(16.dp))
             else -> ChipDot(
                 color = when (kind) {
-                    ChipKind.LIVE -> Atv.OnPepe
+                    ChipKind.LIVE -> Atv.OnZagalo
                     ChipKind.NEUTRAL -> Atv.Lavanda
                     else -> Atv.Palomita
                 },
@@ -223,7 +223,7 @@ fun SettingsList(
 
 /**
  * Setting row: Butaca card, radius 18, icon + title (16 extra-bold) + subtitle (13 Lavanda) +
- * trailing [value] (Palomita) / [chevron] / [trailing] slot. Focused: Crema background, Pepe ink,
+ * trailing [value] (Palomita) / [chevron] / [trailing] slot. Focused: Crema background, Zagalo ink,
  * 4dp Palomita ring, no scale. The subtitle shows up to [subtitleLines] lines.
  */
 @Composable
@@ -285,7 +285,7 @@ fun SettingRow(
 /** On: coral track, white knob right. Off: Pasillo track, Lavanda knob left. 46x26. */
 @Composable
 fun Toggle(checked: Boolean, modifier: Modifier = Modifier) {
-    val track by animateColorAsState(if (checked) Atv.Pepe else Atv.Pasillo, tween(150), label = "toggleTrack")
+    val track by animateColorAsState(if (checked) Atv.Zagalo else Atv.Pasillo, tween(150), label = "toggleTrack")
     val knob by animateColorAsState(if (checked) Color.White else Atv.Lavanda, tween(150), label = "toggleKnob")
     val position by animateFloatAsState(if (checked) 1f else 0f, tween(150), label = "togglePosition")
     Box(modifier.size(46.dp, 26.dp).clip(Atv.ShapePill).background(track).padding(3.dp)) {
@@ -295,7 +295,7 @@ fun Toggle(checked: Boolean, modifier: Modifier = Modifier) {
 
 // ---------- progress ----------
 
-/** Progress / countdown bar: Pasillo track, [color] fill (Palomita; Pepe coral for the request timeout). */
+/** Progress / countdown bar: Pasillo track, [color] fill (Palomita; Zagalo coral for the request timeout). */
 @Composable
 fun TrackBar(
     fraction: Float,
@@ -308,12 +308,12 @@ fun TrackBar(
     }
 }
 
-// ---------- Pepe's props ----------
+// ---------- Zagalo's props ----------
 
-/** Which corner of a [SpeechBubble] is the small (4dp) "tail" corner, pointing at Pepe. */
+/** Which corner of a [SpeechBubble] is the small (4dp) "tail" corner, pointing at Zagalo. */
 enum class BubbleTail { BottomStart, BottomEnd, TopStart, TopEnd }
 
-/** Pepe's speech bubble: Crema, Pepe-ink Fredoka 600, radius 18 with one 4dp tail corner. */
+/** Zagalo's speech bubble: Crema, Zagalo-ink Fredoka 600, radius 18 with one 4dp tail corner. */
 @Composable
 fun SpeechBubble(
     text: String,
@@ -332,12 +332,12 @@ fun SpeechBubble(
     Text(
         text,
         style = style,
-        color = Atv.PepeInk,
+        color = Atv.ZagaloInk,
         modifier = modifier.clip(shape).background(Atv.Crema).padding(horizontal = Atv.Space4, vertical = 10.dp),
     )
 }
 
-/** The flat ellipse Pepe stands on (#221B3D; darker on dimmed screens). Size it with [modifier]. */
+/** The flat ellipse Zagalo stands on (#221B3D; darker on dimmed screens). Size it with [modifier]. */
 @Composable
 fun FloorShadow(modifier: Modifier = Modifier, color: Color = Atv.Floor) {
     Spacer(modifier.drawBehind { drawOval(color) })

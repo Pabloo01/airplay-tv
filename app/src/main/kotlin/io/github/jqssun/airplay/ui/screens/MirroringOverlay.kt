@@ -47,8 +47,8 @@ import io.github.jqssun.airplay.ui.design.ChipKind
 import io.github.jqssun.airplay.ui.design.PillButton
 import io.github.jqssun.airplay.ui.design.Stage
 import io.github.jqssun.airplay.ui.design.StatusChip
-import io.github.jqssun.airplay.ui.design.Pepe
-import io.github.jqssun.airplay.ui.design.PepeMood
+import io.github.jqssun.airplay.ui.design.Zagalo
+import io.github.jqssun.airplay.ui.design.ZagaloMood
 import io.github.jqssun.airplay.ui.design.card
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
 import io.github.jqssun.airplay.ui.theme.Atv
@@ -142,7 +142,7 @@ fun MirroringOverlay(clientName: String, onStop: () -> Unit) {
     }
 }
 
-/** Live chip top-right; at the bottom a dark band with Pepe eating popcorn and the two buttons. */
+/** Live chip top-right; at the bottom a dark band with Zagalo eating popcorn and the two buttons. */
 @Composable
 private fun OverlayControls(
     sender: String,
@@ -181,7 +181,7 @@ private fun OverlayControls(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(Atv.Space4),
             ) {
-                Pepe(PepeMood.PALOMITAS, size = 112.dp)
+                Zagalo(ZagaloMood.PALOMITAS, size = 112.dp)
                 caption()
                 keep()
                 stop()
@@ -194,7 +194,7 @@ private fun OverlayControls(
             Modifier.align(Alignment.TopEnd).padding(top = Atv.SafeY, end = Atv.SafeX).widthIn(max = 520.dp),
         )
         Box(Modifier.align(Alignment.BottomStart).fillMaxWidth().height(150.dp).background(Atv.ScrimBand))
-        Pepe(PepeMood.PALOMITAS, Modifier.align(Alignment.BottomStart).padding(start = 40.dp, bottom = 10.dp), size = 128.dp)
+        Zagalo(ZagaloMood.PALOMITAS, Modifier.align(Alignment.BottomStart).padding(start = 40.dp, bottom = 10.dp), size = 128.dp)
         Box(Modifier.align(Alignment.BottomStart).padding(start = 176.dp, bottom = 52.dp)) { caption() }
         Row(
             modifier = Modifier.align(Alignment.BottomEnd).padding(end = Atv.SafeX, bottom = 48.dp),
@@ -206,7 +206,7 @@ private fun OverlayControls(
     }
 }
 
-/** "¿Se acabó la sesión?": sad Pepe in a panel over the dimmed video; focus starts on keep sharing. */
+/** "¿Se acabó la sesión?": sad Zagalo in a panel over the dimmed video; focus starts on keep sharing. */
 @Composable
 private fun StopConfirmation(
     sender: String,
@@ -222,7 +222,7 @@ private fun StopConfirmation(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Atv.Space3),
         ) {
-            Pepe(PepeMood.TRISTE, size = 150.dp)
+            Zagalo(ZagaloMood.TRISTE, size = 150.dp)
             Text(stringResource(R.string.stop_confirm_title), style = AtvType.SectionTitle, textAlign = TextAlign.Center)
             Text(
                 stringResource(R.string.stop_confirm_desc, sender),

@@ -157,20 +157,20 @@
     <string name="cd_previous">Previous</string>
     <string name="cd_next">Next</string>
 
-    <!-- Pepe, the mascot (content descriptions) -->
-    <string name="cd_pepe_hola">Pepe waves hello</string>
-    <string name="cd_pepe_curioso">Pepe, curious</string>
-    <string name="cd_pepe_palomitas">Pepe with 3D glasses and popcorn</string>
-    <string name="cd_pepe_triste">Pepe, sad</string>
-    <string name="cd_pepe_musica">Pepe with headphones</string>
-    <string name="cd_pepe_mareado">Pepe, dizzy</string>
-    <string name="cd_pepe_dormido">Pepe, asleep</string>
-    <string name="cd_pepe_buscando">Pepe looking for Wi-Fi with a magnifying glass</string>
-    <string name="cd_pepe_herramientas">Pepe with a wrench</string>
-    <string name="cd_pepe_lista">Pepe with his list</string>
+    <!-- Zagalo, the mascot (content descriptions) -->
+    <string name="cd_zagalo_hola">Zagalo waves hello</string>
+    <string name="cd_zagalo_curioso">Zagalo, curious</string>
+    <string name="cd_zagalo_palomitas">Zagalo with 3D glasses and popcorn</string>
+    <string name="cd_zagalo_triste">Zagalo, sad</string>
+    <string name="cd_zagalo_musica">Zagalo with headphones</string>
+    <string name="cd_zagalo_mareado">Zagalo, dizzy</string>
+    <string name="cd_zagalo_dormido">Zagalo, asleep</string>
+    <string name="cd_zagalo_buscando">Zagalo looking for Wi-Fi with a magnifying glass</string>
+    <string name="cd_zagalo_herramientas">Zagalo with a wrench</string>
+    <string name="cd_zagalo_lista">Zagalo with his list</string>
 
     <!-- Idle -->
-    <string name="status_waiting">Waiting · %1$s</string>
+    <string name="status_waiting">Waiting</string>
     <string name="status_stopped">Stopped</string>
     <string name="status_error">Error</string>
     <string name="status_permission">Permission needed</string>
@@ -183,10 +183,10 @@
     <string name="idle_hint_error">Check the network and try again.</string>
     <string name="idle_title_connecting">Connecting…</string>
     <string name="idle_title_permission">Nearby devices access needed</string>
-    <string name="greeting_morning">Good morning, family</string>
-    <string name="greeting_afternoon">Good afternoon, family</string>
-    <string name="greeting_night">Good evening, family</string>
-    <string name="idle_bubble">Hi! I\'m saving your seat</string>
+    <string name="greeting_morning">Good morning!</string>
+    <string name="greeting_afternoon">Good afternoon!</string>
+    <string name="greeting_night">Good evening!</string>
+    <string name="idle_bubble">Hi! Good to see you</string>
     <string name="idle_step_control_center">Control Center</string>
     <string name="idle_step_mirroring">Screen Mirroring</string>
     <string name="btn_settings">Settings</string>
@@ -196,7 +196,7 @@
     <string name="request_desc">It will be able to show its screen, videos, photos and music on this TV.</string>
     <string name="btn_allow_device">Allow</string>
     <string name="btn_reject">Decline</string>
-    <string name="request_note">If you let it in, Pepe adds it to his list and won\'t ask again.</string>
+    <string name="request_note">If you let it in, Zagalo adds it to his list and won\'t ask again.</string>
     <string name="request_timeout">Declining automatically in %1$d s</string>
     <string name="request_eyebrow">New visitor</string>
     <string name="request_bubble">Knock, knock!</string>
@@ -206,28 +206,28 @@
     <string name="pin_label">Type this code on your iPhone</string>
     <string name="pin_timer">This screen closes in %1$d s</string>
     <string name="pin_desc">Your iPhone will ask for it when connecting. That way no neighbour sneaks into your living room.</string>
-    <string name="pin_bubble">Psst… it\'s a secret</string>
+    <string name="pin_bubble">It\'s a secret</string>
     <string name="cd_pin">Code %1$s</string>
 
     <!-- Mirroring -->
     <string name="chip_mirroring">Mirroring · %1$s</string>
-    <string name="btn_stop_mirroring">Stop</string>
-    <string name="btn_keep_sharing">Keep sharing</string>
-    <string name="stop_confirm_title">Is the show over?</string>
-    <string name="stop_confirm_desc">Screen mirroring will stop: %1$s will no longer show on this TV.</string>
-    <string name="btn_stop_confirm">Yes, stop</string>
-    <string name="overlay_title">Enjoy the show!</string>
-    <string name="overlay_sub">Pepe won\'t miss a minute</string>
+    <string name="btn_stop_mirroring">Stop mirroring</string>
+    <string name="btn_keep_sharing">Keep watching</string>
+    <string name="stop_confirm_title">Stop mirroring?</string>
+    <string name="stop_confirm_desc">%1$s\'s screen will no longer show on this TV.</string>
+    <string name="btn_stop_confirm">Stop mirroring</string>
+    <string name="overlay_title">What would you like to do?</string>
+    <string name="overlay_sub">Keep watching or stop mirroring</string>
 
     <!-- Audio -->
-    <string name="chip_audio">Streaming audio · From %1$s</string>
-    <string name="chip_audio_idle">Waiting for audio · %1$s is connected</string>
+    <string name="chip_audio">Streaming audio · %1$s</string>
+    <string name="chip_audio_idle">Waiting for audio · %1$s</string>
     <string name="audio_untitled">Playing audio</string>
 
     <!-- Settings home -->
     <string name="settings_title">Settings</string>
     <string name="settings_desc">How Apple devices on your network see you and who can connect.</string>
-    <string name="settings_eyebrow">Pepe\'s workshop</string>
+    <string name="settings_eyebrow">Zagalo\'s workshop</string>
     <string name="settings_footer">AirPlay TV %1$s · %2$s</string>
     <string name="settings_footer_offline">AirPlay TV %1$s · no network</string>
     <string name="row_server">Receiver</string>
@@ -282,7 +282,7 @@
     <string name="no_network_bubble">Wi-Fi, where are you?</string>
     <string name="chip_lost">Connection lost</string>
     <string name="lost_title">The connection with %1$s was lost</string>
-    <string name="lost_desc">Check that it\'s still nearby and on Wi-Fi. Pepe will wait %1$d s for it to come back…</string>
+    <string name="lost_desc">Check that it\'s still nearby and on Wi-Fi. Zagalo will wait %1$d s for it to come back…</string>
     <string name="lost_kicker">Hello? Are you still there?</string>
 
     <!-- Screensaver -->

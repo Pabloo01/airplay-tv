@@ -30,24 +30,24 @@ object Atv {
     val ButacaAlta = Color(0xFF2E2650)
     /** Pasillo: borders, toggle off, progress track, icon tiles. */
     val Pasillo = Color(0xFF3A3160)
-    /** Suelo: the ellipse painted under Pepe. */
+    /** Suelo: the ellipse painted under Zagalo. */
     val Floor = Color(0xFF221B3D)
     /** Palomita: focus fill, progress, eyebrows. */
     val Palomita = Color(0xFFFFC94A)
     /** Ink on [Palomita]. */
     val OnPalomita = Color(0xFF2A1A00)
-    /** Pale popcorn: focused icon tiles, Pepe's second knob. */
+    /** Pale popcorn: focused icon tiles, Zagalo's second knob. */
     val PalomitaSoft = Color(0xFFFFE2A3)
-    /** Pepe: brand coral, toggle on, live chip. */
-    val Pepe = Color(0xFFFF6B5B)
-    /** Ink on [Pepe]. */
-    val OnPepe = Color(0xFF2A0F0B)
-    /** Pepe's feet and grill. */
-    val PepeDark = Color(0xFFD9483B)
-    /** Pepe's screen (cream). */
-    val PepeScreen = Color(0xFFFFF3DE)
-    /** Pepe's face ink; also the ink on [Crema] surfaces (focused rows, speech bubbles). */
-    val PepeInk = Color(0xFF2A1633)
+    /** Zagalo: brand coral, toggle on, live chip. */
+    val Zagalo = Color(0xFFFF6B5B)
+    /** Ink on [Zagalo]. */
+    val OnZagalo = Color(0xFF2A0F0B)
+    /** Zagalo's feet and grill. */
+    val ZagaloDark = Color(0xFFD9483B)
+    /** Zagalo's screen (cream). */
+    val ZagaloScreen = Color(0xFFFFF3DE)
+    /** Zagalo's face ink; also the ink on [Crema] surfaces (focused rows, speech bubbles). */
+    val ZagaloInk = Color(0xFF2A1633)
     /** Stop: destructive buttons (white text keeps 4.6:1). */
     val Stop = Color(0xFFD63B3B)
     /** Red text on a focused (cream) destructive button. */
@@ -71,7 +71,7 @@ object Atv {
     val InkMuted = Lavanda
     val InkFaint = Faint
     /** Ink on the focused (cream) row surface. */
-    val OnFocus = PepeInk
+    val OnFocus = ZagaloInk
     val OnFocusMuted = OnCremaMuted
 
     // ---------- spacing ----------
@@ -128,7 +128,7 @@ private fun variable(res: Int, weight: Int) = Font(
     variationSettings = FontVariation.Settings(FontVariation.weight(weight)),
 )
 
-/** Fredoka (variable, wght 300-700): titles, display, the clock, Pepe's bubbles. */
+/** Fredoka (variable, wght 300-700): titles, display, the clock, Zagalo's bubbles. */
 val Fredoka = FontFamily(
     variable(R.font.fredoka, 400),
     variable(R.font.fredoka, 500),
@@ -170,7 +170,7 @@ object AtvType {
     val Headline = style(Fredoka, 22, 28, 600)
     /** Wordmark, overlay captions ("¡Que aproveche!"). */
     val HeadlineSmall = style(Fredoka, 20, 26, 600)
-    /** Pepe's speech bubble. */
+    /** Zagalo's speech bubble. */
     val Bubble = style(Fredoka, 18, 24, 600)
 
     // Nunito

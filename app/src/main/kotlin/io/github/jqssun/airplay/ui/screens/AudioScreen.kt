@@ -70,8 +70,8 @@ import io.github.jqssun.airplay.ui.design.FloorShadow
 import io.github.jqssun.airplay.ui.design.RoundIconButton
 import io.github.jqssun.airplay.ui.design.Stage
 import io.github.jqssun.airplay.ui.design.StatusChip
-import io.github.jqssun.airplay.ui.design.Pepe
-import io.github.jqssun.airplay.ui.design.PepeMood
+import io.github.jqssun.airplay.ui.design.Zagalo
+import io.github.jqssun.airplay.ui.design.ZagaloMood
 import io.github.jqssun.airplay.ui.design.TrackBar
 import io.github.jqssun.airplay.ui.design.Wall
 import io.github.jqssun.airplay.ui.design.card
@@ -112,7 +112,7 @@ fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
     val sender = clientName.ifBlank { stringResource(R.string.device_generic) }
     val tv = isTv()
     val chip = stringResource(if (streaming) R.string.chip_audio else R.string.chip_audio_idle, sender)
-    val mood = if (streaming) PepeMood.MUSICA else PepeMood.HOLA
+    val mood = if (streaming) ZagaloMood.MUSICA else ZagaloMood.HOLA
     // without a DACP player the length still comes with the track metadata
     val totalMs = durationMs.takeIf { it > 0 } ?: track.durationMs
     val info: @Composable ColumnScope.() -> Unit = if (!streaming) {
@@ -168,7 +168,7 @@ fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
                 StatusChip(chip, ChipKind.WAITING, icon = Icons.Rounded.MusicNote)
                 Artwork(track.coverArt, Modifier.widthIn(max = 320.dp).fillMaxWidth())
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Atv.Space2), content = info)
-                Pepe(mood, size = 140.dp)
+                Zagalo(mood, size = 140.dp)
             },
         ) {
             StatusChip(
@@ -184,7 +184,7 @@ fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
                 content = info,
             )
             FloorShadow(Modifier.offset(730.dp, 430.dp).size(200.dp, 40.dp))
-            Pepe(mood, Modifier.offset(740.dp, 262.dp), size = 190.dp)
+            Zagalo(mood, Modifier.offset(740.dp, 262.dp), size = 190.dp)
         }
         val scrim by animateColorAsState(
             if (dimmed && tv) Color.Black.copy(alpha = 0.7f) else Color.Transparent,

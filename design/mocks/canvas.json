@@ -60,7 +60,7 @@
     },
     "Mascota.dc.html": {
       "h": 900,
-      "title": "Mascota: tres candidatas y Pepe",
+      "title": "Mascota: tres candidatas y Zagalo",
       "w": 1440,
       "x": 0,
       "y": 0
@@ -100,9 +100,9 @@
       "x": 1040,
       "y": 1340
     },
-    "Pepe.dc.html": {
+    "Zagalo.dc.html": {
       "h": 240,
-      "title": "Pepe (componente con 10 caras)",
+      "title": "Zagalo (componente con 10 caras)",
       "w": 240,
       "x": 3600,
       "y": 0
@@ -146,7 +146,7 @@
     "Mascota.dc.html",
     "Icono.dc.html",
     "Estilo.dc.html",
-    "Pepe.dc.html",
+    "Zagalo.dc.html",
     "Main.dc.html",
     "Solicitud.dc.html",
     "Codigo.dc.html",

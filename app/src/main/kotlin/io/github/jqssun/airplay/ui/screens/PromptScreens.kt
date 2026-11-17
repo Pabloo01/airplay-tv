@@ -54,8 +54,8 @@ import io.github.jqssun.airplay.ui.design.PillButton
 import io.github.jqssun.airplay.ui.design.SpeechBubble
 import io.github.jqssun.airplay.ui.design.Stage
 import io.github.jqssun.airplay.ui.design.StatusChip
-import io.github.jqssun.airplay.ui.design.Pepe
-import io.github.jqssun.airplay.ui.design.PepeMood
+import io.github.jqssun.airplay.ui.design.Zagalo
+import io.github.jqssun.airplay.ui.design.ZagaloMood
 import io.github.jqssun.airplay.ui.design.TrackBar
 import io.github.jqssun.airplay.ui.design.Wall
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
@@ -115,7 +115,7 @@ fun RequestScreen(request: AirPlayService.ClientRequest, onAnswer: (Boolean) -> 
             TrackBar(
                 remaining / AirPlayService.CLIENT_REQUEST_TIMEOUT_MS.toFloat(),
                 Modifier.weight(1f),
-                color = Atv.Pepe,
+                color = Atv.Zagalo,
             )
             Text(
                 stringResource(R.string.request_timeout, (remaining / 1000).toInt()),
@@ -129,7 +129,7 @@ fun RequestScreen(request: AirPlayService.ClientRequest, onAnswer: (Boolean) -> 
         Stage(
             narrow = {
                 SpeechBubble(bubble, tail = BubbleTail.BottomEnd, style = AtvType.Headline)
-                Pepe(PepeMood.CURIOSO, size = 160.dp)
+                Zagalo(ZagaloMood.CURIOSO, size = 160.dp)
                 Panel(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(Atv.Space6), verticalArrangement = Arrangement.spacedBy(14.dp), content = card)
                 }
@@ -137,7 +137,7 @@ fun RequestScreen(request: AirPlayService.ClientRequest, onAnswer: (Boolean) -> 
         ) {
             FloorShadow(Modifier.offset(70.dp, 404.dp).size(300.dp, 52.dp))
             SpeechBubble(bubble, Modifier.offset(92.dp, 70.dp), tail = BubbleTail.BottomEnd, style = AtvType.Headline)
-            Pepe(PepeMood.CURIOSO, Modifier.offset(80.dp, 140.dp), size = 280.dp)
+            Zagalo(ZagaloMood.CURIOSO, Modifier.offset(80.dp, 140.dp), size = 280.dp)
             Panel(
                 Modifier
                     .align(Alignment.TopEnd)
@@ -190,7 +190,7 @@ fun PinScreen(pin: String, clientName: String, onCancel: () -> Unit) {
                 StatusChip(chip, ChipKind.WAITING, icon = Icons.Outlined.Lock)
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(18.dp)) { code(true) }
                 SpeechBubble(bubble)
-                Pepe(PepeMood.LISTA, size = 160.dp)
+                Zagalo(ZagaloMood.LISTA, size = 160.dp)
             },
         ) {
             StatusChip(
@@ -205,7 +205,7 @@ fun PinScreen(pin: String, clientName: String, onCancel: () -> Unit) {
             ) { code(false) }
             SpeechBubble(bubble, Modifier.offset(650.dp, 120.dp))
             FloorShadow(Modifier.offset(650.dp, 418.dp).size(250.dp, 46.dp))
-            Pepe(PepeMood.LISTA, Modifier.offset(660.dp, 190.dp), size = 240.dp)
+            Zagalo(ZagaloMood.LISTA, Modifier.offset(660.dp, 190.dp), size = 240.dp)
         }
     }
 }
@@ -237,7 +237,7 @@ private fun DigitTile(digit: Char, width: Dp, height: Dp, style: TextStyle) {
             },
         contentAlignment = Alignment.Center,
     ) {
-        Text(digit.toString(), style = style, color = Atv.PepeInk)
+        Text(digit.toString(), style = style, color = Atv.ZagaloInk)
     }
 }
 
@@ -282,7 +282,7 @@ fun ConnectionLostOverlay(senderName: String, onHome: () -> Unit) {
         Stage(
             narrow = {
                 StatusChip(chip, ChipKind.ALERT, icon = Icons.Rounded.WifiOff)
-                Pepe(PepeMood.MAREADO, size = 160.dp)
+                Zagalo(ZagaloMood.MAREADO, size = 160.dp)
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp), content = copy)
             },
         ) {
@@ -293,7 +293,7 @@ fun ConnectionLostOverlay(senderName: String, onHome: () -> Unit) {
                 icon = Icons.Rounded.WifiOff,
             )
             FloorShadow(Modifier.offset(70.dp, 420.dp).size(240.dp, 44.dp), color = DimFloor)
-            Pepe(PepeMood.MAREADO, Modifier.offset(80.dp, 170.dp), size = 250.dp)
+            Zagalo(ZagaloMood.MAREADO, Modifier.offset(80.dp, 170.dp), size = 250.dp)
             Column(
                 modifier = Modifier.fillMaxWidth().padding(start = 400.dp, end = Atv.SafeX, top = 130.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -303,7 +303,7 @@ fun ConnectionLostOverlay(senderName: String, onHome: () -> Unit) {
     }
 }
 
-// the floor under Pepe on a dimmed screen
+// the floor under Zagalo on a dimmed screen
 private val DimFloor = Color(0xFF1A1530)
 
 private const val PIN_SCREEN_MS = 60_000L
