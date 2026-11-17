@@ -1,28 +1,164 @@
 {
   "v": 3,
-  "createdOnFiles": {"v": 1, "at": "2026-10-25T11:19:00Z"},
-  "title": "Air Play JD — Pantallas",
-  "launch": {"view": "canvas"},
-  "pages": [],
+  "attachments": {},
   "boards": {
-    "Main.dc.html": {"x": 0, "y": 0, "w": 960, "h": 540, "title": "1 · Espera"},
-    "Request.dc.html": {"x": 1040, "y": 0, "w": 960, "h": 540, "title": "2 · Solicitud de conexión"},
-    "Pin.dc.html": {"x": 2080, "y": 0, "w": 960, "h": 540, "title": "3 · Código de emparejamiento"},
-    "Mirroring.dc.html": {"x": 0, "y": 920, "w": 960, "h": 540, "title": "4 · Duplicado de pantalla"},
-    "Audio.dc.html": {"x": 1040, "y": 920, "w": 960, "h": 540, "title": "5 · Audio con metadatos"},
-    "Settings.dc.html": {"x": 0, "y": 1840, "w": 960, "h": 540, "title": "6 · Ajustes"},
-    "ErrorNetwork.dc.html": {"x": 1040, "y": 1840, "w": 960, "h": 540, "title": "7 · Error: sin red"},
-    "ErrorLost.dc.html": {"x": 2080, "y": 1840, "w": 960, "h": 540, "title": "8 · Error: conexión perdida"},
-    "Screensaver.dc.html": {"x": 3120, "y": 0, "w": 960, "h": 540, "title": "9 · Salvapantallas (espera tras 2 min)"},
-    "Devices.dc.html": {"x": 3120, "y": 1840, "w": 960, "h": 540, "title": "10 · Dispositivos permitidos"}
+    "Ajustes.dc.html": {
+      "h": 540,
+      "title": "7 · Ajustes",
+      "w": 960,
+      "x": 1040,
+      "y": 2320
+    },
+    "Codigo.dc.html": {
+      "h": 540,
+      "title": "3 · Código de emparejamiento",
+      "w": 960,
+      "x": 2080,
+      "y": 1340
+    },
+    "Detener.dc.html": {
+      "h": 540,
+      "title": "5 · ¿Dejar de compartir?",
+      "w": 960,
+      "x": 4160,
+      "y": 1340
+    },
+    "Dispositivos.dc.html": {
+      "h": 540,
+      "title": "8 · Dispositivos permitidos",
+      "w": 960,
+      "x": 2080,
+      "y": 2320
+    },
+    "Duplicando.dc.html": {
+      "h": 540,
+      "title": "4 · Peli en marcha + menú (OK)",
+      "w": 960,
+      "x": 3120,
+      "y": 1340
+    },
+    "Estilo.dc.html": {
+      "h": 540,
+      "title": "Estilo: color, letra y botones",
+      "w": 960,
+      "x": 2560,
+      "y": 0
+    },
+    "Icono.dc.html": {
+      "h": 540,
+      "title": "Icono y banner de la tele",
+      "w": 960,
+      "x": 1520,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 540,
+      "title": "1 · Inicio: esperando",
+      "w": 960,
+      "x": 0,
+      "y": 1340
+    },
+    "Mascota.dc.html": {
+      "h": 900,
+      "title": "Mascota: tres candidatas y Pepe",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Musica.dc.html": {
+      "h": 540,
+      "title": "6 · Solo música",
+      "w": 960,
+      "x": 0,
+      "y": 2320
+    },
+    "Perdida.dc.html": {
+      "h": 540,
+      "title": "9 · Conexión perdida",
+      "w": 960,
+      "x": 3120,
+      "y": 2320
+    },
+    "Salvapantallas.dc.html": {
+      "h": 540,
+      "title": "11 · Salvapantallas",
+      "w": 960,
+      "x": 5200,
+      "y": 2320
+    },
+    "SinRed.dc.html": {
+      "h": 540,
+      "title": "10 · Sin Wi-Fi",
+      "w": 960,
+      "x": 4160,
+      "y": 2320
+    },
+    "Solicitud.dc.html": {
+      "h": 540,
+      "title": "2 · Alguien quiere conectarse",
+      "w": 960,
+      "x": 1040,
+      "y": 1340
+    },
+    "Pepe.dc.html": {
+      "h": 240,
+      "title": "Pepe (componente con 10 caras)",
+      "w": 240,
+      "x": 3600,
+      "y": 0
+    }
   },
-  "order": ["Main.dc.html", "Request.dc.html", "Pin.dc.html", "Mirroring.dc.html", "Audio.dc.html", "Settings.dc.html", "ErrorNetwork.dc.html", "ErrorLost.dc.html", "Screensaver.dc.html", "Devices.dc.html"],
+  "createdOnFiles": {
+    "at": "2026-11-17T13:05:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
   "notes": {
-    "t1": {"x": 0, "y": -260, "text": "Conectar un dispositivo", "kind": "title1", "maxW": 4080},
-    "t2": {"x": 0, "y": 660, "text": "Recibir contenido", "kind": "title1", "maxW": 2000},
-    "t3": {"x": 0, "y": 1580, "text": "Ajustes y errores", "kind": "title1", "maxW": 4080}
+    "rowBrand": {
+      "kind": "title1",
+      "maxW": 3840,
+      "text": "Marca: mascota, icono y estilo",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "rowMain": {
+      "kind": "title1",
+      "maxW": 5120,
+      "text": "Flujo principal: de esperar a ver la peli",
+      "w": 240,
+      "x": 0,
+      "y": 1060
+    },
+    "rowMore": {
+      "kind": "title1",
+      "maxW": 6160,
+      "text": "Música, ajustes y momentos raros",
+      "w": 240,
+      "x": 0,
+      "y": 2040
+    }
   },
-  "designSystems": [
-    {"title": "Air Play JD", "namespace": "airplayjd", "artifact": "https://claude.ai/artifact/6nancAmD3HzieqHsU26a91", "version": "1792926952-559a", "copiedAt": "2026-10-25T11:19:00Z"}
-  ]
+  "order": [
+    "Mascota.dc.html",
+    "Icono.dc.html",
+    "Estilo.dc.html",
+    "Pepe.dc.html",
+    "Main.dc.html",
+    "Solicitud.dc.html",
+    "Codigo.dc.html",
+    "Duplicando.dc.html",
+    "Detener.dc.html",
+    "Musica.dc.html",
+    "Ajustes.dc.html",
+    "Dispositivos.dc.html",
+    "Perdida.dc.html",
+    "SinRed.dc.html",
+    "Salvapantallas.dc.html"
+  ],
+  "pages": [],
+  "title": "AirPlay TV — Rediseño"
 }

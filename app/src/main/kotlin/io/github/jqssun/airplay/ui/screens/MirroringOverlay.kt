@@ -12,8 +12,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Stop
@@ -29,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -41,10 +44,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.jqssun.airplay.R
 import io.github.jqssun.airplay.ui.design.ChipKind
-import io.github.jqssun.airplay.ui.design.GlassButton
-import io.github.jqssun.airplay.ui.design.GlassPanel
-import io.github.jqssun.airplay.ui.design.SafeArea
+import io.github.jqssun.airplay.ui.design.PillButton
+import io.github.jqssun.airplay.ui.design.Stage
 import io.github.jqssun.airplay.ui.design.StatusChip
+import io.github.jqssun.airplay.ui.design.Pepe
+import io.github.jqssun.airplay.ui.design.PepeMood
+import io.github.jqssun.airplay.ui.design.card
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
 import io.github.jqssun.airplay.ui.theme.Atv
 import io.github.jqssun.airplay.ui.theme.AtvType
@@ -131,35 +136,77 @@ fun MirroringOverlay(clientName: String, onStop: () -> Unit) {
                     },
                 )
             } else {
-                SafeArea {
-                    StatusChip(
-                        stringResource(R.string.chip_mirroring, sender),
-                        ChipKind.LIVE,
-                        Modifier.align(Alignment.TopEnd),
-                    )
-                    Row(
-                        modifier = Modifier.align(Alignment.BottomEnd),
-                        horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
-                    ) {
-                        GlassButton(
-                            text = stringResource(R.string.btn_keep_sharing),
-                            icon = Icons.Rounded.PlayArrow,
-                            onClick = ::hide,
-                            modifier = Modifier.focusRequester(keepFocus),
-                        )
-                        GlassButton(
-                            text = stringResource(R.string.btn_stop_mirroring),
-                            icon = Icons.Rounded.Stop,
-                            onClick = { confirming = true },
-                            danger = true,
-                        )
-                    }
-                }
+                OverlayControls(sender = sender, keepFocus = keepFocus, onKeepWatching = ::hide, onStop = { confirming = true })
             }
         }
     }
 }
 
+/** Live chip top-right; at the bottom a dark band with Pepe eating popcorn and the two buttons. */
+@Composable
+private fun OverlayControls(
+    sender: String,
+    keepFocus: FocusRequester,
+    onKeepWatching: () -> Unit,
+    onStop: () -> Unit,
+) {
+    val chip = stringResource(R.string.chip_mirroring, sender)
+    val caption: @Composable () -> Unit = {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(stringResource(R.string.overlay_title), style = AtvType.HeadlineSmall)
+            Text(stringResource(R.string.overlay_sub), style = AtvType.Caption, color = Atv.InkMuted)
+        }
+    }
+    val keep: @Composable () -> Unit = {
+        PillButton(
+            text = stringResource(R.string.btn_keep_sharing),
+            icon = Icons.Rounded.PlayArrow,
+            onClick = onKeepWatching,
+            modifier = Modifier.focusRequester(keepFocus),
+        )
+    }
+    val stop: @Composable () -> Unit = {
+        PillButton(
+            text = stringResource(R.string.btn_stop_mirroring),
+            icon = Icons.Rounded.Stop,
+            onClick = onStop,
+            danger = true,
+        )
+    }
+    Stage(
+        narrow = {
+            StatusChip(chip, ChipKind.LIVE)
+            Column(
+                modifier = Modifier.fillMaxWidth().card(Atv.ShapeLg, Atv.ScrimBand).padding(Atv.Space6),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(Atv.Space4),
+            ) {
+                Pepe(PepeMood.PALOMITAS, size = 112.dp)
+                caption()
+                keep()
+                stop()
+            }
+        },
+    ) {
+        StatusChip(
+            chip,
+            ChipKind.LIVE,
+            Modifier.align(Alignment.TopEnd).padding(top = Atv.SafeY, end = Atv.SafeX).widthIn(max = 520.dp),
+        )
+        Box(Modifier.align(Alignment.BottomStart).fillMaxWidth().height(150.dp).background(Atv.ScrimBand))
+        Pepe(PepeMood.PALOMITAS, Modifier.align(Alignment.BottomStart).padding(start = 40.dp, bottom = 10.dp), size = 128.dp)
+        Box(Modifier.align(Alignment.BottomStart).padding(start = 176.dp, bottom = 52.dp)) { caption() }
+        Row(
+            modifier = Modifier.align(Alignment.BottomEnd).padding(end = Atv.SafeX, bottom = 48.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            keep()
+            stop()
+        }
+    }
+}
+
+/** "¿Se acabó la sesión?": sad Pepe in a panel over the dimmed video; focus starts on keep sharing. */
 @Composable
 private fun StopConfirmation(
     sender: String,
@@ -167,38 +214,44 @@ private fun StopConfirmation(
     onKeepWatching: () -> Unit,
     onStop: () -> Unit,
 ) {
-    Box(
-        Modifier.fillMaxSize().background(Color(0xFF0A0A0C).copy(alpha = 0.55f)),
-        contentAlignment = Alignment.Center,
-    ) {
-        GlassPanel(Modifier.widthIn(max = 520.dp), strong = true) {
-            Column(
-                modifier = Modifier.padding(horizontal = 40.dp, vertical = Atv.Space8),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+    val panel: @Composable (Modifier) -> Unit = { modifier ->
+        Column(
+            modifier = modifier
+                .card(ConfirmShape, Atv.Butaca, border = Atv.Pasillo)
+                .padding(start = 36.dp, end = 36.dp, top = 26.dp, bottom = Atv.Space8),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Atv.Space3),
+        ) {
+            Pepe(PepeMood.TRISTE, size = 150.dp)
+            Text(stringResource(R.string.stop_confirm_title), style = AtvType.SectionTitle, textAlign = TextAlign.Center)
+            Text(
+                stringResource(R.string.stop_confirm_desc, sender),
+                style = AtvType.Body,
+                color = Atv.InkMuted,
+                textAlign = TextAlign.Center,
+            )
+            Row(
+                modifier = Modifier.padding(top = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                Text(stringResource(R.string.stop_confirm_title), style = AtvType.Title, textAlign = TextAlign.Center)
-                Text(
-                    stringResource(R.string.stop_confirm_desc, sender),
-                    style = AtvType.Body,
-                    color = Atv.InkMuted,
-                    textAlign = TextAlign.Center,
+                PillButton(
+                    text = stringResource(R.string.btn_keep_sharing),
+                    icon = Icons.Rounded.PlayArrow,
+                    onClick = onKeepWatching,
+                    modifier = Modifier.focusRequester(keepFocus),
                 )
-                Row(
-                    modifier = Modifier.padding(top = Atv.Space2),
-                    horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
-                ) {
-                    GlassButton(
-                        text = stringResource(R.string.btn_keep_sharing),
-                        onClick = onKeepWatching,
-                        modifier = Modifier.focusRequester(keepFocus),
-                    )
-                    GlassButton(text = stringResource(R.string.btn_stop_confirm), onClick = onStop, danger = true)
-                }
+                PillButton(text = stringResource(R.string.btn_stop_confirm), onClick = onStop, danger = true)
             }
         }
     }
+    Box(Modifier.fillMaxSize().background(Atv.Scrim)) {
+        Stage(narrow = { panel(Modifier.fillMaxWidth()) }) {
+            panel(Modifier.align(Alignment.TopCenter).padding(top = 70.dp).width(500.dp))
+        }
+    }
 }
+
+private val ConfirmShape = RoundedCornerShape(30.dp)
 
 // keys that reveal the hidden overlay; their auto-repeat is ignored. volume, media and home keys
 // pass through untouched

@@ -33,8 +33,8 @@ android {
         applicationId = "app.airplaytv"
         minSdk = 23
         targetSdk = 37
-        versionCode = 38
-        versionName = "1.0.1"
+        versionCode = 41
+        versionName = "1.2.0"
 
         externalNativeBuild {
             cmake {
@@ -122,7 +122,6 @@ dependencies {
     implementation(libs.media3.common)
     implementation(libs.kotlinx.coroutines)
     implementation(libs.oboe)
-    implementation(libs.haze)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

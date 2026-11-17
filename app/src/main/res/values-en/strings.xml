@@ -38,6 +38,7 @@
     <string name="section_display">Display</string>
     <string name="section_decode">Decode</string>
     <string name="section_developer">Developer</string>
+    <string name="section_diagnostics">Diagnostics</string>
 
     <!-- Settings: Server -->
     <string name="setting_server_name">Server name</string>
@@ -156,13 +157,25 @@
     <string name="cd_previous">Previous</string>
     <string name="cd_next">Next</string>
 
+    <!-- Pepe, the mascot (content descriptions) -->
+    <string name="cd_pepe_hola">Pepe waves hello</string>
+    <string name="cd_pepe_curioso">Pepe, curious</string>
+    <string name="cd_pepe_palomitas">Pepe with 3D glasses and popcorn</string>
+    <string name="cd_pepe_triste">Pepe, sad</string>
+    <string name="cd_pepe_musica">Pepe with headphones</string>
+    <string name="cd_pepe_mareado">Pepe, dizzy</string>
+    <string name="cd_pepe_dormido">Pepe, asleep</string>
+    <string name="cd_pepe_buscando">Pepe looking for Wi-Fi with a magnifying glass</string>
+    <string name="cd_pepe_herramientas">Pepe with a wrench</string>
+    <string name="cd_pepe_lista">Pepe with his list</string>
+
     <!-- Idle -->
-    <string name="status_waiting">Waiting</string>
+    <string name="status_waiting">Waiting · %1$s</string>
     <string name="status_stopped">Stopped</string>
     <string name="status_error">Error</string>
     <string name="status_permission">Permission needed</string>
     <string name="status_connecting">Connecting to %1$s</string>
-    <string name="idle_title">Ready to receive</string>
+    <string name="idle_title">Shall we watch a movie?</string>
     <string name="idle_hint">On your iPhone, open Control Center, tap Screen Mirroring and choose this TV.</string>
     <string name="idle_title_stopped">Receiver stopped</string>
     <string name="idle_hint_stopped">Start the receiver so your Apple devices can find it.</string>
@@ -170,37 +183,49 @@
     <string name="idle_hint_error">Check the network and try again.</string>
     <string name="idle_title_connecting">Connecting…</string>
     <string name="idle_title_permission">Nearby devices access needed</string>
-    <string name="card_settings">Settings</string>
+    <string name="greeting_morning">Good morning, family</string>
+    <string name="greeting_afternoon">Good afternoon, family</string>
+    <string name="greeting_night">Good evening, family</string>
+    <string name="idle_bubble">Hi! I\'m saving your seat</string>
+    <string name="idle_step_control_center">Control Center</string>
+    <string name="idle_step_mirroring">Screen Mirroring</string>
+    <string name="btn_settings">Settings</string>
 
     <!-- Connection request -->
-    <string name="request_title">%1$s wants to connect</string>
+    <string name="request_title">%1$s wants to come into the room</string>
     <string name="request_desc">It will be able to show its screen, videos, photos and music on this TV.</string>
     <string name="btn_allow_device">Allow</string>
     <string name="btn_reject">Decline</string>
-    <string name="request_note">If you allow it, we won\'t ask again for this device.</string>
+    <string name="request_note">If you let it in, Pepe adds it to his list and won\'t ask again.</string>
     <string name="request_timeout">Declining automatically in %1$d s</string>
+    <string name="request_eyebrow">New visitor</string>
+    <string name="request_bubble">Knock, knock!</string>
 
     <!-- Pairing code -->
     <string name="pin_chip">Pairing with %1$s</string>
-    <string name="pin_label">Enter this code on your Apple device</string>
+    <string name="pin_label">Type this code on your iPhone</string>
     <string name="pin_timer">This screen closes in %1$d s</string>
+    <string name="pin_desc">Your iPhone will ask for it when connecting. That way no neighbour sneaks into your living room.</string>
+    <string name="pin_bubble">Psst… it\'s a secret</string>
+    <string name="cd_pin">Code %1$s</string>
 
     <!-- Mirroring -->
     <string name="chip_mirroring">Mirroring · %1$s</string>
     <string name="btn_stop_mirroring">Stop</string>
     <string name="btn_keep_sharing">Keep sharing</string>
-    <string name="stop_confirm_title">Stop mirroring?</string>
-    <string name="stop_confirm_desc">%1$s will stop showing on this TV.</string>
+    <string name="stop_confirm_title">Is the show over?</string>
+    <string name="stop_confirm_desc">Screen mirroring will stop: %1$s will no longer show on this TV.</string>
     <string name="btn_stop_confirm">Yes, stop</string>
+    <string name="overlay_title">Enjoy the show!</string>
+    <string name="overlay_sub">Pepe won\'t miss a minute</string>
 
     <!-- Audio -->
-    <string name="chip_audio">Streaming audio</string>
-    <string name="source_from">From %1$s</string>
-    <string name="audio_dim_note">After 2 minutes without using the remote, the screen dims to protect the TV.</string>
+    <string name="chip_audio">Streaming audio · From %1$s</string>
 
     <!-- Settings home -->
     <string name="settings_title">Settings</string>
     <string name="settings_desc">How Apple devices on your network see you and who can connect.</string>
+    <string name="settings_eyebrow">Pepe\'s workshop</string>
     <string name="settings_footer">AirPlay TV %1$s · %2$s</string>
     <string name="settings_footer_offline">AirPlay TV %1$s · no network</string>
     <string name="row_server">Receiver</string>
@@ -214,6 +239,8 @@
     <string name="row_request_sub">New devices ask for permission the first time</string>
     <string name="row_devices">Allowed devices</string>
     <string name="row_devices_none">None yet</string>
+    <string name="row_crop_sub">So the movie fills the TV</string>
+    <string name="row_smooth_sub">Steady motion, sound in sync</string>
     <string name="row_quality">Picture quality</string>
     <string name="row_quality_sub">Higher quality needs better Wi-Fi</string>
     <string name="quality_auto">Automatic</string>
@@ -221,9 +248,6 @@
     <string name="quality_1080">1080p</string>
     <string name="quality_4k">4K</string>
     <string name="quality_custom">Custom</string>
-    <string name="row_debug">Show diagnostics</string>
-    <string name="row_debug_sub">Codec, FPS, audio buffer and glitches over the video</string>
-    <string name="section_advanced">Advanced</string>
     <string name="row_advanced">Advanced settings</string>
     <string name="row_advanced_sub">Codecs, network, audio and developer options</string>
     <string name="row_logs">Logs</string>
@@ -232,7 +256,9 @@
 
     <!-- Allowed devices -->
     <string name="devices_title">Allowed devices</string>
-    <string name="devices_desc">These devices connect without asking. Remove one so it asks for permission again.</string>
+    <string name="devices_desc">These devices come in without asking. Remove one so it asks for permission again.</string>
+    <string name="devices_eyebrow">The room\'s VIP list</string>
+    <string name="devices_bubble">You\'re on the list</string>
     <string name="btn_remove_all">Remove all</string>
     <string name="devices_remove">Remove</string>
     <string name="devices_hint">Press OK on a device to remove it.</string>
@@ -250,9 +276,12 @@
     <string name="no_network_title">The TV is not connected to a Wi-Fi network</string>
     <string name="no_network_desc">Connect the TV and your iPhone to the same Wi-Fi network to send content.</string>
     <string name="btn_network_settings">Open network settings</string>
+    <string name="no_network_eyebrow">No Wi-Fi, no movie</string>
+    <string name="no_network_bubble">Wi-Fi, where are you?</string>
     <string name="chip_lost">Connection lost</string>
     <string name="lost_title">The connection with %1$s was lost</string>
-    <string name="lost_desc">Check that the device is still nearby and on Wi-Fi. Waiting %1$d s for it to come back…</string>
+    <string name="lost_desc">Check that it\'s still nearby and on Wi-Fi. Pepe will wait %1$d s for it to come back…</string>
+    <string name="lost_kicker">Hello? Are you still there?</string>
 
     <!-- Screensaver -->
     <string name="screensaver_status">%1$s · Ready to receive</string>

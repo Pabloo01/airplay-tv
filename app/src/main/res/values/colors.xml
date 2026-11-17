@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="atv_bg">#0B0A0D</color>
-    <color name="atv_signal">#FC5858</color>
+    <!-- Noche: window background behind the Compose UI (Atv.Noche) -->
+    <color name="atv_bg">#16122B</color>
+    <!-- Pepe coral, the brand colour (Atv.Pepe) -->
+    <color name="atv_signal">#FF6B5B</color>
 </resources>

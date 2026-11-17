@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Estilo: color, letra y componentes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font:inherit}
+</style>
+</helmet>
+<div style="width: 960px; height: 540px; box-sizing: border-box; padding: 36px 48px; background: #16122B; font-family: Nunito, sans-serif; color: #FFF6EA; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; align-items: baseline; justify-content: space-between">
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 30px">Noche de peli en el sofá</h1>
+    <span style="font-size: 14px; color: #C8BFDA">Oscuro para ver con la luz baja · Redondo y amable · El mando manda: lo seleccionado se pinta de palomita</span>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 800; letter-spacing: 2px; color: #FFC94A">COLORES</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 12px; background: #16122B; border: 2px solid #3A3160"></span><span style="font-size: 14px; line-height: 18px"><b>Noche</b><br>#16122B fondo</span></div>
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 12px; background: #231D3D; border: 2px solid #3A3160"></span><span style="font-size: 14px; line-height: 18px"><b>Butaca</b><br>#231D3D tarjetas</span></div>
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 12px; background: #FFC94A"></span><span style="font-size: 14px; line-height: 18px"><b>Palomita</b><br>#FFC94A selección</span></div>
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 12px; background: #FF6B5B"></span><span style="font-size: 14px; line-height: 18px"><b>Pepe</b><br>#FF6B5B marca</span></div>
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 12px; background: #D63B3B"></span><span style="font-size: 14px; line-height: 18px"><b>Stop</b><br>#D63B3B detener</span></div>
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 12px; background: #3A3160"></span><span style="font-size: 14px; line-height: 18px"><b>Pasillo</b><br>#3A3160 bordes</span></div>
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 12px; background: #FFF6EA"></span><span style="font-size: 14px; line-height: 18px"><b>Crema</b><br>#FFF6EA texto</span></div>
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 12px; background: #C8BFDA"></span><span style="font-size: 14px; line-height: 18px"><b>Lavanda</b><br>#C8BFDA secundario</span></div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 800; letter-spacing: 2px; color: #FFC94A">LETRAS</h2>
+      <div style="background: #231D3D; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-family: Fredoka, sans-serif; font-weight: 600; font-size: 34px; line-height: 38px">¿Ponemos una peli?</span>
+        <span style="font-size: 13px; color: #C8BFDA">Fredoka 600 · títulos, 28–46 px</span>
+        <span style="font-size: 18px; line-height: 25px">Abre el Centro de control y toca Duplicar pantalla.</span>
+        <span style="font-size: 13px; color: #C8BFDA">Nunito 500–800 · textos, 16–18 px; nunca menos de 13 px en la tele</span>
+      </div>
+      <div style="background: #231D3D; border-radius: 20px; padding: 14px 18px; font-size: 15px; line-height: 22px; color: #C8BFDA">
+        Tono: cercano y con chispa, pero claro. Primero lo que hay que hacer; la broma, después.
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 800; letter-spacing: 2px; color: #FFC94A">CON EL MANDO</h2>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <button type="button" style="border: 0; border-radius: 999px; padding: 11px 20px; background: #2E2650; color: #FFF6EA; font-weight: 800; font-size: 15px">Normal</button>
+        <button type="button" style="border: 0; border-radius: 999px; padding: 11px 20px; background: #FFC94A; color: #2A1A00; font-weight: 800; font-size: 15px; box-shadow: 0 0 0 5px rgba(255, 201, 74, 0.22)">Seleccionado</button>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <button type="button" style="border: 0; border-radius: 999px; padding: 11px 20px; background: #D63B3B; color: #FFFFFF; font-weight: 800; font-size: 15px">Detener</button>
+        <button type="button" style="border: 0; border-radius: 999px; padding: 11px 20px; background: #FFF6EA; color: #B42C2C; font-weight: 800; font-size: 15px; box-shadow: 0 0 0 5px rgba(214, 59, 59, 0.35)">Detener seleccionado</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: center; justify-content: space-between; background: #231D3D; border-radius: 18px; padding: 12px 16px">
+          <span style="font-weight: 700; font-size: 15px">Fila normal</span>
+          <span aria-hidden="true" style="width: 42px; height: 24px; border-radius: 12px; background: #3A3160; display: flex; align-items: center; padding: 3px; box-sizing: border-box"><span style="width: 18px; height: 18px; border-radius: 9px; background: #C8BFDA"></span></span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; background: #FFF6EA; color: #2A1633; border-radius: 18px; padding: 12px 16px; box-shadow: 0 0 0 4px #FFC94A">
+          <span style="font-weight: 800; font-size: 15px">Fila seleccionada</span>
+          <span aria-hidden="true" style="width: 42px; height: 24px; border-radius: 12px; background: #FF6B5B; display: flex; align-items: center; justify-content: flex-end; padding: 3px; box-sizing: border-box"><span style="width: 18px; height: 18px; border-radius: 9px; background: #FFFFFF"></span></span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <span style="display: flex; align-items: center; gap: 7px; background: #231D3D; border: 1px solid #3A3160; border-radius: 999px; padding: 6px 13px; font-size: 13px; font-weight: 700"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 4px; background: #FFC94A"></span>Esperando</span>
+        <span style="display: flex; align-items: center; gap: 7px; background: #FF6B5B; color: #2A0F0B; border-radius: 999px; padding: 6px 13px; font-size: 13px; font-weight: 800"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 4px; background: #2A0F0B"></span>En directo</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":540}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

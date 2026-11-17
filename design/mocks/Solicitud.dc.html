@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Alguien quiere conectarse</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font:inherit}
+</style>
+</helmet>
+<div style="width: 960px; height: 540px; position: relative; overflow: hidden; background: #16122B; font-family: Nunito, sans-serif; color: #FFF6EA">
+  <div aria-hidden="true" style="position: absolute; left: 70px; top: 404px; width: 300px; height: 52px; border-radius: 50%; background: #221B3D"></div>
+  <div style="position: absolute; left: 92px; top: 70px; background: #FFF6EA; color: #2A1633; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px; padding: 10px 18px; border-radius: 18px 18px 4px 18px">¡Toc, toc!</div>
+  <div style="position: absolute; left: 80px; top: 140px">
+    <dc-import name="Pepe" mood="curioso" size="280" hint-size="280px,280px"></dc-import>
+  </div>
+
+  <div style="position: absolute; right: 48px; top: 64px; width: 470px; box-sizing: border-box; background: #231D3D; border: 1px solid #3A3160; border-radius: 28px; padding: 32px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <span aria-hidden="true" style="width: 48px; height: 48px; border-radius: 16px; background: #3A3160; display: flex; align-items: center; justify-content: center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFC94A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"></rect><path d="M11 18h2"></path></svg>
+      </span>
+      <span style="font-size: 13px; font-weight: 800; letter-spacing: 2px; color: #FFC94A">VISITA NUEVA</span>
+    </div>
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 32px; line-height: 38px">iPhone de Ana quiere entrar a la sala</h1>
+    <p style="margin: 0; font-size: 17px; line-height: 25px; color: #C8BFDA">Podrá mostrar su pantalla, vídeos, fotos y música en este televisor.</p>
+    <div style="display: flex; gap: 12px; margin-top: 6px">
+      <button type="button" style="display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; padding: 12px 24px; background: #FFC94A; color: #2A1A00; font-weight: 800; font-size: 17px; box-shadow: 0 0 0 5px rgba(255, 201, 74, 0.22); transform: scale(1.04)">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2A1A00" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg>
+        Permitir
+      </button>
+      <button type="button" style="border: 0; border-radius: 999px; padding: 12px 24px; background: #2E2650; color: #FFF6EA; font-weight: 800; font-size: 17px">Rechazar</button>
+    </div>
+    <p style="margin: 2px 0 0; font-size: 14px; line-height: 20px; color: #C8BFDA">Si le dejas pasar, Pepe lo apunta en su lista y no volverá a preguntar.</p>
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div aria-hidden="true" style="flex: 1; height: 6px; border-radius: 3px; background: #3A3160; overflow: hidden"><div style="width: 80%; height: 6px; background: #FF6B5B"></div></div>
+      <span style="font-size: 13px; font-weight: 700; color: #C8BFDA">Se rechazará en 24 s</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":540}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

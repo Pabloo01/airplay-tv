@@ -19,13 +19,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
+import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PhoneIphone
@@ -52,7 +53,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -66,12 +66,15 @@ import androidx.compose.ui.unit.dp
 import io.github.jqssun.airplay.R
 import io.github.jqssun.airplay.audio.VolumeBroadcast
 import io.github.jqssun.airplay.ui.design.ChipKind
-import io.github.jqssun.airplay.ui.design.GlassIconButton
-import io.github.jqssun.airplay.ui.design.SafeArea
+import io.github.jqssun.airplay.ui.design.FloorShadow
+import io.github.jqssun.airplay.ui.design.RoundIconButton
+import io.github.jqssun.airplay.ui.design.Stage
+import io.github.jqssun.airplay.ui.design.StatusChip
+import io.github.jqssun.airplay.ui.design.Pepe
+import io.github.jqssun.airplay.ui.design.PepeMood
 import io.github.jqssun.airplay.ui.design.TrackBar
 import io.github.jqssun.airplay.ui.design.Wall
-import io.github.jqssun.airplay.ui.design.glass
-import io.github.jqssun.airplay.ui.design.isWide
+import io.github.jqssun.airplay.ui.design.card
 import io.github.jqssun.airplay.ui.dpadAdjust
 import io.github.jqssun.airplay.ui.isTv
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
@@ -106,80 +109,72 @@ fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
     LaunchedEffect(player != null) { playFocus.requestFocusUntilLanded() }
     val sender = clientName.ifBlank { stringResource(R.string.device_generic) }
     val tv = isTv()
-
-    Wall {
-        SafeArea {
-            val wide = isWide()
-            Column(Modifier.fillMaxSize()) {
-                TopBar(stringResource(R.string.chip_audio), ChipKind.LIVE)
-                val info: @Composable ColumnScope.() -> Unit = {
-                    Text(stringResource(R.string.source_from, sender), style = AtvType.CaptionStrong, color = Atv.InkMuted)
-                    Text(
-                        track.title.ifEmpty { stringResource(R.string.unknown_track) },
-                        style = AtvType.Display,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    val subtitle = listOf(track.artist, track.album).filter { it.isNotEmpty() }.joinToString(" · ")
-                    if (subtitle.isNotEmpty()) {
-                        Text(subtitle, style = AtvType.Headline, color = Atv.InkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                    Row(
-                        modifier = Modifier.padding(top = 28.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
-                    ) {
-                        Text(formatTrackTime(positionMs), style = AtvType.CaptionStrong, color = Atv.InkMuted)
-                        TrackBar(
-                            if (durationMs > 0) positionMs / durationMs.toFloat() else 0f,
-                            Modifier.weight(1f),
-                        )
-                        Text(
-                            "−" + formatTrackTime((durationMs - positionMs).coerceAtLeast(0)),
-                            style = AtvType.CaptionStrong,
-                            color = Atv.InkMuted,
-                        )
-                    }
-                    if (player != null) {
-                        Row(
-                            modifier = Modifier.padding(top = 20.dp),
-                            horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
-                        ) {
-                            GlassIconButton(Icons.Rounded.SkipPrevious, stringResource(R.string.cd_previous), { player.seekToPrevious() })
-                            GlassIconButton(
-                                if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                                stringResource(R.string.cd_play_pause),
-                                {
-                                    if (playing) player.pause() else player.play()
-                                    playing = !playing
-                                },
-                                modifier = Modifier.focusRequester(playFocus),
-                            )
-                            GlassIconButton(Icons.Rounded.SkipNext, stringResource(R.string.cd_next), { player.seekToNext() })
-                        }
-                    }
-                    if (!tv) VolumeControls(viewModel)
-                }
-                if (wide) {
-                    Row(
-                        modifier = Modifier.weight(1f).padding(horizontal = Atv.Space6),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(Atv.Space12),
-                    ) {
-                        Artwork(track.coverArt, Modifier.size(280.dp))
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp), content = info)
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = Atv.Space6),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        Artwork(track.coverArt, Modifier.widthIn(max = 360.dp).fillMaxWidth().align(Alignment.CenterHorizontally))
-                        info()
-                    }
-                }
-                if (tv) Text(stringResource(R.string.audio_dim_note), style = AtvType.Caption, color = Atv.InkMuted)
+    val chip = stringResource(R.string.chip_audio, sender)
+    // without a DACP player the length still comes with the track metadata
+    val totalMs = durationMs.takeIf { it > 0 } ?: track.durationMs
+    val info: @Composable ColumnScope.() -> Unit = {
+        Text(
+            track.title.ifEmpty { stringResource(R.string.unknown_track) },
+            style = AtvType.Title,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        val subtitle = listOf(track.artist, track.album).filter { it.isNotEmpty() }.joinToString(" · ")
+        if (subtitle.isNotEmpty()) {
+            Text(subtitle, style = AtvType.BodyLarge, color = Atv.InkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            TrackBar(if (totalMs > 0) positionMs / totalMs.toFloat() else 0f, Modifier.fillMaxWidth(), height = 8.dp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(formatTrackTime(positionMs), style = AtvType.Footnote, color = Atv.InkMuted)
+                if (totalMs > 0) Text(formatTrackTime(totalMs), style = AtvType.Footnote, color = Atv.InkMuted)
             }
+        }
+        if (player != null) {
+            Row(
+                modifier = Modifier.padding(top = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
+            ) {
+                RoundIconButton(Icons.Rounded.SkipPrevious, stringResource(R.string.cd_previous), { player.seekToPrevious() })
+                RoundIconButton(
+                    if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                    stringResource(R.string.cd_play_pause),
+                    {
+                        if (playing) player.pause() else player.play()
+                        playing = !playing
+                    },
+                    modifier = Modifier.focusRequester(playFocus),
+                    size = 72.dp,
+                )
+                RoundIconButton(Icons.Rounded.SkipNext, stringResource(R.string.cd_next), { player.seekToNext() })
+            }
+        }
+        if (!tv) VolumeControls(viewModel)
+    }
+    Wall {
+        Stage(
+            narrow = {
+                StatusChip(chip, ChipKind.WAITING, icon = Icons.Rounded.MusicNote)
+                Artwork(track.coverArt, Modifier.widthIn(max = 320.dp).fillMaxWidth())
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Atv.Space2), content = info)
+                Pepe(PepeMood.MUSICA, size = 140.dp)
+            },
+        ) {
+            StatusChip(
+                chip,
+                ChipKind.WAITING,
+                Modifier.offset(Atv.SafeX, Atv.SafeY).widthIn(max = 640.dp),
+                icon = Icons.Rounded.MusicNote,
+            )
+            Artwork(track.coverArt, Modifier.offset(Atv.SafeX, 96.dp).size(260.dp))
+            Column(
+                modifier = Modifier.offset(348.dp, 112.dp).width(400.dp),
+                verticalArrangement = Arrangement.spacedBy(Atv.Space2),
+                content = info,
+            )
+            FloorShadow(Modifier.offset(730.dp, 430.dp).size(200.dp, 40.dp))
+            Pepe(PepeMood.MUSICA, Modifier.offset(740.dp, 262.dp), size = 190.dp)
         }
         val scrim by animateColorAsState(
             if (dimmed && tv) Color.Black.copy(alpha = 0.7f) else Color.Transparent,
@@ -190,13 +185,13 @@ fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
     }
 }
 
+/** 260dp square, radius 28: the cover art, or a music note on ButacaAlta when there is none. */
 @Composable
 private fun Artwork(cover: Bitmap?, modifier: Modifier) {
     Box(
         modifier = modifier
             .aspectRatio(1f)
-            .shadow(24.dp, Atv.ShapeLg, ambientColor = Color.Black, spotColor = Color.Black)
-            .glass(Atv.ShapeLg),
+            .card(Atv.ShapeLg, Atv.ButacaAlta, border = Atv.Pasillo),
         contentAlignment = Alignment.Center,
     ) {
         if (cover != null) {
@@ -207,7 +202,7 @@ private fun Artwork(cover: Bitmap?, modifier: Modifier) {
                 modifier = Modifier.fillMaxSize().clip(Atv.ShapeLg),
             )
         } else {
-            Icon(Icons.Rounded.MusicNote, null, tint = Atv.InkMuted, modifier = Modifier.size(48.dp))
+            Icon(Icons.Outlined.MusicNote, null, tint = Atv.InkMuted, modifier = Modifier.size(64.dp))
         }
     }
 }
@@ -259,9 +254,9 @@ private fun VolumeRow(
             enabled = enabled,
             onValueChangeFinished = onValueChangeFinished,
             colors = SliderDefaults.colors(
-                thumbColor = Atv.Ink,
-                activeTrackColor = Atv.Ink,
-                inactiveTrackColor = Color.White.copy(alpha = 0.22f),
+                thumbColor = Atv.Crema,
+                activeTrackColor = Atv.Palomita,
+                inactiveTrackColor = Atv.Pasillo,
             ),
             modifier = Modifier.weight(1f).dpadAdjust(onLeft = { onStep(-1) }, onRight = { onStep(1) }),
         )

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Solo música</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font:inherit}
+</style>
+</helmet>
+<div style="width: 960px; height: 540px; position: relative; overflow: hidden; background: #16122B; font-family: Nunito, sans-serif; color: #FFF6EA">
+  <div style="position: absolute; left: 48px; top: 27px; display: flex; align-items: center; gap: 8px; background: #231D3D; border: 1px solid #3A3160; border-radius: 999px; padding: 7px 16px 7px 12px; font-size: 14px; font-weight: 700">
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#FFC94A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span>Transmitiendo audio · Desde iPhone de Pablo</span>
+  </div>
+
+  <div style="position: absolute; left: 48px; top: 96px; width: 260px; height: 260px; border-radius: 28px; background: #2E2650; border: 1px solid #3A3160; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px">
+    <svg width="64" height="64" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#C8BFDA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span style="font-size: 14px; font-weight: 700; color: #C8BFDA">[Carátula del disco]</span>
+  </div>
+
+  <div style="position: absolute; left: 348px; top: 112px; width: 400px; display: flex; flex-direction: column; gap: 8px">
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 36px; line-height: 42px">[Título de la canción]</h1>
+    <span style="font-size: 18px; color: #C8BFDA">[Artista] · [Álbum]</span>
+    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 18px">
+      <div aria-hidden="true" style="height: 8px; border-radius: 4px; background: #3A3160; overflow: hidden"><div style="width: 38%; height: 8px; background: #FFC94A; border-radius: 4px"></div></div>
+      <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #C8BFDA"><span>[tiempo]</span><span>[duración]</span></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px; margin-top: 14px">
+      <button type="button" aria-label="Anterior" style="width: 56px; height: 56px; border: 0; border-radius: 28px; background: #2E2650; display: flex; align-items: center; justify-content: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="#FFF6EA"><path d="M6 5h2v14H6zM20 5v14L9 12z"></path></svg>
+      </button>
+      <button type="button" aria-label="Pausa" style="width: 72px; height: 72px; border: 0; border-radius: 36px; background: #FFC94A; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 6px rgba(255, 201, 74, 0.22); transform: scale(1.04)">
+        <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" fill="#2A1A00"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
+      </button>
+      <button type="button" aria-label="Siguiente" style="width: 56px; height: 56px; border: 0; border-radius: 28px; background: #2E2650; display: flex; align-items: center; justify-content: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="#FFF6EA"><path d="M16 5h2v14h-2zM4 5v14l11-7z"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; left: 730px; top: 430px; width: 200px; height: 40px; border-radius: 50%; background: #221B3D"></div>
+  <div style="position: absolute; left: 740px; top: 262px">
+    <dc-import name="Pepe" mood="musica" size="190" hint-size="190px,190px"></dc-import>
+  </div>
+
+  
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":540}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

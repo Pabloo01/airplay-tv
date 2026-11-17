@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Salvapantallas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 960px; height: 540px; position: relative; overflow: hidden; background: #0B0916; font-family: Nunito, sans-serif; color: #FFF6EA">
+  <div aria-hidden="true" style="position: absolute; left: 140px; top: 80px; width: 3px; height: 3px; border-radius: 2px; background: #FFF6EA; opacity: 0.35"></div>
+  <div aria-hidden="true" style="position: absolute; left: 420px; top: 48px; width: 4px; height: 4px; border-radius: 2px; background: #FFC94A; opacity: 0.3"></div>
+  <div aria-hidden="true" style="position: absolute; left: 860px; top: 120px; width: 3px; height: 3px; border-radius: 2px; background: #FFF6EA; opacity: 0.3"></div>
+  <div aria-hidden="true" style="position: absolute; left: 300px; top: 300px; width: 3px; height: 3px; border-radius: 2px; background: #FFF6EA; opacity: 0.25"></div>
+  <svg aria-hidden="true" width="60" height="60" viewBox="0 0 60 60" style="position: absolute; left: 820px; top: 40px"><path d="M40 8a24 24 0 1 0 14 34A20 20 0 0 1 40 8z" fill="#FFE7A8" opacity="0.6"></path></svg>
+
+  <div style="position: absolute; left: 96px; top: 150px; display: flex; flex-direction: column; gap: 4px">
+    <span style="font-family: Fredoka, sans-serif; font-weight: 500; font-size: 112px; line-height: 116px; color: #E9E1F5">23:41</span>
+    <span style="font-size: 18px; font-weight: 700; color: #9C93B5">TV Pablo · Listo para recibir</span>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; left: 600px; top: 440px; width: 220px; height: 36px; border-radius: 50%; background: #15112A"></div>
+  <div style="position: absolute; left: 610px; top: 250px; opacity: 0.85">
+    <dc-import name="Pepe" mood="dormido" size="210" hint-size="210px,210px"></dc-import>
+  </div>
+
+  
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":540}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

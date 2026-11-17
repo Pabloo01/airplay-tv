@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Dispositivos permitidos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font:inherit}
+</style>
+</helmet>
+<div style="width: 960px; height: 540px; position: relative; overflow: hidden; background: #16122B; font-family: Nunito, sans-serif; color: #FFF6EA">
+  <div style="position: absolute; left: 48px; top: 40px; width: 330px; display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 14px; font-weight: 700; color: #C8BFDA">‹ Ajustes</span>
+    <span style="font-size: 13px; font-weight: 800; letter-spacing: 2px; color: #FFC94A">LA LISTA VIP DE LA SALA</span>
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 36px; line-height: 42px">Dispositivos permitidos</h1>
+    <p style="margin: 0; font-size: 16px; line-height: 23px; color: #C8BFDA">Estos dispositivos entran sin preguntar. Quita uno para que vuelva a pedir permiso.</p>
+  </div>
+  <div style="position: absolute; left: 196px; top: 296px; background: #FFF6EA; color: #2A1633; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 16px; padding: 9px 14px; border-radius: 16px 16px 4px 16px">Tú estás en la lista</div>
+  <div aria-hidden="true" style="position: absolute; left: 50px; top: 470px; width: 200px; height: 38px; border-radius: 50%; background: #221B3D"></div>
+  <div style="position: absolute; left: 56px; top: 316px">
+    <dc-import name="Pepe" mood="lista" size="180" hint-size="180px,180px"></dc-import>
+  </div>
+
+  <div style="position: absolute; left: 420px; right: 48px; top: 96px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 16px; background: #FFF6EA; color: #2A1633; border-radius: 22px; padding: 16px 18px; box-shadow: 0 0 0 4px #FFC94A">
+      <span aria-hidden="true" style="width: 48px; height: 48px; border-radius: 16px; background: #FFE2A3; display: flex; align-items: center; justify-content: center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2A1633" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"></rect><path d="M11 18h2"></path></svg>
+      </span>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 800; font-size: 18px">iPhone de Pablo</span><span style="font-size: 14px; color: #5C4F6E">Última conexión: hoy, 11:37</span></div>
+      <span style="background: #D63B3B; color: #FFFFFF; font-weight: 800; font-size: 14px; padding: 7px 14px; border-radius: 999px">Quitar</span>
+    </div>
+    <p style="margin: 0; font-size: 14px; color: #C8BFDA">Pulsa OK sobre un dispositivo para quitarlo.</p>
+  </div>
+  <button type="button" style="position: absolute; left: 420px; bottom: 32px; border: 0; border-radius: 999px; padding: 12px 22px; background: #2E2650; color: #FFF6EA; font-weight: 800; font-size: 16px">Quitar todos</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":540}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

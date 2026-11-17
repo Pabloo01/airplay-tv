@@ -1,23 +1,18 @@
 package io.github.jqssun.airplay.ui.design
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,44 +20,56 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.jqssun.airplay.R
 import io.github.jqssun.airplay.ui.theme.Atv
 import io.github.jqssun.airplay.ui.theme.AtvType
 
+// ---------- brand ----------
+
+/** Pepe-TV glyph + "AirPlay TV" in Fredoka (top-left of the home screen). */
 @Composable
 fun Wordmark(modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier.height(32.dp),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Atv.Space2),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Mark(Modifier.size(32.dp))
-        Text(stringResource(R.string.app_name), style = AtvType.Headline, color = Atv.Ink, maxLines = 1)
+        Mark(Modifier.size(30.dp))
+        Text(
+            stringResource(R.string.app_name),
+            style = AtvType.HeadlineSmall.copy(letterSpacing = 0.2.sp),
+            color = Atv.Ink,
+            maxLines = 1,
+        )
     }
 }
 
+/** The small Pepe TV glyph (`R.drawable.logo_mark`, 30x30 viewport). */
 @Composable
 fun Mark(modifier: Modifier = Modifier) {
     Image(
@@ -72,188 +79,266 @@ fun Mark(modifier: Modifier = Modifier) {
     )
 }
 
-enum class ChipKind { IDLE, OK, LIVE, ERROR }
+// ---------- text helpers ----------
 
+/** Uppercase yellow kicker above a title ("BUENAS NOCHES, FAMILIA"). */
 @Composable
-fun StatusChip(text: String, kind: ChipKind, modifier: Modifier = Modifier) {
-    val content = when (kind) {
-        ChipKind.LIVE -> Atv.OnSignal
-        ChipKind.ERROR -> Atv.Signal
-        ChipKind.IDLE -> Atv.InkMuted
-        ChipKind.OK -> Atv.Ink
-    }
+fun Eyebrow(text: String, modifier: Modifier = Modifier, color: Color = Atv.Palomita) {
+    Text(text.uppercase(), style = AtvType.Eyebrow, color = color, modifier = modifier)
+}
+
+// ---------- status chip ----------
+
+enum class ChipKind {
+    /** Butaca + Pasillo border + Palomita dot with a soft ring ("Esperando · TV"). */
+    WAITING,
+
+    /** Like [WAITING] with a Lavanda dot ("Sin red", "Detenido"). */
+    NEUTRAL,
+
+    /** Pepe coral fill, dark ink and dot ("Duplicando · iPhone"). */
+    LIVE,
+
+    /** Butaca + 2dp coral border + coral icon ("Conexión perdida"). */
+    ALERT,
+}
+
+/**
+ * Pill-shaped status chip, 34dp high. [icon] replaces the dot (tinted Palomita, or OnPepe on
+ * [ChipKind.LIVE]); on [ChipKind.ALERT] it defaults to a warning sign tinted coral.
+ */
+@Composable
+fun StatusChip(text: String, kind: ChipKind, modifier: Modifier = Modifier, icon: ImageVector? = null) {
     val shape = Atv.ShapePill
-    val surface = if (kind == ChipKind.LIVE) {
-        Modifier.shadow(12.dp, shape).clip(shape).background(Atv.Signal)
-    } else {
-        Modifier.glass(shape, blur = false)
+    val surface = when (kind) {
+        ChipKind.LIVE -> Modifier.card(shape, Atv.Pepe)
+        ChipKind.ALERT -> Modifier.card(shape, Atv.Butaca, border = Atv.Pepe, borderWidth = 2.dp)
+        ChipKind.WAITING, ChipKind.NEUTRAL -> Modifier.card(shape, Atv.Butaca, border = Atv.Pasillo)
     }
+    val ink = if (kind == ChipKind.LIVE) Atv.OnPepe else Atv.Ink
+    val loud = kind == ChipKind.LIVE || kind == ChipKind.ALERT
     Row(
         modifier = modifier.height(34.dp).then(surface).padding(start = Atv.Space3, end = Atv.Space4),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Atv.Space2),
     ) {
-        if (kind == ChipKind.ERROR) {
-            Icon(Icons.Rounded.Warning, null, tint = content, modifier = Modifier.size(14.dp))
-        } else {
-            val pulse = if (kind == ChipKind.LIVE) {
-                rememberInfiniteTransition(label = "pulse").animateFloat(
-                    initialValue = 1f,
-                    targetValue = 0.4f,
-                    animationSpec = infiniteRepeatable(tween(800), RepeatMode.Reverse),
-                    label = "pulseAlpha",
-                ).value
-            } else 1f
-            Box(
-                Modifier.size(10.dp).alpha(pulse).clip(Atv.ShapePill)
-                    .background(if (kind == ChipKind.OK) Atv.Ink else content)
+        when {
+            kind == ChipKind.ALERT ->
+                Icon(icon ?: Icons.Rounded.Warning, null, tint = Atv.Pepe, modifier = Modifier.size(16.dp))
+            icon != null ->
+                Icon(icon, null, tint = if (kind == ChipKind.LIVE) Atv.OnPepe else Atv.Palomita, modifier = Modifier.size(16.dp))
+            else -> ChipDot(
+                color = when (kind) {
+                    ChipKind.LIVE -> Atv.OnPepe
+                    ChipKind.NEUTRAL -> Atv.Lavanda
+                    else -> Atv.Palomita
+                },
+                glow = kind == ChipKind.WAITING,
             )
         }
-        Text(text, style = AtvType.CaptionStrong, color = content, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(
+            text,
+            style = if (loud) AtvType.CaptionStrong.copy(fontWeight = FontWeight.ExtraBold) else AtvType.CaptionStrong,
+            color = ink,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
 @Composable
-fun GlassButton(
+private fun ChipDot(color: Color, glow: Boolean) {
+    Spacer(
+        Modifier.size(9.dp).drawBehind {
+            if (glow) drawCircle(color.copy(alpha = 0.2f), radius = size.minDimension / 2 + 4.dp.toPx())
+            drawCircle(color)
+        }
+    )
+}
+
+// ---------- buttons ----------
+
+/**
+ * Pill button, 52dp high. Unfocused ButacaAlta + Crema; focused Palomita + dark ink, 1.04 scale
+ * and a soft yellow ring. [danger]: Stop red + white; focused Crema + red text + red ring.
+ */
+@Composable
+fun PillButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
-    // destructive action: solid red at rest, white with red text when focused (same focus cue as
-    // every other button)
     danger: Boolean = false,
 ) {
-    GlassSurface(onClick = onClick, modifier = modifier.height(52.dp), transparentAtRest = danger) { focused ->
-        val ink = when {
-            !danger -> LocalContentColor.current
-            focused -> Atv.Danger
-            else -> Color.White
-        }
+    FocusSurface(
+        onClick = onClick,
+        modifier = modifier.height(52.dp),
+        style = if (danger) FocusStyle.Danger else FocusStyle.Button,
+    ) {
         Row(
-            modifier = Modifier.fillMaxHeight()
-                .then(if (danger && !focused) Modifier.background(Atv.Danger) else Modifier)
-                .padding(horizontal = 28.dp),
+            modifier = Modifier.fillMaxHeight().padding(horizontal = Atv.Space6),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Atv.Space2),
+            horizontalArrangement = Arrangement.spacedBy(9.dp),
         ) {
-            if (icon != null) Icon(icon, null, modifier = Modifier.size(20.dp), tint = ink)
-            Text(text, style = AtvType.Button, color = ink)
+            if (icon != null) Icon(icon, null, modifier = Modifier.size(18.dp))
+            Text(text, style = AtvType.Button, maxLines = 1)
         }
     }
 }
 
+/** Round icon button (prev / play / next): 56dp default, 72dp for the main action. Same focus rule as [PillButton]. */
 @Composable
-fun GlassIconButton(
+fun RoundIconButton(
     icon: ImageVector,
     contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    size: Dp = 56.dp,
 ) {
-    GlassSurface(onClick = onClick, modifier = modifier.size(48.dp), blur = false) {
-        Box(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
-            Icon(icon, contentDescription, modifier = Modifier.size(24.dp))
-        }
+    FocusSurface(onClick = onClick, modifier = modifier.size(size), style = FocusStyle.Round) {
+        Icon(icon, contentDescription, modifier = Modifier.size(size * 0.39f).align(Alignment.Center))
     }
 }
 
+// ---------- settings ----------
+
+/**
+ * Column of [SettingRow]s, 8dp apart. Pads itself by the focus ring width so the ring of the
+ * first/last row isn't clipped; pass [scroll] to make it scroll (the padding stays inside).
+ */
 @Composable
-fun MediaCard(
-    icon: ImageVector,
-    title: String,
-    onClick: () -> Unit,
+fun SettingsList(
     modifier: Modifier = Modifier,
+    scroll: ScrollState? = null,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
-    val interaction = remember { MutableInteractionSource() }
-    val focused by interaction.collectIsFocusedAsState()
-    val lift by animateFloatAsState(if (focused) 1f else 0f, label = "lift")
-    val titleColor by animateColorAsState(if (focused) Atv.Ink else Atv.InkMuted, label = "cardTitle")
-    Column(modifier.width(150.dp), verticalArrangement = Arrangement.spacedBy(Atv.Space3)) {
-        GlassSurface(
-            onClick = onClick,
-            shape = Atv.ShapeMd,
-            interactionSource = interaction,
-            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f).offset(y = (-4).dp * lift),
-        ) {
-            Icon(icon, null, modifier = Modifier.size(40.dp).align(Alignment.Center))
-        }
-        Column(Modifier.offset(y = 8.dp * lift).padding(horizontal = Atv.Space1)) {
-            Text(title, style = AtvType.CardTitle, color = titleColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
-    }
-}
-
-@Composable
-fun GlassList(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(
-        modifier = modifier.glass(RoundedCornerShape(Atv.RadiusMd + Atv.Space2)).padding(Atv.Space2),
+        modifier = modifier
+            .then(if (scroll != null) Modifier.verticalScroll(scroll) else Modifier)
+            .padding(Atv.RingRow),
         verticalArrangement = Arrangement.spacedBy(Atv.Space2),
         content = content,
     )
 }
 
+/**
+ * Setting row: Butaca card, radius 18, icon + title (16 extra-bold) + subtitle (13 Lavanda) +
+ * trailing [value] (Palomita) / [chevron] / [trailing] slot. Focused: Crema background, Pepe ink,
+ * 4dp Palomita ring, no scale. The subtitle shows up to [subtitleLines] lines.
+ */
 @Composable
-fun GlassRow(
+fun SettingRow(
     title: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     subtitle: String? = null,
     value: String? = null,
+    chevron: Boolean = false,
+    subtitleLines: Int = 2,
     trailing: (@Composable RowScope.(focused: Boolean) -> Unit)? = null,
 ) {
-    GlassSurface(
+    FocusSurface(
         onClick = onClick,
-        shape = Atv.ShapeMd,
-        focusScale = Atv.ScaleRow,
-        transparentAtRest = true,
-        modifier = modifier.fillMaxWidth().heightIn(min = 64.dp),
+        radius = Atv.RadiusRow,
+        style = FocusStyle.Row,
+        focusScale = 1f,
+        modifier = modifier.fillMaxWidth().heightIn(min = 56.dp),
     ) { focused ->
         val muted = if (focused) Atv.OnFocusMuted else Atv.InkMuted
         Row(
-            modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(horizontal = 20.dp, vertical = Atv.Space3),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = Atv.Space4, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             if (icon != null) {
-                Icon(icon, null, tint = if (focused) Atv.OnFocus else Atv.InkMuted, modifier = Modifier.size(24.dp))
+                Icon(icon, null, tint = if (focused) Atv.OnFocus else Atv.InkMuted, modifier = Modifier.size(22.dp))
             }
             Column(Modifier.weight(1f)) {
-                Text(title, style = AtvType.BodyStrong, color = LocalContentColor.current)
+                Text(title, style = AtvType.RowTitle, color = LocalContentColor.current)
                 if (subtitle != null) {
-                    Text(subtitle, style = AtvType.Caption, color = muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(subtitle, style = AtvType.RowSubtitle, color = muted, maxLines = subtitleLines, overflow = TextOverflow.Ellipsis)
                 }
             }
             if (value != null) {
-                Text(value, style = AtvType.Callout, color = muted, maxLines = 1, textAlign = TextAlign.End)
+                Text(
+                    value,
+                    style = AtvType.RowValue,
+                    color = if (focused) Atv.OnFocus else Atv.Palomita,
+                    maxLines = 1,
+                    textAlign = TextAlign.End,
+                )
             }
             trailing?.invoke(this, focused)
+            if (chevron) {
+                Icon(
+                    Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                    null,
+                    tint = if (focused) Atv.OnFocus else Atv.InkMuted,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
         }
     }
 }
 
+/** On: coral track, white knob right. Off: Pasillo track, Lavanda knob left. 46x26. */
 @Composable
-fun AtvSwitch(checked: Boolean, focused: Boolean) {
-    val track by animateColorAsState(
-        when {
-            checked -> Atv.Signal
-            focused -> Atv.OnFocusMuted
-            else -> Color.White.copy(alpha = 0.2f)
-        },
-        label = "switchTrack",
+fun Toggle(checked: Boolean, modifier: Modifier = Modifier) {
+    val track by animateColorAsState(if (checked) Atv.Pepe else Atv.Pasillo, tween(150), label = "toggleTrack")
+    val knob by animateColorAsState(if (checked) Color.White else Atv.Lavanda, tween(150), label = "toggleKnob")
+    val position by animateFloatAsState(if (checked) 1f else 0f, tween(150), label = "togglePosition")
+    Box(modifier.size(46.dp, 26.dp).clip(Atv.ShapePill).background(track).padding(3.dp)) {
+        Box(Modifier.offset(x = 20.dp * position).size(20.dp).clip(Atv.ShapePill).background(knob))
+    }
+}
+
+// ---------- progress ----------
+
+/** Progress / countdown bar: Pasillo track, [color] fill (Palomita; Pepe coral for the request timeout). */
+@Composable
+fun TrackBar(
+    fraction: Float,
+    modifier: Modifier = Modifier,
+    height: Dp = 6.dp,
+    color: Color = Atv.Palomita,
+) {
+    Box(modifier.height(height).clip(Atv.ShapePill).background(Atv.Pasillo)) {
+        Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceIn(0f, 1f)).clip(Atv.ShapePill).background(color))
+    }
+}
+
+// ---------- Pepe's props ----------
+
+/** Which corner of a [SpeechBubble] is the small (4dp) "tail" corner, pointing at Pepe. */
+enum class BubbleTail { BottomStart, BottomEnd, TopStart, TopEnd }
+
+/** Pepe's speech bubble: Crema, Pepe-ink Fredoka 600, radius 18 with one 4dp tail corner. */
+@Composable
+fun SpeechBubble(
+    text: String,
+    modifier: Modifier = Modifier,
+    tail: BubbleTail = BubbleTail.BottomStart,
+    style: TextStyle = AtvType.Bubble,
+) {
+    val round = Atv.RadiusRow
+    val tip = 4.dp
+    val shape = RoundedCornerShape(
+        topStart = if (tail == BubbleTail.TopStart) tip else round,
+        topEnd = if (tail == BubbleTail.TopEnd) tip else round,
+        bottomEnd = if (tail == BubbleTail.BottomEnd) tip else round,
+        bottomStart = if (tail == BubbleTail.BottomStart) tip else round,
     )
-    val knob by animateFloatAsState(if (checked) 1f else 0f, label = "switchKnob")
-    Box(Modifier.size(50.dp, 30.dp).clip(Atv.ShapePill).background(track)) {
-        Box(
-            Modifier.padding(2.dp).offset(x = 20.dp * knob).size(26.dp)
-                .shadow(3.dp, Atv.ShapePill).clip(Atv.ShapePill).background(Atv.Ink)
-        )
-    }
+    Text(
+        text,
+        style = style,
+        color = Atv.PepeInk,
+        modifier = modifier.clip(shape).background(Atv.Crema).padding(horizontal = Atv.Space4, vertical = 10.dp),
+    )
 }
 
+/** The flat ellipse Pepe stands on (#221B3D; darker on dimmed screens). Size it with [modifier]. */
 @Composable
-fun TrackBar(fraction: Float, modifier: Modifier = Modifier, height: androidx.compose.ui.unit.Dp = 6.dp) {
-    Box(modifier.height(height).clip(Atv.ShapePill).background(Color.White.copy(alpha = 0.22f))) {
-        Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceIn(0f, 1f)).clip(Atv.ShapePill).background(Atv.Ink))
-    }
+fun FloorShadow(modifier: Modifier = Modifier, color: Color = Atv.Floor) {
+    Spacer(modifier.drawBehind { drawOval(color) })
 }
-

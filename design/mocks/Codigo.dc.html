@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Código de emparejamiento</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 960px; height: 540px; position: relative; overflow: hidden; background: #16122B; font-family: Nunito, sans-serif; color: #FFF6EA">
+  <div style="position: absolute; right: 48px; top: 27px; display: flex; align-items: center; gap: 8px; background: #231D3D; border: 1px solid #3A3160; border-radius: 999px; padding: 7px 16px 7px 12px; font-size: 14px; font-weight: 700">
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#FFC94A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+    <span>Emparejando con iPhone de Ana</span>
+  </div>
+
+  <div style="position: absolute; left: 48px; top: 92px; width: 560px; display: flex; flex-direction: column; gap: 18px">
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 38px; line-height: 44px">Escribe este código en tu iPhone</h1>
+    <div style="display: flex; gap: 16px" role="group" aria-label="Código 4 8 2 7">
+      <span style="width: 104px; height: 132px; border-radius: 22px; background: #FFF6EA; color: #2A1633; display: flex; align-items: center; justify-content: center; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 76px; box-shadow: 0 6px 0 #D9C9A8">4</span>
+      <span style="width: 104px; height: 132px; border-radius: 22px; background: #FFF6EA; color: #2A1633; display: flex; align-items: center; justify-content: center; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 76px; box-shadow: 0 6px 0 #D9C9A8">8</span>
+      <span style="width: 104px; height: 132px; border-radius: 22px; background: #FFF6EA; color: #2A1633; display: flex; align-items: center; justify-content: center; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 76px; box-shadow: 0 6px 0 #D9C9A8">2</span>
+      <span style="width: 104px; height: 132px; border-radius: 22px; background: #FFF6EA; color: #2A1633; display: flex; align-items: center; justify-content: center; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 76px; box-shadow: 0 6px 0 #D9C9A8">7</span>
+    </div>
+    <p style="margin: 6px 0 0; font-size: 17px; line-height: 25px; color: #C8BFDA">El iPhone te lo pedirá al conectar. Así nadie del vecindario se cuela en tu sala.</p>
+    <div style="display: flex; align-items: center; gap: 10px; width: 456px">
+      <div aria-hidden="true" style="flex: 1; height: 6px; border-radius: 3px; background: #3A3160; overflow: hidden"><div style="width: 75%; height: 6px; background: #FFC94A"></div></div>
+      <span style="font-size: 13px; font-weight: 700; color: #C8BFDA">Esta pantalla se cerrará en 45 s</span>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 650px; top: 120px; background: #FFF6EA; color: #2A1633; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 18px; padding: 10px 16px; border-radius: 18px 18px 18px 4px">Psst… es secreto</div>
+  <div aria-hidden="true" style="position: absolute; left: 650px; top: 418px; width: 250px; height: 46px; border-radius: 50%; background: #221B3D"></div>
+  <div style="position: absolute; left: 660px; top: 190px">
+    <dc-import name="Pepe" mood="lista" size="240" hint-size="240px,240px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":540}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

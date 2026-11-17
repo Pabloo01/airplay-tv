@@ -2,19 +2,15 @@ package io.github.jqssun.airplay.ui.screens
 
 import android.text.format.DateFormat
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -32,55 +28,49 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import io.github.jqssun.airplay.R
-import io.github.jqssun.airplay.ui.design.Mark
+import io.github.jqssun.airplay.ui.design.FloorShadow
+import io.github.jqssun.airplay.ui.design.Stage
+import io.github.jqssun.airplay.ui.design.Pepe
+import io.github.jqssun.airplay.ui.design.PepeMood
 import io.github.jqssun.airplay.ui.design.Wall
-import io.github.jqssun.airplay.ui.design.glass
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
 import io.github.jqssun.airplay.ui.theme.Atv
 import io.github.jqssun.airplay.ui.theme.AtvType
 import kotlinx.coroutines.delay
 
-private fun DrawScope.blob(color: Color, alpha: Float, sizeDp: Float, leftDp: Float, topDp: Float, scale: Float, density: Float) {
-    val radius = sizeDp / 2f * scale * density
-    val center = Offset((leftDp + sizeDp / 2f) * density, (topDp + sizeDp / 2f) * density)
-    drawCircle(
-        brush = Brush.radialGradient(
-            0f to color.copy(alpha = alpha),
-            0.6f to color.copy(alpha = alpha * 0.4f),
-            1f to Color.Transparent,
-            center = center,
-            radius = radius,
-        ),
-        radius = radius,
-        center = center,
-    )
-}
-
-private val driftPath = listOf(0f to 0f, 520f to 40f, 500f to 300f, -10f to 280f, 0f to 0f)
+// Offsets (dp) the clock and Pepe travel through together, about one stop a minute.
+// They keep the whole group (x 96..830, y 150..500 on the 960x540 stage) on screen.
+private val driftPath = listOf(0f to 0f, 100f to -40f, 60f to -120f, -70f to -100f, -60f to 10f, 0f to 0f)
 
 private fun drift(t: Float): Pair<Float, Float> {
-    val segment = (t * 4).toInt().coerceIn(0, 3)
-    val local = t * 4 - segment
+    val segments = driftPath.size - 1
+    val segment = (t * segments).toInt().coerceIn(0, segments - 1)
+    val local = t * segments - segment
     val (x0, y0) = driftPath[segment]
     val (x1, y1) = driftPath[segment + 1]
     return (x0 + (x1 - x0) * local) to (y0 + (y1 - y0) * local)
 }
 
+private val NightStars = listOf(
+    Star(140, 80, 3f, Atv.Crema, 0.35f),
+    Star(420, 48, 4f, Atv.Palomita, 0.3f),
+    Star(860, 120, 3f, Atv.Crema, 0.3f),
+    Star(300, 300, 3f, Atv.Crema, 0.25f),
+)
+
 @Composable
 fun Screensaver(serverName: String) {
     val transition = rememberInfiniteTransition(label = "screensaver")
-    val b1 by transition.animateFloat(0f, 1f, infiniteRepeatable(tween(46_000), RepeatMode.Reverse), label = "b1")
-    val b2 by transition.animateFloat(0f, 1f, infiniteRepeatable(tween(58_000), RepeatMode.Reverse), label = "b2")
-    val b3 by transition.animateFloat(0f, 1f, infiniteRepeatable(tween(70_000), RepeatMode.Reverse), label = "b3")
-    val card by transition.animateFloat(0f, 1f, infiniteRepeatable(tween(240_000, easing = LinearEasing)), label = "card")
+    val progress = transition.animateFloat(0f, 1f, infiniteRepeatable(tween(DRIFT_LOOP_MS, easing = LinearEasing)), label = "drift")
     val context = LocalContext.current
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) {
@@ -89,32 +79,63 @@ fun Screensaver(serverName: String) {
             now = System.currentTimeMillis()
         }
     }
-    val density = LocalDensity.current.density
+    // holds the focus so the first key press reaches MainScreen (which wakes the home screen)
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { focus.requestFocusUntilLanded() }
+    val clock: @Composable () -> Unit = {
+        Column(verticalArrangement = Arrangement.spacedBy(Atv.Space1)) {
+            Text(DateFormat.getTimeFormat(context).format(now), style = AtvType.Clock, color = ClockInk)
+            Text(stringResource(R.string.screensaver_status, serverName), style = StatusLine, color = Atv.InkFaint)
+        }
+    }
+    // the drift is read at placement time only: no recomposition while it moves
+    val shift = Modifier.offset {
+        val (dx, dy) = drift(progress.value)
+        IntOffset(dx.dp.roundToPx(), dy.dp.roundToPx())
+    }
 
-    Wall(ambient = false) {
-        BoxWithConstraints(Modifier.fillMaxSize().background(Atv.Bg).focusRequester(focus).focusable()) {
-            val sx = maxWidth.value / 960f
-            val sy = maxHeight.value / 540f
-            Canvas(Modifier.fillMaxSize()) {
-                blob(Atv.Ambient1, 0.42f, 520f * sx, -120f * sx + 380f * sx * b1, -160f * sy + 240f * sy * b1, 1f + 0.15f * b1, density)
-                blob(Atv.Ambient2, 0.42f, 460f * sx, 640f * sx - 420f * sx * b2, 260f * sy - 200f * sy * b2, 1f - 0.1f * b2, density)
-                blob(Atv.Ambient1, 0.22f, 360f * sx, 420f * sx - 300f * sx * b3, 260f * sy - 220f * sy * b3, 1f + 0.25f * b3, density)
-            }
-            val (dx, dy) = drift(card)
-            Box(Modifier.offset(x = (72f + dx * sx).dp, y = (72f + dy * sy).dp)) {
+    Wall(color = Atv.Deep) {
+        Stage(
+            modifier = Modifier.focusRequester(focus).focusable(),
+            narrow = {
                 Column(
-                    modifier = Modifier.alpha(0.85f).glass(Atv.ShapeLg, blur = false).padding(horizontal = 28.dp, vertical = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.offset {
+                        val (dx, dy) = drift(progress.value)
+                        IntOffset((dx * 0.2f).dp.roundToPx(), (dy * 0.5f).dp.roundToPx())
+                    },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Atv.Space6),
                 ) {
-                    Text(DateFormat.getTimeFormat(context).format(now), style = AtvType.Clock, color = Atv.Ink)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Mark(Modifier.size(22.dp))
-                        Text(stringResource(R.string.screensaver_status, serverName), style = AtvType.Callout, color = Atv.InkMuted)
-                    }
+                    clock()
+                    Pepe(PepeMood.DORMIDO, Modifier.alpha(0.85f), size = 160.dp)
                 }
+            },
+        ) {
+            Starfield(NightStars)
+            Moon(Modifier.offset(820.dp, 40.dp).size(60.dp))
+            Box(Modifier.fillMaxSize().then(shift)) {
+                Box(Modifier.offset(96.dp, 150.dp)) { clock() }
+                FloorShadow(Modifier.offset(600.dp, 440.dp).size(220.dp, 36.dp), color = NightFloor)
+                Pepe(PepeMood.DORMIDO, Modifier.offset(610.dp, 250.dp).alpha(0.85f), size = 210.dp)
             }
         }
     }
 }
+
+/** Crescent moon from the prototype's 60x60 SVG. */
+@Composable
+private fun Moon(modifier: Modifier) {
+    val path = remember { PathParser().parsePathString(MOON_PATH).toPath() }
+    Canvas(modifier) {
+        scale(size.width / 60f, pivot = Offset.Zero) { drawPath(path, MoonColor, alpha = 0.6f) }
+    }
+}
+
+private const val MOON_PATH = "M40 8a24 24 0 1 0 14 34A20 20 0 0 1 40 8z"
+private const val DRIFT_LOOP_MS = 300_000
+
+// a touch dimmer than Crema, as in the prototype
+private val ClockInk = Color(0xFFE9E1F5)
+private val MoonColor = Color(0xFFFFE7A8)
+private val NightFloor = Color(0xFF15112A)
+private val StatusLine = AtvType.BodyLarge.copy(fontWeight = FontWeight.Bold)

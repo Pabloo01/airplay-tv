@@ -39,6 +39,7 @@ import io.github.jqssun.airplay.ui.screens.NoNetworkScreen
 import io.github.jqssun.airplay.ui.screens.PinScreen
 import io.github.jqssun.airplay.ui.screens.RequestScreen
 import io.github.jqssun.airplay.ui.screens.Screensaver
+import io.github.jqssun.airplay.ui.screens.SettingsFocus
 import io.github.jqssun.airplay.ui.screens.SettingsHome
 import io.github.jqssun.airplay.ui.screens.rememberLanAvailable
 import io.github.jqssun.airplay.ui.theme.Atv
@@ -85,6 +86,12 @@ fun MainScreen(
     val lanAvailable = rememberLanAvailable()
     val context = LocalContext.current
     var route by rememberSaveable { mutableStateOf(Route.HOME) }
+    // where we came from, so a screen we return to can put focus back on the row that was used
+    var previous by rememberSaveable { mutableStateOf(Route.HOME) }
+    fun go(to: Route) {
+        previous = route
+        route = to
+    }
     var inputTick by remember { mutableIntStateOf(0) }
     var screensaver by remember { mutableStateOf(false) }
 
@@ -102,10 +109,13 @@ fun MainScreen(
     }
 
     BackHandler(enabled = route != Route.HOME) {
-        route = when (route) {
-            Route.DEVICES, Route.ADVANCED, Route.LOGS -> Route.SETTINGS
-            else -> Route.HOME
-        }
+        go(
+            when (route) {
+                Route.LOGS -> Route.ADVANCED
+                Route.DEVICES, Route.ADVANCED -> Route.SETTINGS
+                else -> Route.HOME
+            }
+        )
     }
 
     Box(
@@ -147,22 +157,27 @@ fun MainScreen(
             audio -> AudioScreen(viewModel, clientName, inputTick)
             route == Route.SETTINGS -> SettingsHome(
                 viewModel,
-                onOpenDevices = { route = Route.DEVICES },
-                onOpenAdvanced = { route = Route.ADVANCED },
-                onOpenLogs = { route = Route.LOGS },
+                onOpenDevices = { go(Route.DEVICES) },
+                onOpenAdvanced = { go(Route.ADVANCED) },
+                focusOn = when (previous) {
+                    Route.DEVICES -> SettingsFocus.DEVICES
+                    Route.ADVANCED, Route.LOGS -> SettingsFocus.ADVANCED
+                    else -> SettingsFocus.TOP
+                },
             )
             route == Route.DEVICES -> DevicesScreen(
                 devices,
                 onRemove = viewModel::removeAllowedDevice,
                 onRemoveAll = viewModel::clearAllowedDevices,
-                onBack = { route = Route.SETTINGS },
+                onBack = { go(Route.SETTINGS) },
             )
-            route == Route.ADVANCED -> AdvancedSettingsScreen(viewModel, onBack = { route = Route.SETTINGS })
+            route == Route.ADVANCED -> AdvancedSettingsScreen(
+                viewModel,
+                onBack = { go(Route.SETTINGS) },
+                onOpenLogs = { go(Route.LOGS) },
+            )
             route == Route.LOGS -> LogsRoute(viewModel)
-            !lanAvailable && connections == 0 -> NoNetworkScreen(
-                onOpenNetworkSettings = { context.openNetworkSettings() },
-                onRetry = { if (state != ServerState.RUNNING) viewModel.startServer() },
-            )
+            !lanAvailable && connections == 0 -> NoNetworkScreen(onOpenNetworkSettings = { context.openNetworkSettings() })
             screensaver -> Screensaver(serverName)
             else -> IdleScreen(
                 state = state,
@@ -170,11 +185,9 @@ fun MainScreen(
                 serverName = serverName,
                 clientName = clientName,
                 connections = connections,
-                recentDevices = devices,
                 onStart = viewModel::startServer,
                 onLocalNetwork = onLocalNetwork,
-                onOpenSettings = { route = Route.SETTINGS },
-                onOpenDevices = { route = Route.DEVICES },
+                onOpenSettings = { go(Route.SETTINGS) },
             )
         }
     }

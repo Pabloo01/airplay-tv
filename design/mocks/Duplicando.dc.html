@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Peli en marcha con el menú del mando</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font:inherit}
+</style>
+</helmet>
+<div style="width: 960px; height: 540px; position: relative; overflow: hidden; background: #1C3554; font-family: Nunito, sans-serif; color: #FFF6EA">
+  <svg aria-hidden="true" width="960" height="540" viewBox="0 0 960 540" style="position: absolute; left: 0; top: 0">
+    <rect width="960" height="540" fill="#1C3554"></rect>
+    <circle cx="720" cy="140" r="70" fill="#FFE7A8"></circle>
+    <circle cx="200" cy="90" r="2" fill="#FFF6EA"></circle>
+    <circle cx="420" cy="60" r="2.5" fill="#FFF6EA"></circle>
+    <circle cx="560" cy="120" r="2" fill="#FFF6EA"></circle>
+    <path d="M0 380 Q160 290 320 360 Q470 420 640 330 Q800 260 960 340 L960 540 L0 540 Z" fill="#15304E"></path>
+    <path d="M0 450 Q200 390 420 440 Q640 490 960 420 L960 540 L0 540 Z" fill="#0E2238"></path>
+    <path d="M300 432 l10 -36 10 36 Z M318 436 l12 -48 12 48 Z" fill="#0A1A2C"></path>
+  </svg>
+  <span style="position: absolute; left: 48px; top: 30px; font-size: 13px; font-weight: 700; color: #B9CDE4">[Tu peli, a pantalla completa]</span>
+
+  <div style="position: absolute; right: 48px; top: 27px; display: flex; align-items: center; gap: 8px; background: #FF6B5B; color: #2A0F0B; border-radius: 999px; padding: 7px 16px 7px 12px; font-size: 14px; font-weight: 800">
+    <span aria-hidden="true" style="width: 9px; height: 9px; border-radius: 5px; background: #2A0F0B"></span>
+    <span>Duplicando · iPhone de Pablo</span>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 150px; background: rgba(18, 14, 36, 0.86)"></div>
+  <div style="position: absolute; left: 40px; bottom: 10px">
+    <dc-import name="Pepe" mood="palomitas" size="128" hint-size="128px,128px"></dc-import>
+  </div>
+  <div style="position: absolute; left: 176px; bottom: 52px; display: flex; flex-direction: column; gap: 2px">
+    <span style="font-family: Fredoka, sans-serif; font-weight: 600; font-size: 20px">¡Que aproveche!</span>
+    <span style="font-size: 14px; color: #C8BFDA">Pepe no se pierde ni un minuto</span>
+  </div>
+  <div style="position: absolute; right: 48px; bottom: 48px; display: flex; gap: 14px">
+    <button type="button" style="display: flex; align-items: center; gap: 9px; border: 0; border-radius: 999px; padding: 13px 24px; background: #FFC94A; color: #2A1A00; font-weight: 800; font-size: 17px; box-shadow: 0 0 0 5px rgba(255, 201, 74, 0.22); transform: scale(1.04)">
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="#2A1A00"><path d="M7 4v16l13-8z"></path></svg>
+      Seguir compartiendo
+    </button>
+    <button type="button" style="display: flex; align-items: center; gap: 9px; border: 0; border-radius: 999px; padding: 13px 24px; background: #D63B3B; color: #FFFFFF; font-weight: 800; font-size: 17px">
+      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="#FFFFFF"><rect x="4" y="4" width="16" height="16" rx="3"></rect></svg>
+      Detener
+    </button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":540}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

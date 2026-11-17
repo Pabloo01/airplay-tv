@@ -1,73 +1,70 @@
 package io.github.jqssun.airplay.ui.screens
 
-import androidx.compose.foundation.horizontalScroll
+import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Devices
-import androidx.compose.material.icons.rounded.DesktopMac
-import androidx.compose.material.icons.rounded.Laptop
-import androidx.compose.material.icons.rounded.PhoneIphone
-import androidx.compose.material.icons.rounded.TabletMac
-import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.jqssun.airplay.AllowedDevice
-import io.github.jqssun.airplay.DeviceKind
 import io.github.jqssun.airplay.R
-import io.github.jqssun.airplay.deviceKind
 import io.github.jqssun.airplay.service.AirPlayService.ServerState
 import io.github.jqssun.airplay.ui.design.ChipKind
-import io.github.jqssun.airplay.ui.design.GlassButton
-import io.github.jqssun.airplay.ui.design.GlassPanel
-import io.github.jqssun.airplay.ui.design.MediaCard
-import io.github.jqssun.airplay.ui.design.SafeArea
-import io.github.jqssun.airplay.ui.design.StatusChip
+import io.github.jqssun.airplay.ui.design.Eyebrow
+import io.github.jqssun.airplay.ui.design.FloorShadow
+import io.github.jqssun.airplay.ui.design.PillButton
+import io.github.jqssun.airplay.ui.design.SpeechBubble
+import io.github.jqssun.airplay.ui.design.Stage
+import io.github.jqssun.airplay.ui.design.Pepe
+import io.github.jqssun.airplay.ui.design.PepeMood
 import io.github.jqssun.airplay.ui.design.Wall
-import io.github.jqssun.airplay.ui.design.Wordmark
 import io.github.jqssun.airplay.ui.requestFocusUntilLanded
 import io.github.jqssun.airplay.ui.theme.Atv
 import io.github.jqssun.airplay.ui.theme.AtvType
 import io.github.jqssun.airplay.viewmodel.LocalNetworkAccess
+import kotlinx.coroutines.delay
+import java.util.Calendar
 
-fun deviceIcon(model: String): ImageVector = when (deviceKind(model)) {
-    DeviceKind.PHONE -> Icons.Rounded.PhoneIphone
-    DeviceKind.TABLET -> Icons.Rounded.TabletMac
-    DeviceKind.LAPTOP -> Icons.Rounded.Laptop
-    DeviceKind.DESKTOP -> Icons.Rounded.DesktopMac
-    DeviceKind.OTHER -> Icons.Rounded.Devices
+/** What the home screen is showing: the receiver waiting (the prototype) or one of its other states. */
+private enum class Home(val mood: PepeMood, @param:StringRes val title: Int, @param:StringRes val hint: Int) {
+    WAITING(PepeMood.HOLA, R.string.idle_title, R.string.idle_hint),
+    CONNECTING(PepeMood.CURIOSO, R.string.idle_title_connecting, R.string.waiting_for_playback),
+    STOPPED(PepeMood.DORMIDO, R.string.idle_title_stopped, R.string.idle_hint_stopped),
+    ERROR(PepeMood.MAREADO, R.string.idle_title_error, R.string.idle_hint_error),
+    PERMISSION(PepeMood.BUSCANDO, R.string.idle_title_permission, R.string.local_network_desc),
 }
 
-@Composable
-fun TopBar(chipText: String, chipKind: ChipKind, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Wordmark()
-        StatusChip(chipText, chipKind, Modifier.padding(start = Atv.Space4))
-    }
-}
+private val HomeStars = listOf(
+    Star(120, 70, 6f, Atv.Palomita, 0.35f),
+    Star(520, 46, 4f, Atv.Crema, 0.3f),
+    Star(880, 150, 5f, Atv.Palomita, 0.3f),
+    Star(430, 470, 4f, Atv.Crema, 0.25f),
+)
 
 @Composable
 fun IdleScreen(
@@ -76,102 +73,159 @@ fun IdleScreen(
     serverName: String,
     clientName: String,
     connections: Int,
-    recentDevices: List<AllowedDevice>,
     onStart: () -> Unit,
     onLocalNetwork: () -> Unit,
     onOpenSettings: () -> Unit,
-    onOpenDevices: () -> Unit,
 ) {
-    val needsPermission = state != ServerState.RUNNING && localNetwork != LocalNetworkAccess.GRANTED
+    val home = when {
+        state != ServerState.RUNNING && localNetwork != LocalNetworkAccess.GRANTED -> Home.PERMISSION
+        state == ServerState.ERROR -> Home.ERROR
+        state == ServerState.STOPPED -> Home.STOPPED
+        connections > 0 -> Home.CONNECTING
+        else -> Home.WAITING
+    }
     val sender = clientName.ifBlank { stringResource(R.string.device_generic) }
-    val (chipText, chipKind) = when {
-        needsPermission -> stringResource(R.string.status_permission) to ChipKind.ERROR
-        state == ServerState.ERROR -> stringResource(R.string.status_error) to ChipKind.ERROR
-        state == ServerState.STOPPED -> stringResource(R.string.status_stopped) to ChipKind.IDLE
-        connections > 0 -> stringResource(R.string.status_connecting, sender) to ChipKind.OK
-        else -> stringResource(R.string.status_waiting) to ChipKind.IDLE
+    val (chipText, chipKind) = when (home) {
+        Home.WAITING -> stringResource(R.string.status_waiting, serverName) to ChipKind.WAITING
+        Home.CONNECTING -> stringResource(R.string.status_connecting, sender) to ChipKind.WAITING
+        Home.STOPPED -> stringResource(R.string.status_stopped) to ChipKind.NEUTRAL
+        Home.ERROR -> stringResource(R.string.status_error) to ChipKind.ALERT
+        Home.PERMISSION -> stringResource(R.string.status_permission) to ChipKind.ALERT
     }
-    val (title, hint) = when {
-        needsPermission -> R.string.idle_title_permission to R.string.local_network_desc
-        state == ServerState.ERROR -> R.string.idle_title_error to R.string.idle_hint_error
-        state == ServerState.STOPPED -> R.string.idle_title_stopped to R.string.idle_hint_stopped
-        connections > 0 -> R.string.idle_title_connecting to R.string.waiting_for_playback
-        else -> R.string.idle_title to R.string.idle_hint
-    }
-    val action: Pair<String, () -> Unit>? = when {
-        needsPermission -> stringResource(
+    val action: Pair<String, () -> Unit>? = when (home) {
+        Home.PERMISSION -> stringResource(
             if (localNetwork == LocalNetworkAccess.SETTINGS) R.string.btn_open_settings else R.string.btn_allow
         ) to onLocalNetwork
-        state != ServerState.RUNNING -> stringResource(R.string.btn_start) to onStart
-        else -> null
+        Home.ERROR -> stringResource(R.string.btn_retry) to onStart
+        Home.STOPPED -> stringResource(R.string.btn_start) to onStart
+        Home.WAITING, Home.CONNECTING -> null
     }
+    // the remote starts on the primary action when there is one, else on "Ajustes"
     val firstFocus = remember { FocusRequester() }
     LaunchedEffect(action != null) { firstFocus.requestFocusUntilLanded() }
+    val greeting = stringResource(greetingFor(rememberHour()))
 
-    Wall {
-        SafeArea {
-            Column(
-                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).heightIn(min = maxHeight),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    TopBar(chipText, chipKind)
-                    Spacer(Modifier.height(36.dp))
-                    GlassPanel(Modifier.widthIn(max = 560.dp)) {
-                        Column(
-                            modifier = Modifier.padding(horizontal = 56.dp, vertical = Atv.Space8),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(Atv.Space3),
-                        ) {
-                            Text(stringResource(title), style = AtvType.Display, textAlign = TextAlign.Center)
-                            Text(
-                                stringResource(hint),
-                                style = AtvType.Body,
-                                color = Atv.InkMuted,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.widthIn(max = 440.dp),
-                            )
-                            Text(
-                                serverName,
-                                style = AtvType.Headline,
-                                color = Atv.Signal,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(top = Atv.Space1),
-                            )
-                            if (action != null) {
-                                GlassButton(
-                                    text = action.first,
-                                    onClick = action.second,
-                                    modifier = Modifier.padding(top = Atv.Space2).focusRequester(firstFocus),
-                                )
-                            }
-                        }
-                    }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Atv.Space6),
-                    verticalAlignment = Alignment.Bottom,
-                    modifier = Modifier
-                        .horizontalScroll(rememberScrollState())
-                        .padding(start = Atv.Space3, end = Atv.Space3, top = Atv.Space8, bottom = Atv.Space6),
-                ) {
-                    recentDevices.take(2).forEachIndexed { i, d ->
-                        MediaCard(
-                            icon = deviceIcon(d.model),
-                            title = d.name,
-                            onClick = onOpenDevices,
-                            modifier = if (i == 0 && action == null) Modifier.focusRequester(firstFocus) else Modifier,
-                        )
-                    }
-                    MediaCard(
-                        icon = Icons.Rounded.Tune,
-                        title = stringResource(R.string.card_settings),
-                        onClick = onOpenSettings,
-                        modifier = if (recentDevices.isEmpty() && action == null) Modifier.focusRequester(firstFocus) else Modifier,
-                    )
-                }
-            }
+    val copy: @Composable ColumnScope.() -> Unit = {
+        Eyebrow(greeting)
+        Text(stringResource(home.title), style = AtvType.Display, maxLines = 3, overflow = TextOverflow.Ellipsis)
+        Text(stringResource(home.hint), style = AtvType.BodyLarge, color = Atv.InkMuted)
+        if (action != null) {
+            PillButton(
+                text = action.first,
+                onClick = action.second,
+                modifier = Modifier.padding(top = 10.dp).focusRequester(firstFocus),
+            )
         }
     }
+    val settings: @Composable () -> Unit = {
+        PillButton(
+            text = stringResource(R.string.btn_settings),
+            icon = Icons.Outlined.Settings,
+            onClick = onOpenSettings,
+            modifier = if (action == null) Modifier.focusRequester(firstFocus) else Modifier,
+        )
+    }
+    val waiting = home == Home.WAITING
+
+    Wall {
+        Stage(
+            narrow = {
+                TopBar(chipText, chipKind)
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp), content = copy)
+                if (waiting) Steps(serverName, Modifier.fillMaxWidth(), stacked = true)
+                if (waiting) SpeechBubble(stringResource(R.string.idle_bubble))
+                Pepe(home.mood, size = 180.dp)
+                settings()
+            },
+        ) {
+            Starfield(HomeStars)
+            FloorShadow(Modifier.offset(600.dp, 404.dp).size(300.dp, 56.dp))
+            TopBar(chipText, chipKind, Modifier.padding(horizontal = Atv.SafeX).padding(top = Atv.SafeY))
+            Column(
+                modifier = Modifier.offset(Atv.SafeX, 112.dp).width(500.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                copy()
+                if (waiting) Steps(serverName, Modifier.padding(top = 10.dp))
+            }
+            if (waiting) SpeechBubble(stringResource(R.string.idle_bubble), Modifier.offset(568.dp, 92.dp))
+            Pepe(home.mood, Modifier.offset(612.dp, 150.dp), size = 280.dp)
+            Box(
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = Atv.SafeX, bottom = Atv.SafeY),
+            ) { settings() }
+        }
+    }
+}
+
+/** "1 Centro de control · 2 Duplicar pantalla · 3 <this TV>": the last step is the TV, in coral. */
+@Composable
+private fun Steps(serverName: String, modifier: Modifier = Modifier, stacked: Boolean = false) {
+    val first = stringResource(R.string.idle_step_control_center)
+    val second = stringResource(R.string.idle_step_mirroring)
+    if (stacked) {
+        Column(modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Step(1, first)
+            Step(2, second)
+            Step(3, serverName, highlight = true)
+        }
+    } else {
+        Row(modifier, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Step(1, first)
+            Step(2, second)
+            Step(3, serverName, highlight = true, modifier = Modifier.weight(1f, fill = false))
+        }
+    }
+}
+
+@Composable
+private fun Step(number: Int, text: String, modifier: Modifier = Modifier, highlight: Boolean = false) {
+    val ink = if (highlight) Atv.OnPepe else Atv.Ink
+    Row(
+        modifier = modifier
+            .clip(Atv.ShapeTile)
+            .background(if (highlight) Atv.Pepe else Atv.Butaca)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Atv.Space2),
+    ) {
+        Box(
+            modifier = Modifier.size(22.dp).clip(Atv.ShapePill).background(if (highlight) Atv.PepeScreen else Atv.Pasillo),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(number.toString(), style = AtvType.Footnote, color = if (highlight) Atv.OnPepe else Atv.Palomita)
+        }
+        Text(
+            text,
+            style = if (highlight) AtvType.CaptionStrong.copy(fontWeight = FontWeight.ExtraBold) else AtvType.CaptionStrong,
+            color = ink,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.widthIn(max = 280.dp),
+        )
+    }
+}
+
+@Composable
+private fun rememberHour(): Int {
+    var hour by remember { mutableIntStateOf(currentHour()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(60_000)
+            hour = currentHour()
+        }
+    }
+    return hour
+}
+
+private fun currentHour() = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+
+// Spanish day parts: "buenos días" until lunch, "buenas tardes" until dark
+@StringRes
+private fun greetingFor(hour: Int): Int = when (hour) {
+    in 6..13 -> R.string.greeting_morning
+    in 14..20 -> R.string.greeting_afternoon
+    else -> R.string.greeting_night
 }

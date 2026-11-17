@@ -6,20 +6,27 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Article
+import androidx.compose.material.icons.rounded.HighQuality
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -29,13 +36,27 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.jqssun.airplay.Prefs
 import io.github.jqssun.airplay.R
 import io.github.jqssun.airplay.appSettingsIntent
+import io.github.jqssun.airplay.ui.design.Eyebrow
+import io.github.jqssun.airplay.ui.design.SettingRow
+import io.github.jqssun.airplay.ui.design.Toggle
+import io.github.jqssun.airplay.ui.design.card
+import io.github.jqssun.airplay.ui.theme.Atv
+import io.github.jqssun.airplay.ui.theme.AtvType
 import io.github.jqssun.airplay.viewmodel.MainViewModel
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import kotlin.math.roundToInt
 
+/** Quick picture presets (resolution + frame rate) shown above the detailed controls. */
+private enum class Quality(@param:StringRes val label: Int, val resolution: String, val fps: Int) {
+    AUTO(R.string.quality_auto, Prefs.AUTO, 60),
+    HD(R.string.quality_720, "1280x720", 60),
+    FULL_HD(R.string.quality_1080, "1920x1080", 60),
+    UHD(R.string.quality_4k, "3840x2160", 60),
+}
+
 @Composable
-fun SettingsScreen(viewModel: MainViewModel) {
+fun SettingsScreen(viewModel: MainViewModel, onOpenLogs: () -> Unit) {
     val serverName by viewModel.pref(Prefs.SERVER_NAME).collectAsState()
     val h265 by viewModel.pref(Prefs.H265).collectAsState()
     val enforceSdr by viewModel.pref(Prefs.ENFORCE_SDR).collectAsState()
@@ -77,11 +98,13 @@ fun SettingsScreen(viewModel: MainViewModel) {
         Prefs.OFF to stringResource(R.string.chip_off),
     )
 
+    // padded by the focus ring so the first/last row's ring isn't clipped by the scroll
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(vertical = 8.dp)
+            .padding(Atv.RingRow),
+        verticalArrangement = Arrangement.spacedBy(Atv.Space2),
     ) {
         SectionHeader(stringResource(R.string.section_server))
 
@@ -140,30 +163,33 @@ fun SettingsScreen(viewModel: MainViewModel) {
         }
         val needsOverlayPermission = launchOnConnect && !hasOverlayPermission
         val autoLaunch = launchOnConnect && hasOverlayPermission
-        ListItem(
-            modifier = Modifier
-                .dpadFocus(RectangleShape)
-                .toggleable(
-                    value = autoLaunch,
-                    role = Role.Switch,
-                    onValueChange = {
-                        viewModel.set(Prefs.LAUNCH_ON_CONNECT, it)
-                        if (it && !canAutoLaunch(ctx)) _openOverlaySettings(ctx)
-                    }
-                ),
-            headlineContent = { Text(stringResource(R.string.setting_launch_on_connect)) },
-            supportingContent = {
-                Text(stringResource(
-                    if (needsOverlayPermission) R.string.setting_launch_on_connect_no_permission
-                    else R.string.setting_launch_on_connect_desc
-                ))
-            },
-            trailingContent = {
-                Switch(checked = autoLaunch, onCheckedChange = null)
+        SettingSwitch(
+            title = stringResource(R.string.setting_launch_on_connect),
+            description = stringResource(
+                if (needsOverlayPermission) R.string.setting_launch_on_connect_no_permission
+                else R.string.setting_launch_on_connect_desc
+            ),
+            checked = autoLaunch,
+            onCheckedChange = {
+                viewModel.set(Prefs.LAUNCH_ON_CONNECT, it)
+                if (it && !canAutoLaunch(ctx)) _openOverlaySettings(ctx)
             }
         )
 
         SectionHeader(stringResource(R.string.section_display))
+
+        val quality = Quality.entries.firstOrNull { it.resolution == resolution && it.fps == maxFps }
+        SettingRow(
+            title = stringResource(R.string.row_quality),
+            subtitle = stringResource(R.string.row_quality_sub),
+            value = stringResource(quality?.label ?: R.string.quality_custom),
+            icon = Icons.Rounded.HighQuality,
+            onClick = {
+                val next = Quality.entries[((quality?.ordinal ?: -1) + 1) % Quality.entries.size]
+                viewModel.set(Prefs.RESOLUTION, next.resolution)
+                viewModel.set(Prefs.MAX_FPS, next.fps)
+            }
+        )
 
         SettingResolution(
             value = resolution,
@@ -199,6 +225,23 @@ fun SettingsScreen(viewModel: MainViewModel) {
             description = stringResource(R.string.setting_overscanned_desc),
             checked = overscanned,
             onCheckedChange = { viewModel.set(Prefs.OVERSCANNED, it) }
+        )
+
+        SectionHeader(stringResource(R.string.section_diagnostics))
+
+        SettingSwitch(
+            title = stringResource(R.string.setting_debug_overlay),
+            description = stringResource(R.string.setting_debug_overlay_desc),
+            checked = debugEnabled,
+            onCheckedChange = { viewModel.set(Prefs.DEBUG_ENABLED, it) }
+        )
+
+        SettingRow(
+            title = stringResource(R.string.row_logs),
+            subtitle = stringResource(R.string.row_logs_sub),
+            icon = Icons.AutoMirrored.Rounded.Article,
+            chevron = true,
+            onClick = onOpenLogs
         )
 
         SectionHeader(stringResource(R.string.section_decode))
@@ -329,22 +372,20 @@ fun SettingsScreen(viewModel: MainViewModel) {
 
             if (audioLatencyMs >= 0) {
                 var sliderVal by remember(audioLatencyMs) { mutableFloatStateOf(audioLatencyMs.toFloat()) }
-                ListItem(
-                    headlineContent = {
-                        Slider(
-                            value = sliderVal,
-                            onValueChange = { sliderVal = it },
-                            onValueChangeFinished = { viewModel.set(Prefs.AUDIO_LATENCY_MS, sliderVal.roundToInt()) },
-                            valueRange = 0f..1000f,
-                            steps = 19,
-                            modifier = Modifier.dpadFocus().dpadAdjust(
-                                onLeft = { viewModel.set(Prefs.AUDIO_LATENCY_MS, (audioLatencyMs - 50).coerceIn(0, 1000)) },
-                                onRight = { viewModel.set(Prefs.AUDIO_LATENCY_MS, (audioLatencyMs + 50).coerceIn(0, 1000)) }
-                            )
+                SliderCard(value = stringResource(R.string.audio_delay_value, sliderVal.roundToInt())) {
+                    Slider(
+                        value = sliderVal,
+                        onValueChange = { sliderVal = it },
+                        onValueChangeFinished = { viewModel.set(Prefs.AUDIO_LATENCY_MS, sliderVal.roundToInt()) },
+                        valueRange = 0f..1000f,
+                        steps = 19,
+                        colors = atvSliderColors(),
+                        modifier = Modifier.weight(1f).dpadFocus().dpadAdjust(
+                            onLeft = { viewModel.set(Prefs.AUDIO_LATENCY_MS, (audioLatencyMs - 50).coerceIn(0, 1000)) },
+                            onRight = { viewModel.set(Prefs.AUDIO_LATENCY_MS, (audioLatencyMs + 50).coerceIn(0, 1000)) }
                         )
-                    },
-                    trailingContent = { Text(stringResource(R.string.audio_delay_value, sliderVal.roundToInt())) }
-                )
+                    )
+                }
             }
 
             SettingSwitch(
@@ -357,27 +398,27 @@ fun SettingsScreen(viewModel: MainViewModel) {
             if (audioAutoBuffer) {
                 val maxStep = Prefs.AUDIO_ADAPTIVE_STEP.range.last
                 var stepVal by remember(audioAdaptiveStep) { mutableFloatStateOf(audioAdaptiveStep.toFloat()) }
-                ListItem(
-                    headlineContent = {
-                        Slider(
-                            value = stepVal,
-                            onValueChange = { stepVal = it },
-                            onValueChangeFinished = { viewModel.set(Prefs.AUDIO_ADAPTIVE_STEP, stepVal.roundToInt()) },
-                            valueRange = 0f..maxStep.toFloat(),
-                            steps = maxStep - 1,
-                            modifier = Modifier.dpadFocus().dpadAdjust(
-                                onLeft = { viewModel.set(Prefs.AUDIO_ADAPTIVE_STEP, (audioAdaptiveStep - 1).coerceIn(0, maxStep)) },
-                                onRight = { viewModel.set(Prefs.AUDIO_ADAPTIVE_STEP, (audioAdaptiveStep + 1).coerceIn(0, maxStep)) }
-                            )
+                val step = stepVal.roundToInt().coerceIn(0, maxStep)
+                SliderCard(
+                    value = stringResource(
+                        R.string.audio_adaptive_value,
+                        Prefs.ADAPTIVE_PERCENTILES[step],
+                        stringArrayResource(R.array.audio_adaptive_step_names)[step]
+                    )
+                ) {
+                    Slider(
+                        value = stepVal,
+                        onValueChange = { stepVal = it },
+                        onValueChangeFinished = { viewModel.set(Prefs.AUDIO_ADAPTIVE_STEP, stepVal.roundToInt()) },
+                        valueRange = 0f..maxStep.toFloat(),
+                        steps = maxStep - 1,
+                        colors = atvSliderColors(),
+                        modifier = Modifier.weight(1f).dpadFocus().dpadAdjust(
+                            onLeft = { viewModel.set(Prefs.AUDIO_ADAPTIVE_STEP, (audioAdaptiveStep - 1).coerceIn(0, maxStep)) },
+                            onRight = { viewModel.set(Prefs.AUDIO_ADAPTIVE_STEP, (audioAdaptiveStep + 1).coerceIn(0, maxStep)) }
                         )
-                    },
-                    trailingContent = {
-                        val step = stepVal.roundToInt().coerceIn(0, maxStep)
-                        Text(stringResource(R.string.audio_adaptive_value,
-                            Prefs.ADAPTIVE_PERCENTILES[step],
-                            stringArrayResource(R.array.audio_adaptive_step_names)[step]))
-                    }
-                )
+                    )
+                }
             } else {
                 SettingTextField(
                     label = stringResource(R.string.setting_audio_cushion_ms),
@@ -396,13 +437,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 range = Prefs.OBOE_BUFFER_FRAMES.range
             )
 
-
-            SettingSwitch(
-                title = stringResource(R.string.setting_debug_overlay),
-                description = stringResource(R.string.setting_debug_overlay_desc),
-                checked = debugEnabled,
-                onCheckedChange = { viewModel.set(Prefs.DEBUG_ENABLED, it) }
-            )
 
             SettingSwitch(
                 title = stringResource(R.string.setting_benchmark_log),
@@ -429,11 +463,83 @@ private fun _openOverlaySettings(ctx: Context) {
 
 @Composable
 private fun SectionHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+    Eyebrow(title, Modifier.padding(start = Atv.Space2, top = Atv.Space4, bottom = Atv.Space1))
+}
+
+/** Butaca card for settings that hold chips or fields: title, description, then [content]. */
+@Composable
+private fun SettingCard(title: String, description: String, content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .card(Atv.ShapeRow)
+            .padding(horizontal = Atv.Space4, vertical = Atv.Space3),
+        verticalArrangement = Arrangement.spacedBy(Atv.Space1),
+    ) {
+        Text(title, style = AtvType.RowTitle, color = Atv.Ink)
+        Text(description, style = AtvType.RowSubtitle, color = Atv.InkMuted)
+        Spacer(Modifier.height(Atv.Space1))
+        content()
+    }
+}
+
+/** A slider and its value in a Butaca card (the slider passes itself in as [slider]). */
+@Composable
+private fun SliderCard(value: String, slider: @Composable RowScope.() -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .card(Atv.ShapeRow)
+            .padding(horizontal = Atv.Space4, vertical = Atv.Space2),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Atv.Space3),
+    ) {
+        slider()
+        Text(value, style = AtvType.RowValue, color = Atv.Palomita)
+    }
+}
+
+@Composable
+private fun atvSliderColors() = SliderDefaults.colors(
+    thumbColor = Atv.Crema,
+    activeTrackColor = Atv.Pepe,
+    activeTickColor = Atv.OnPepe,
+    inactiveTrackColor = Atv.Pasillo,
+    inactiveTickColor = Atv.Lavanda,
+)
+
+/** Text field colours of the night room: Butaca fill, Pasillo border, Palomita when focused. */
+@Composable
+fun atvFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = Atv.Crema,
+    unfocusedTextColor = Atv.Crema,
+    focusedContainerColor = Atv.Butaca,
+    unfocusedContainerColor = Atv.Butaca,
+    focusedBorderColor = Atv.Palomita,
+    unfocusedBorderColor = Atv.Pasillo,
+    focusedLabelColor = Atv.Palomita,
+    unfocusedLabelColor = Atv.Lavanda,
+    cursorColor = Atv.Palomita,
+    focusedSupportingTextColor = Atv.Lavanda,
+    unfocusedSupportingTextColor = Atv.Lavanda,
+)
+
+/** Pill chip: ButacaAlta at rest, coral when selected, Palomita outline under the remote's focus. */
+@Composable
+private fun AtvChip(selected: Boolean, label: String, onClick: () -> Unit) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text(label, style = AtvType.CaptionStrong) },
+        shape = Atv.ShapePill,
+        border = null,
+        colors = FilterChipDefaults.filterChipColors(
+            containerColor = Atv.ButacaAlta,
+            labelColor = Atv.Crema,
+            selectedContainerColor = Atv.Pepe,
+            selectedLabelColor = Atv.OnPepe,
+        ),
+        modifier = Modifier.dpadFocus(Atv.ShapePill),
     )
 }
 
@@ -459,71 +565,66 @@ private fun SettingResolution(
     var width by remember(value) { mutableStateOf(if (isPreset) "" else parts[0]) }
     var height by remember(value) { mutableStateOf(if (isPreset) "" else parts.getOrElse(1) { "" }) }
 
-    ListItem(
-        headlineContent = { Text(stringResource(R.string.setting_resolution)) },
-        supportingContent = {
-            Column {
-                Text(stringResource(R.string.setting_resolution_desc))
-                Spacer(Modifier.height(8.dp))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    @Composable
-                    fun presetChip(key: String, label: String) = FilterChip(
-                        selected = value == key && !editing,
-                        onClick = {
+    SettingCard(stringResource(R.string.setting_resolution), stringResource(R.string.setting_resolution_desc)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            @Composable
+            fun presetChip(key: String, label: String) = AtvChip(
+                selected = value == key && !editing,
+                label = label,
+                onClick = {
+                    editing = false
+                    width = ""; height = ""
+                    onValueChange(key)
+                }
+            )
+            presets.forEach { (key, label) -> presetChip(key, label) }
+            AtvChip(
+                selected = !isPreset || editing,
+                label = stringResource(R.string.chip_custom),
+                onClick = { editing = true }
+            )
+            devicePresets.forEach { (key, label) -> presetChip(key, label) }
+        }
+        if (editing || !isPreset) {
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = width,
+                    onValueChange = { width = it.filter { c -> c.isDigit() }.take(5) },
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.setting_resolution_width)) },
+                    shape = Atv.ShapeRow,
+                    colors = atvFieldColors(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedTextField(
+                    value = height,
+                    onValueChange = { height = it.filter { c -> c.isDigit() }.take(5) },
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.setting_resolution_height)) },
+                    shape = Atv.ShapeRow,
+                    colors = atvFieldColors(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = doneAndHide {
+                        val w = width.toIntOrNull()
+                        val h = height.toIntOrNull()
+                        if (w != null && w > 0 && h != null && h > 0) {
+                            onValueChange("${w}x${h}")
                             editing = false
-                            width = ""; height = ""
-                            onValueChange(key)
-                        },
-                        label = { Text(label) },
-                        modifier = Modifier.dpadFocus()
-                    )
-                    presets.forEach { (key, label) -> presetChip(key, label) }
-                    FilterChip(
-                        selected = !isPreset || editing,
-                        onClick = { editing = true },
-                        label = { Text(stringResource(R.string.chip_custom)) },
-                        modifier = Modifier.dpadFocus()
-                    )
-                    devicePresets.forEach { (key, label) -> presetChip(key, label) }
-                }
-                if (editing || !isPreset) {
-                    Spacer(Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = width,
-                            onValueChange = { width = it.filter { c -> c.isDigit() }.take(5) },
-                            singleLine = true,
-                            label = { Text(stringResource(R.string.setting_resolution_width)) },
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Next
-                            ),
-                            modifier = Modifier.weight(1f)
-                        )
-                        OutlinedTextField(
-                            value = height,
-                            onValueChange = { height = it.filter { c -> c.isDigit() }.take(5) },
-                            singleLine = true,
-                            label = { Text(stringResource(R.string.setting_resolution_height)) },
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Done
-                            ),
-                            keyboardActions = doneAndHide {
-                                val w = width.toIntOrNull()
-                                val h = height.toIntOrNull()
-                                if (w != null && w > 0 && h != null && h > 0) {
-                                    onValueChange("${w}x${h}")
-                                    editing = false
-                                }
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
-    )
+    }
 }
 
 @Composable
@@ -552,6 +653,9 @@ private fun SettingTextField(
         supportingText = description?.let { { Text(it) } },
         singleLine = true,
         isError = !valid,
+        textStyle = AtvType.Callout,
+        shape = Atv.ShapeRow,
+        colors = atvFieldColors(),
         keyboardOptions = KeyboardOptions(
             keyboardType = if (range == null) KeyboardType.Text else KeyboardType.Number,
             imeAction = ImeAction.Done
@@ -559,8 +663,6 @@ private fun SettingTextField(
         keyboardActions = doneAndHide(::save),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(bottom = 8.dp)
             .onFocusChanged { if (!it.isFocused) save() }
     )
 }
@@ -579,43 +681,37 @@ private fun SettingChipField(
     var editing by remember { mutableStateOf(false) }
     var text by remember(value) { mutableStateOf(if (isPreset) "" else value) }
 
-    ListItem(
-        headlineContent = { Text(title) },
-        supportingContent = {
-            Column {
-                Text(description)
-                Spacer(Modifier.height(8.dp))
-                ChipRow(if (editing) "" else value, presets, { editing = false; text = ""; onValueChange(it) }) {
-                    FilterChip(
-                        selected = !isPreset || editing,
-                        onClick = { editing = true },
-                        label = { Text(stringResource(R.string.chip_custom)) },
-                        modifier = Modifier.dpadFocus()
-                    )
-                }
-                if (editing || !isPreset) {
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = text,
-                        onValueChange = { text = it },
-                        singleLine = true,
-                        label = { Text(placeholder) },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = keyboardType,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = doneAndHide {
-                            if (text.isNotBlank()) {
-                                onValueChange(text)
-                                editing = false
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
+    SettingCard(title, description) {
+        ChipRow(if (editing) "" else value, presets, { editing = false; text = ""; onValueChange(it) }) {
+            AtvChip(
+                selected = !isPreset || editing,
+                label = stringResource(R.string.chip_custom),
+                onClick = { editing = true }
+            )
         }
-    )
+        if (editing || !isPreset) {
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                singleLine = true,
+                label = { Text(placeholder) },
+                shape = Atv.ShapeRow,
+                colors = atvFieldColors(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = keyboardType,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = doneAndHide {
+                    if (text.isNotBlank()) {
+                        onValueChange(text)
+                        editing = false
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -628,12 +724,7 @@ private fun ChipRow(
 ) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { (key, label) ->
-            FilterChip(
-                selected = value == key,
-                onClick = { onSelect(key) },
-                label = { Text(label) },
-                modifier = Modifier.dpadFocus()
-            )
+            AtvChip(selected = value == key, label = label, onClick = { onSelect(key) })
         }
         trailing()
     }
@@ -647,18 +738,12 @@ private fun SettingChips(
     options: List<Pair<String, String>>,
     onValueChange: (String) -> Unit
 ) {
-    ListItem(
-        headlineContent = { Text(title) },
-        supportingContent = {
-            Column {
-                Text(description)
-                Spacer(Modifier.height(8.dp))
-                ChipRow(value, options, onValueChange)
-            }
-        }
-    )
+    SettingCard(title, description) {
+        ChipRow(value, options, onValueChange)
+    }
 }
 
+/** On/off setting: a [SettingRow] with a [Toggle]; the whole description is shown. */
 @Composable
 private fun SettingSwitch(
     title: String,
@@ -666,12 +751,14 @@ private fun SettingSwitch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    ListItem(
-        modifier = Modifier
-            .dpadFocus(RectangleShape)
-            .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange),
-        headlineContent = { Text(title) },
-        supportingContent = { Text(description) },
-        trailingContent = { Switch(checked = checked, onCheckedChange = null) }
-    )
+    SettingRow(
+        title = title,
+        subtitle = description,
+        subtitleLines = Int.MAX_VALUE,
+        onClick = { onCheckedChange(!checked) },
+        modifier = Modifier.semantics {
+            role = Role.Switch
+            toggleableState = ToggleableState(checked)
+        },
+    ) { Toggle(checked) }
 }

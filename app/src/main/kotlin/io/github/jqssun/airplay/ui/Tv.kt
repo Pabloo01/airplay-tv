@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import androidx.compose.foundation.border
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
+import io.github.jqssun.airplay.ui.theme.Atv
 
 fun Context.isTvDevice(): Boolean =
     packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK) ||
@@ -41,7 +41,7 @@ fun isTv(): Boolean {
 fun Modifier.dpadFocus(shape: Shape = RoundedCornerShape(12.dp)): Modifier = composed {
     var focused by remember { mutableStateOf(false) }
     onFocusChanged { focused = it.isFocused }
-        .border(2.dp, if (focused) MaterialTheme.colorScheme.primary else Color.Transparent, shape)
+        .border(2.dp, if (focused) Atv.Palomita else Color.Transparent, shape)
 }
 
 fun Modifier.dpadAdjust(onLeft: () -> Unit, onRight: () -> Unit): Modifier = composed {
