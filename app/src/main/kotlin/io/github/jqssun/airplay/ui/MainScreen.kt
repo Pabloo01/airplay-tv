@@ -97,7 +97,9 @@ fun MainScreen(
 
     val mirroring = state == ServerState.RUNNING && mirroringActive && !audioOnly
     val lost = connectionLost.takeUnless { mirroring }
-    val audio = audioOnly && connections > 0
+    // any connected sender that is not mirroring gets the audio screen: playing, paused, or
+    // "waiting for audio" (just connected, sender app closed, or mirroring just ended)
+    val audio = connections > 0 && !mirroring
     val home = route == Route.HOME && request == null && pin == null && !mirroring && lost == null && !audio
 
     LaunchedEffect(home, inputTick) {
