@@ -222,6 +222,8 @@
 
     <!-- Audio -->
     <string name="chip_audio">Transmitiendo audio · Desde %1$s</string>
+    <string name="chip_audio_idle">Esperando audio · %1$s está conectado</string>
+    <string name="audio_untitled">Reproduciendo audio</string>
 
     <!-- Settings home -->
     <string name="settings_title">Ajustes</string>

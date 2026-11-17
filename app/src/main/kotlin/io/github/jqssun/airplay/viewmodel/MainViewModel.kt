@@ -154,6 +154,9 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
     private val _trackInfo = MutableStateFlow(TrackInfo())
     val trackInfo: StateFlow<TrackInfo> = _trackInfo.asStateFlow()
 
+    private val _audioStreaming = MutableStateFlow(false)
+    val audioStreaming: StateFlow<Boolean> = _audioStreaming.asStateFlow()
+
 
     // logs: callers include the video decode thread (benchmark line, under the renderer lock)
     // and native audio threads, so addLog only queues; the UI list and airplay_logs.txt are
@@ -326,6 +329,7 @@ class MainViewModel @Inject constructor(app: Application) : AndroidViewModel(app
             _audioOnly.value = it.audioOnly.value
             _mirroringActive.value = it.mirroringActive.value
             _trackInfo.value = it.trackInfo.value
+            _audioStreaming.value = it.audioStreaming.value
             _clientVolume.value = it.clientVolume()
             _clientVolumeAdjustable.value = it.dacpController?.ready == true
             if (pref(Prefs.DEBUG_ENABLED).value) {

@@ -103,6 +103,18 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
     private val _trackInfo = MutableStateFlow(TrackInfo())
     val trackInfo = _trackInfo.asStateFlow()
 
+    // there is a music session to show (playing or paused); false while the sender stays
+    // connected with nothing to play (app closed on the sender, or mirroring just ended)
+    private val _audioStreaming = MutableStateFlow(false)
+    val audioStreaming = _audioStreaming.asStateFlow()
+
+    // the RTP audio stream itself; iOS also closes it a few seconds after a pause
+    @Volatile private var _streamOpen = false
+
+    // set when a new stream opens: the shown cover may belong to another app until the
+    // sender sends new art or the same track comes back (resume after a pause)
+    @Volatile private var _artStale = false
+
     private val _positionMs = MutableStateFlow(0L)
     private val _durationMs = MutableStateFlow(0L)
     private val _playing = MutableStateFlow(true)
@@ -187,7 +199,7 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
                     artworkData = _coverArtBytes,
                     durationMs = _durationMs.value,
                     playing = _playing.value,
-                    active = _audioOnly.value && _connectionCount.value > 0,
+                    active = _audioOnly.value && _audioStreaming.value && _connectionCount.value > 0,
                 )
             },
             positionMs = ::currentPositionMs,
@@ -474,11 +486,10 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         videoRenderer.release()
         mediaSession?.isActive = false
         _audioOnly.value = false
+        _audioStreaming.value = false
+        _streamOpen = false
         _mirroringActive.value = false
-        _coverArtBytes = null
-        _trackInfo.value = TrackInfo()
-        _positionMs.value = 0
-        _durationMs.value = 0
+        _clearTrack()
         _serverState.value = ServerState.STOPPED
         _connectionCount.value = 0
         _clientVol = null
@@ -539,6 +550,13 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         audioRenderer.start()
         audioRenderer.setFormat(ct, spf)
         if (!usingScreen) _setPlaying(true)
+        if (!usingScreen) {
+            // a new stream may come from another app: its first metadata decides whether the
+            // previous cover still applies (see onMetadata)
+            if (!_streamOpen) _artStale = true
+            _streamOpen = true
+            _audioStreaming.value = true
+        }
         if (!usingScreen && !_audioOnly.value) {
             // pure music streaming (not screen mirroring audio)
             _setAudioOnly(true)
@@ -664,10 +682,9 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
             audioRenderer.stop()
             _releaseWifiLock()
             _audioOnly.value = false
-            _coverArtBytes = null
-            _trackInfo.value = TrackInfo()
-            _positionMs.value = 0
-            _durationMs.value = 0
+            _audioStreaming.value = false
+            _streamOpen = false
+            _clearTrack()
             dacpController?.reset()
             _clientVol = null
             _mainHandler.post {
@@ -731,8 +748,23 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
 
     override fun onMetadata(data: ByteArray) {
         val map = DmapParser.parse(data)
-        val info = TrackInfo.fromDmap(map, _trackInfo.value.coverArt)
+        val prev = _trackInfo.value
+        var info = TrackInfo.fromDmap(map, prev.coverArt)
+        val empty = info.title.isEmpty() && info.artist.isEmpty()
+        val otherTrack = info.title != prev.title || info.artist != prev.artist
+        // empty metadata: the sender app was closed (or plays untitled audio);
+        // another track on a fresh stream: the old cover belongs to the previous app
+        if (empty || (_artStale && otherTrack)) {
+            info = info.copy(coverArt = null)
+            _coverArtBytes = null
+        }
+        if (!empty) _artStale = false
         _trackInfo.value = info
+        // app closed while already paused: the stream is gone, nothing left to resume
+        if (empty && !_streamOpen) {
+            _audioStreaming.value = false
+            _clearTrack()
+        }
         if (info.durationMs > 0) _durationMs.value = info.durationMs
         _updateMediaMetadata()
         _refreshDacpPlayer()
@@ -742,6 +774,7 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
     override fun onCoverArt(data: ByteArray) {
         val bmp = BitmapFactory.decodeByteArray(data, 0, data.size) ?: return
         _coverArtBytes = data
+        _artStale = false
         _trackInfo.value = _trackInfo.value.copy(coverArt = bmp)
         _updateMediaMetadata()
         _refreshDacpPlayer()
@@ -763,7 +796,21 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
     }
 
     override fun onAudioTeardown() {
+        // iOS closes the stream both when the sender app is closed and a few seconds after a
+        // pause; only a closed app sends empty metadata first. On a pause keep the track so it
+        // shows as paused and play (via DACP) can resume it
+        _streamOpen = false
         _setPlaying(false)
+        val track = _trackInfo.value
+        if (track.title.isEmpty() && track.artist.isEmpty()) {
+            _audioStreaming.value = false
+            _clearTrack()
+            _updateMediaMetadata()
+            log("Audio stream closed")
+        } else {
+            log("Audio stream closed (paused)")
+        }
+        _refreshDacpPlayer()
     }
 
     override fun onDacpId(dacpId: String, activeRemote: String) {
@@ -807,6 +854,14 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         if (lock.isHeld) runCatching { lock.release() }
     }
 
+    private fun _clearTrack() {
+        _coverArtBytes = null
+        _trackInfo.value = TrackInfo()
+        _positionMs.value = 0
+        _durationMs.value = 0
+        _progressBaseTime = 0
+    }
+
     private fun _setAudioOnly(audioOnly: Boolean) {
         val prev = _audioOnly.value
         _audioOnly.value = audioOnly
@@ -816,10 +871,7 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
             log("Audio mode")
         } else if (!audioOnly && prev) {
             mediaSession?.isActive = false
-            _coverArtBytes = null
-            _trackInfo.value = TrackInfo()
-            _positionMs.value = 0
-            _durationMs.value = 0
+            _clearTrack()
             _updateMediaNotification()
             log("Mirror mode")
         }

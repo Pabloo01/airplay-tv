@@ -87,7 +87,9 @@ import kotlin.math.roundToInt
 @Composable
 fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
     val track by viewModel.trackInfo.collectAsState()
-    val player = viewModel.dacpPlayer
+    val streaming by viewModel.audioStreaming.collectAsState()
+    // connected but no stream (sender app closed, or mirroring just ended): nothing to control
+    val player = viewModel.dacpPlayer?.takeIf { streaming }
     var positionMs by remember { mutableLongStateOf(0L) }
     var durationMs by remember { mutableLongStateOf(0L) }
     var playing by remember { mutableStateOf(true) }
@@ -106,51 +108,59 @@ fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
         dimmed = true
     }
     val playFocus = remember { FocusRequester() }
-    LaunchedEffect(player != null) { playFocus.requestFocusUntilLanded() }
+    LaunchedEffect(player != null) { if (player != null) playFocus.requestFocusUntilLanded() }
     val sender = clientName.ifBlank { stringResource(R.string.device_generic) }
     val tv = isTv()
-    val chip = stringResource(R.string.chip_audio, sender)
+    val chip = stringResource(if (streaming) R.string.chip_audio else R.string.chip_audio_idle, sender)
+    val mood = if (streaming) PepeMood.MUSICA else PepeMood.HOLA
     // without a DACP player the length still comes with the track metadata
     val totalMs = durationMs.takeIf { it > 0 } ?: track.durationMs
-    val info: @Composable ColumnScope.() -> Unit = {
-        Text(
-            track.title.ifEmpty { stringResource(R.string.unknown_track) },
-            style = AtvType.Title,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        val subtitle = listOf(track.artist, track.album).filter { it.isNotEmpty() }.joinToString(" · ")
-        if (subtitle.isNotEmpty()) {
-            Text(subtitle, style = AtvType.BodyLarge, color = Atv.InkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    val info: @Composable ColumnScope.() -> Unit = if (!streaming) {
+        {
+            Text(stringResource(R.string.waiting_for_playback), style = AtvType.Title, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (!tv) VolumeControls(viewModel)
         }
-        Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            TrackBar(if (totalMs > 0) positionMs / totalMs.toFloat() else 0f, Modifier.fillMaxWidth(), height = 8.dp)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(formatTrackTime(positionMs), style = AtvType.Footnote, color = Atv.InkMuted)
-                if (totalMs > 0) Text(formatTrackTime(totalMs), style = AtvType.Footnote, color = Atv.InkMuted)
+    } else {
+        {
+            Text(
+                track.title.ifEmpty { stringResource(R.string.audio_untitled) },
+                style = AtvType.Title,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            val subtitle = listOf(track.artist, track.album).filter { it.isNotEmpty() }.joinToString(" · ")
+            if (subtitle.isNotEmpty()) {
+                Text(subtitle, style = AtvType.BodyLarge, color = Atv.InkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-        }
-        if (player != null) {
-            Row(
-                modifier = Modifier.padding(top = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
-            ) {
-                RoundIconButton(Icons.Rounded.SkipPrevious, stringResource(R.string.cd_previous), { player.seekToPrevious() })
-                RoundIconButton(
-                    if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                    stringResource(R.string.cd_play_pause),
-                    {
-                        if (playing) player.pause() else player.play()
-                        playing = !playing
-                    },
-                    modifier = Modifier.focusRequester(playFocus),
-                    size = 72.dp,
-                )
-                RoundIconButton(Icons.Rounded.SkipNext, stringResource(R.string.cd_next), { player.seekToNext() })
+            Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                TrackBar(if (totalMs > 0) positionMs / totalMs.toFloat() else 0f, Modifier.fillMaxWidth(), height = 8.dp)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(formatTrackTime(positionMs), style = AtvType.Footnote, color = Atv.InkMuted)
+                    if (totalMs > 0) Text(formatTrackTime(totalMs), style = AtvType.Footnote, color = Atv.InkMuted)
+                }
             }
+            if (player != null) {
+                Row(
+                    modifier = Modifier.padding(top = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Atv.Space4),
+                ) {
+                    RoundIconButton(Icons.Rounded.SkipPrevious, stringResource(R.string.cd_previous), { player.seekToPrevious() })
+                    RoundIconButton(
+                        if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                        stringResource(R.string.cd_play_pause),
+                        {
+                            if (playing) player.pause() else player.play()
+                            playing = !playing
+                        },
+                        modifier = Modifier.focusRequester(playFocus),
+                        size = 72.dp,
+                    )
+                    RoundIconButton(Icons.Rounded.SkipNext, stringResource(R.string.cd_next), { player.seekToNext() })
+                }
+            }
+            if (!tv) VolumeControls(viewModel)
         }
-        if (!tv) VolumeControls(viewModel)
     }
     Wall {
         Stage(
@@ -158,7 +168,7 @@ fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
                 StatusChip(chip, ChipKind.WAITING, icon = Icons.Rounded.MusicNote)
                 Artwork(track.coverArt, Modifier.widthIn(max = 320.dp).fillMaxWidth())
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Atv.Space2), content = info)
-                Pepe(PepeMood.MUSICA, size = 140.dp)
+                Pepe(mood, size = 140.dp)
             },
         ) {
             StatusChip(
@@ -174,7 +184,7 @@ fun AudioScreen(viewModel: MainViewModel, clientName: String, inputTick: Int) {
                 content = info,
             )
             FloorShadow(Modifier.offset(730.dp, 430.dp).size(200.dp, 40.dp))
-            Pepe(PepeMood.MUSICA, Modifier.offset(740.dp, 262.dp), size = 190.dp)
+            Pepe(mood, Modifier.offset(740.dp, 262.dp), size = 190.dp)
         }
         val scrim by animateColorAsState(
             if (dimmed && tv) Color.Black.copy(alpha = 0.7f) else Color.Transparent,
